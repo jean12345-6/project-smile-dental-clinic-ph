@@ -47,4 +47,15 @@ class AppointmentController extends APIController
 
         return new AppointmentResource($appointment);
     }
+        /**
+     * DELETE /api/v1/appointments/{appointment}
+     * Deletes the appointment. A missing appointment never reaches this method:
+     * Laravel answers 404 for us.
+     */
+    public function destroy(Appointment $appointment)
+    {
+        $appointment->delete();
+
+        return $this->ok('Appointment successfully deleted');
+    }
 }

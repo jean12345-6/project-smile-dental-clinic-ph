@@ -19,7 +19,7 @@ Route::middleware('auth:api')->group(function () {
     });
 
     // GET /appointments (list), GET /appointments/{appointment} (one), POST /appointments (book)
-    Route::apiResource('appointments', AppointmentController::class)->only(['index', 'show', 'store']);
+    Route::apiResource('appointments', AppointmentController::class)->only(['index', 'show', 'store', 'destroy']);
 
     // Patients are read only: list and show
     Route::apiResource('patients', PatientsController::class)->only(['index', 'show']);
