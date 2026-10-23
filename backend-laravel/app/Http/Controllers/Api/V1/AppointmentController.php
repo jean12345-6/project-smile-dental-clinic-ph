@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Http\Filters\V1\AppointmentFilter;
+use App\Http\Requests\Api\V1\StoreAppointmentRequest;
 use App\Http\Resources\V1\AppointmentResource;
 use App\Models\Appointment;
-use App\Http\Filters\V1\AppointmentFilter;
 
 class AppointmentController extends APIController
 {
-        /**
+    /**
      * GET /api/v1/appointments
      * Returns a paginated list, narrowed by the filters in the URL
      * (?status=confirmed, ?dentistId=1, ?startTime=2026-10-20, ?include=patient ...).
@@ -18,6 +19,20 @@ class AppointmentController extends APIController
         return AppointmentResource::collection(
             Appointment::filter($filters)->paginate()->withQueryString()
         );
+    }
+
+    /**
+     * POST /api/v1/appointments
+     * Validates the body with StoreAppointmentRequest, then books the appointment.
+     * Laravel answers 201 Created automatically for a newly created resource.
+     */
+    public function store(StoreAppointmentRequest $request)
+    {
+        // mappedAttributes() converts the nested JSON into database columns
+        $appointment = Appointment::create($request->mappedAttributes());
+
+        // refresh() loads the database defaults (status, risk_flag, booked_via) into the response
+        return new AppointmentResource($appointment->refresh());
     }
 
     /**
