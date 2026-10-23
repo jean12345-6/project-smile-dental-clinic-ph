@@ -23,7 +23,7 @@ class AppointmentResource extends JsonResource
                 'riskFlag'  => $this->risk_flag,
                 'bookedVia' => $this->booked_via,
                 // Shown on the detail page only: hidden on the list endpoint
-                $this->mergeWhen(! $request->routeIs('appointments.index'), [
+                $this->mergeWhen(!$request->routeIs(['appointments.index', 'patients.appointments.index']), [
                     'checkInTime' => $this->check_in_time,
                     'createdAt'   => $this->created_at,
                     'updatedAt'   => $this->updated_at,
