@@ -18,8 +18,12 @@ Route::middleware('auth:api')->group(function () {
         Route::post('refresh', [AuthController::class, 'refresh']);
     });
 
-    // GET /appointments (list), GET /appointments/{appointment} (one), POST /appointments (book)
+    // GET /appointments (list), GET /appointments/{appointment} (one),
+    // POST /appointments (book), DELETE /appointments/{appointment}
     Route::apiResource('appointments', AppointmentController::class)->only(['index', 'show', 'store', 'destroy']);
+
+    // PUT replaces the whole appointment (our own method name: replace)
+    Route::put('appointments/{appointment}', [AppointmentController::class, 'replace']);
 
     // Patients are read only: list and show
     Route::apiResource('patients', PatientsController::class)->only(['index', 'show']);

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Filters\V1\AppointmentFilter;
+use App\Http\Requests\Api\V1\ReplaceAppointmentRequest;
 use App\Http\Requests\Api\V1\StoreAppointmentRequest;
 use App\Http\Resources\V1\AppointmentResource;
 use App\Models\Appointment;
@@ -47,7 +48,8 @@ class AppointmentController extends APIController
 
         return new AppointmentResource($appointment);
     }
-        /**
+
+    /**
      * DELETE /api/v1/appointments/{appointment}
      * Deletes the appointment. A missing appointment never reaches this method:
      * Laravel answers 404 for us.
@@ -57,5 +59,16 @@ class AppointmentController extends APIController
         $appointment->delete();
 
         return $this->ok('Appointment successfully deleted');
+    }
+
+    /**
+     * PUT /api/v1/appointments/{appointment}
+     * Replaces the whole appointment: every field must be sent (see ReplaceAppointmentRequest).
+     */
+    public function replace(ReplaceAppointmentRequest $request, Appointment $appointment)
+    {
+        $appointment->update($request->mappedAttributes());
+
+        return new AppointmentResource($appointment);
     }
 }
