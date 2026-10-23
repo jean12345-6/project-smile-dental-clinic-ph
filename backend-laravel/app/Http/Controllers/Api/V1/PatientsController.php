@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Http\Filters\V1\PatientFilter;
 use App\Http\Resources\V1\PatientResource;
 use App\Models\Patient;
 
@@ -12,17 +13,14 @@ class PatientsController extends APIController
 {
     /**
      * GET /api/v1/patients
+     * Filters and sorting come from the URL (?fullName=*maria*, ?sort=-createdAt ...).
      * Add ?include=appointments to load each patient's appointments in one extra query.
      */
-    public function index()
+    public function index(PatientFilter $filters)
     {
-        if ($this->include('appointments')) {
-            return PatientResource::collection(
-                Patient::has('appointments')->with('appointments')->paginate()
-            );
-        }
-
-        return PatientResource::collection(Patient::has('appointments')->paginate());
+        return PatientResource::collection(
+            Patient::has('appointments')->filter($filters)->paginate()->withQueryString()
+        );
     }
 
     /**

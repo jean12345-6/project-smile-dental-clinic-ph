@@ -7,6 +7,17 @@ namespace App\Http\Filters\V1;
  */
 class AppointmentFilter extends QueryFilter
 {
+    // The columns clients may sort appointments by
+    protected array $sortable = [
+        'status',
+        'startTime' => 'start_time',
+        'endTime' => 'end_time',
+        'bookedVia' => 'booked_via',
+        'riskFlag' => 'risk_flag',
+        'createdAt' => 'created_at',
+        'updatedAt' => 'updated_at',
+    ];
+
     /**
      * ?startTime=2026-10-20                 one day
      * ?startTime=2026-10-01,2026-10-31      a date range (from,to), both days included

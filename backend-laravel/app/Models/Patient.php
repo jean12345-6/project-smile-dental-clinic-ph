@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Http\Filters\V1\QueryFilter;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -81,5 +83,13 @@ class Patient extends Model
     public function waitlist()
     {
         return $this->hasMany(Waitlist::class, 'patient_id');
+    }
+
+    /**
+     * Query scope: Patient::filter($filters) applies the filters sent in the URL.
+     */
+    public function scopeFilter(Builder $builder, QueryFilter $filters): Builder
+    {
+        return $filters->apply($builder);
     }
 }
