@@ -13,8 +13,6 @@ class AppointmentController extends APIController
 {
     /**
      * GET /api/v1/appointments
-     * Returns a paginated list, narrowed by the filters in the URL
-     * (?status=confirmed, ?dentistId=1, ?startTime=2026-10-20, ?include=patient ...).
      */
     public function index(AppointmentFilter $filters)
     {
@@ -25,21 +23,22 @@ class AppointmentController extends APIController
 
     /**
      * POST /api/v1/appointments
-     * Validates the body with StoreAppointmentRequest, then books the appointment.
-     * Laravel answers 201 Created automatically for a newly created resource.
+     * Creates an appointment, but only if the policy allows this user to do so.
      */
     public function store(StoreAppointmentRequest $request)
     {
-        // mappedAttributes() converts the nested JSON into database columns
-        $appointment = Appointment::create($request->mappedAttributes());
+        // Ask AppointmentPolicy::store() (checks the ability stored in the token)
+        if ($this->isAble('store', Appointment::class)) {
+            $appointment = Appointment::create($request->mappedAttributes());
 
-        // refresh() loads the database defaults (status, risk_flag, booked_via) into the response
-        return new AppointmentResource($appointment->refresh());
+            return new AppointmentResource($appointment->refresh());
+        }
+
+        return $this->notAuthorized('You are not authorized to create that resource.');
     }
 
     /**
      * GET /api/v1/appointments/{appointment}
-     * Add ?include=patient to load the patient of this appointment.
      */
     public function show(Appointment $appointment)
     {
@@ -52,28 +51,35 @@ class AppointmentController extends APIController
 
     /**
      * DELETE /api/v1/appointments/{appointment}
-     * Deletes the appointment. A missing appointment never reaches this method:
-     * Laravel answers 404 for us.
+     * Deletes the appointment, but only if the policy allows it.
      */
     public function destroy(Appointment $appointment)
     {
-        $appointment->delete();
+        if ($this->isAble('delete', $appointment)) {
+            $appointment->delete();
 
-        return $this->ok('Appointment successfully deleted');
+            return $this->ok('Appointment successfully deleted');
+        }
+
+        return $this->notAuthorized('You are not authorized to delete that resource.');
     }
 
     /**
      * PUT /api/v1/appointments/{appointment}
-     * Replaces the whole appointment: every field must be sent (see ReplaceAppointmentRequest).
+     * Replaces the whole appointment, but only if the policy allows it.
      */
     public function replace(ReplaceAppointmentRequest $request, Appointment $appointment)
     {
-        $appointment->update($request->mappedAttributes());
+        if ($this->isAble('replace', $appointment)) {
+            $appointment->update($request->mappedAttributes());
 
-        return new AppointmentResource($appointment);
+            return new AppointmentResource($appointment);
+        }
+
+        return $this->notAuthorized('You are not authorized to replace that resource.');
     }
 
-        /**
+    /**
      * PATCH /api/v1/appointments/{appointment}
      * Updates only the fields that were sent, but only if the policy allows it.
      */
