@@ -32,7 +32,9 @@ class PatientResource extends JsonResource
                     $this->medical_history
                 ),
             ],
-            // Link to this patient
+            
+            'includes' => AppointmentResource::collection($this->whenLoaded('appointments')),
+
             'links' => [
                 'self' => route('patients.show', ['patient' => $this->patient_id]),
             ],

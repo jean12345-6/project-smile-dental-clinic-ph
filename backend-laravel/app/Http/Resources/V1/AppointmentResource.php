@@ -49,6 +49,8 @@ class AppointmentResource extends JsonResource
                 ],
             ],
 
+            'includes' => new PatientResource($this->whenLoaded('patient')),
+
             'links' => [
                 'self' => route('appointments.show', ['appointment' => $this->appointment_id]),
             ],
