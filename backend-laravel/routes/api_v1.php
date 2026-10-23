@@ -25,6 +25,9 @@ Route::middleware('auth:api')->group(function () {
     // PUT replaces the whole appointment (our own method name: replace)
     Route::put('appointments/{appointment}', [AppointmentController::class, 'replace']);
 
+    // PATCH updates only the fields that were sent
+    Route::patch('appointments/{appointment}', [AppointmentController::class, 'update']);
+
     // Patients are read only: list and show
     Route::apiResource('patients', PatientsController::class)->only(['index', 'show']);
 

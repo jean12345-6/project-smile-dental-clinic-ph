@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Filters\V1\AppointmentFilter;
 use App\Http\Requests\Api\V1\ReplaceAppointmentRequest;
 use App\Http\Requests\Api\V1\StoreAppointmentRequest;
+use App\Http\Requests\Api\V1\UpdateAppointmentRequest;
 use App\Http\Resources\V1\AppointmentResource;
 use App\Models\Appointment;
 
@@ -68,6 +69,21 @@ class AppointmentController extends APIController
     public function replace(ReplaceAppointmentRequest $request, Appointment $appointment)
     {
         $appointment->update($request->mappedAttributes());
+
+        return new AppointmentResource($appointment);
+    }
+
+    /**
+     * PATCH /api/v1/appointments/{appointment}
+     * Updates only the fields that were sent (see UpdateAppointmentRequest).
+     * checkInTime is allowed here only, so the front desk can check a patient in.
+     */
+    public function update(UpdateAppointmentRequest $request, Appointment $appointment)
+    {
+        // mappedAttributes() returns only the keys present in the request
+        $appointment->update(
+            $request->mappedAttributes(['data.attributes.checkInTime' => 'check_in_time'])
+        );
 
         return new AppointmentResource($appointment);
     }
