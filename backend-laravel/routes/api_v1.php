@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\V1\AppointmentController;
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\PatientsController;
 use Illuminate\Support\Facades\Route;
 
 // Public routes: no token needed
@@ -20,4 +21,7 @@ Route::middleware('auth:api')->group(function () {
 
     // GET /appointments (list) and GET /appointments/{appointment} (one appointment)
     Route::apiResource('appointments', AppointmentController::class)->only(['index', 'show']);
+
+    // Patients are read only: list and show
+    Route::apiResource('patients', PatientsController::class)->only(['index', 'show']);
 });
