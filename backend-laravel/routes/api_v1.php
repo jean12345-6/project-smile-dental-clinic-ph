@@ -18,5 +18,6 @@ Route::middleware('auth:api')->group(function () {
         Route::post('refresh', [AuthController::class, 'refresh']);
     });
 
-    Route::apiResource('appointments', AppointmentController::class)->only(['index']);
+    // GET /appointments (list) and GET /appointments/{appointment} (one appointment)
+    Route::apiResource('appointments', AppointmentController::class)->only(['index', 'show']);
 });
