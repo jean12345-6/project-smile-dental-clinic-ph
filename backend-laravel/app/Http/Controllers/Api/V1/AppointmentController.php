@@ -73,18 +73,18 @@ class AppointmentController extends APIController
         return new AppointmentResource($appointment);
     }
 
-    /**
+        /**
      * PATCH /api/v1/appointments/{appointment}
-     * Updates only the fields that were sent (see UpdateAppointmentRequest).
-     * checkInTime is allowed here only, so the front desk can check a patient in.
+     * Updates only the fields that were sent, but only if the policy allows it.
      */
     public function update(UpdateAppointmentRequest $request, Appointment $appointment)
     {
-        // mappedAttributes() returns only the keys present in the request
-        $appointment->update(
-            $request->mappedAttributes(['data.attributes.checkInTime' => 'check_in_time'])
-        );
+        if ($this->isAble('update', $appointment)) {
+            $appointment->update($request->mappedAttributes(['data.attributes.checkInTime' => 'check_in_time']));
 
-        return new AppointmentResource($appointment);
+            return new AppointmentResource($appointment);
+        }
+
+        return $this->notAuthorized('You are not authorized to update that resource.');
     }
 }
