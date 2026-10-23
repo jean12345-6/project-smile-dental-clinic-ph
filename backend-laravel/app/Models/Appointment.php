@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Http\Filters\V1\QueryFilter;
+use Illuminate\Database\Eloquent\Builder;
 
 class Appointment extends Model
 {
@@ -76,5 +78,12 @@ class Appointment extends Model
     public function feedback()
     {
         return $this->hasOne(Feedback::class, 'appointment_id');
+    }
+        /**
+     * Query scope: Appointment::filter($filters) applies the filters sent in the URL.
+     */
+    public function scopeFilter(Builder $builder, QueryFilter $filters): Builder
+    {
+        return $filters->apply($builder);
     }
 }

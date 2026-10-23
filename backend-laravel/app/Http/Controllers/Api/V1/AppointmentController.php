@@ -4,20 +4,20 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Resources\V1\AppointmentResource;
 use App\Models\Appointment;
+use App\Http\Filters\V1\AppointmentFilter;
 
 class AppointmentController extends APIController
 {
-    /**
+        /**
      * GET /api/v1/appointments
-     * Add ?include=patient to load each appointment's patient in one extra query.
+     * Returns a paginated list, narrowed by the filters in the URL
+     * (?status=confirmed, ?dentistId=1, ?startTime=2026-10-20, ?include=patient ...).
      */
-    public function index()
+    public function index(AppointmentFilter $filters)
     {
-        if ($this->include('patient')) {
-            return AppointmentResource::collection(Appointment::with('patient')->paginate());
-        }
-
-        return AppointmentResource::collection(Appointment::paginate());
+        return AppointmentResource::collection(
+            Appointment::filter($filters)->paginate()->withQueryString()
+        );
     }
 
     /**
