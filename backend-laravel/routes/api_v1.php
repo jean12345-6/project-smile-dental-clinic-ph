@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\V1\PatientAppointmentsController;
 use App\Http\Controllers\Api\V1\PatientsController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\UserController;
+use App\Http\Controllers\Api\V1\SlotController;
 
 Route::prefix('auth')->group(function () {
     Route::post('register', [AuthController::class, 'register']);
@@ -18,6 +19,7 @@ Route::middleware('auth:api')->group(function () {
         Route::get('me', [AuthController::class, 'me']);
         Route::post('refresh', [AuthController::class, 'refresh']);
     });
+    Route::get('slots', [SlotController::class, 'index']);
 
     // GET /appointments (list), GET /appointments/{appointment} (one),
     // POST /appointments (book), DELETE /appointments/{appointment}
