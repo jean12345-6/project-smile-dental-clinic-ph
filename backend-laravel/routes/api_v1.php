@@ -32,5 +32,13 @@ Route::middleware('auth:api')->group(function () {
     Route::apiResource('patients', PatientsController::class)->only(['index', 'show']);
 
     // Appointments of one patient: GET /patients/{patient}/appointments
-    Route::apiResource('patients.appointments', PatientAppointmentsController::class)->only(['index']);
+        Route::apiResource('patients.appointments', PatientAppointmentsController::class)
+        ->only(['index', 'store', 'destroy'])
+        ->scoped(); // the appointment must belong to the patient in the URL (otherwise 404)
+
+    // PUT and PATCH use our own method names, so they are registered by hand
+    Route::put('patients/{patient}/appointments/{appointment}', [PatientAppointmentsController::class, 'replace'])
+        ->scopeBindings();
+    Route::patch('patients/{patient}/appointments/{appointment}', [PatientAppointmentsController::class, 'update'])
+        ->scopeBindings();
 });

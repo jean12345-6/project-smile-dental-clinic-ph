@@ -3,9 +3,10 @@
 namespace App\Http\Requests\Api\V1;
 
 use App\Permissions\V1\Abilities;
+use Illuminate\Database\Eloquent\Model;
 
 /**
- * Validates the body of POST /appointments.
+ * Validates the body of POST /appointments and POST /patients/{patient}/appointments.
  */
 class StoreAppointmentRequest extends BaseAppointmentRequest
 {
@@ -16,6 +17,30 @@ class StoreAppointmentRequest extends BaseAppointmentRequest
     public function authorize(): bool
     {
         return true;
+    }
+
+    /**
+     * On POST /patients/{patient}/appointments the patient id is in the URL, not in the body.
+     * Copy it into the body so the same rules below work for both routes.
+     */
+    protected function prepareForValidation(): void
+    {
+        $patient = $this->route('patient');
+
+        if ($patient === null) {
+            return;
+        }
+
+        $patientId = $patient instanceof Model ? $patient->getKey() : $patient;
+        $data = $this->input('data');
+
+        if (! is_array($data)) {
+            $data = [];
+        }
+
+        $data['relationships']['patient']['data']['id'] = (int) $patientId;
+
+        $this->merge(['data' => $data]);
     }
 
     /**
