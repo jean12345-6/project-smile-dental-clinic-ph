@@ -7,19 +7,27 @@ use App\Http\Controllers\Api\V1\PatientsController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\UserController;
 use App\Http\Controllers\Api\V1\SlotController;
+use App\Http\Controllers\Api\V1\LookupController;
+use App\Http\Controllers\Api\V1\WaitlistController;
 
 Route::prefix('auth')->group(function () {
     Route::post('register', [AuthController::class, 'register']);
-    Route::post('login', [AuthController::class, 'login']);
+    Route::post('login', [AuthController::class, 'login'])->middleware(\App\Http\Middleware\SessionLogger::class);
 });
+
+require __DIR__.'/api_v1_public.php';
 
 Route::middleware('auth:api')->group(function () {
     Route::prefix('auth')->group(function () {
-        Route::post('logout', [AuthController::class, 'logout']);
+        Route::post('logout', [AuthController::class, 'logout'])->middleware(\App\Http\Middleware\SessionLogger::class);
         Route::get('me', [AuthController::class, 'me']);
         Route::post('refresh', [AuthController::class, 'refresh']);
     });
     Route::get('slots', [SlotController::class, 'index']);
+        Route::get('lookups', [LookupController::class, 'index']);
+    Route::get('waitlist', [WaitlistController::class, 'index']);
+    Route::post('waitlist', [WaitlistController::class, 'store']);
+    require __DIR__.'/api_v1_extra.php';
 
     // GET /appointments (list), GET /appointments/{appointment} (one),
     // POST /appointments (book), DELETE /appointments/{appointment}

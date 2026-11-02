@@ -6,9 +6,23 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Http\Filters\V1\QueryFilter;
 use Illuminate\Database\Eloquent\Builder;
+use App\Services\V1\WaitlistService;
 
 class Appointment extends Model
 {
+
+    protected static function booted(): void
+    {
+        // Slot freed by a cancel -> offer it to the waitlist
+        static::updated(function (Appointment $appointment) {
+            if ($appointment->wasChanged('status') && $appointment->status === 'cancelled') {
+                app(WaitlistService::class)->offerFor($appointment);
+            }
+        });
+
+        // Slot freed by a delete -> offer it too
+        static::deleted(fn (Appointment $appointment) => app(WaitlistService::class)->offerFor($appointment));
+    }
     use HasFactory;
 
     protected $table = 'appointments';
