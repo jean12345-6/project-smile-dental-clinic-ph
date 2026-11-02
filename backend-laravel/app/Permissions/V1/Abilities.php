@@ -4,10 +4,6 @@ namespace App\Permissions\V1;
 
 use App\Models\User;
 
-/**
- * Every ability name in one place, plus the rule that decides who receives which.
- * Format: resource:action. "own" means "only for things I own".
- */
 final class Abilities
 {
     // Appointment abilities
@@ -19,34 +15,42 @@ final class Abilities
     public const DeleteAppointment = 'appointment:delete';
     public const DeleteOwnAppointment = 'appointment:own:delete';
 
+    // User management abilities (admins only)
+    public const CreateUser = 'user:create';
+    public const UpdateUser = 'user:update';
+    public const ReplaceUser = 'user:replace';
+    public const DeleteUser = 'user:delete';
+
     /**
-     * Returns the list of abilities a user receives, based on the role.
-     * The list is written into the JWT at login, so the policies can read it
-     * without querying the database.
+     * The abilities written into the JWT at login, based on the user's role.
      */
     public static function getAbilities(User $user): array
     {
         return match ($user->role) {
-            // Clinic staff may act on any appointment
-            'superadmin', 'clinic_admin', 'receptionist' => [
+            'superadmin', 'clinic_admin' => [
+                self::CreateAppointment,
+                self::UpdateAppointment,
+                self::ReplaceAppointment,
+                self::DeleteAppointment,
+                self::CreateUser,
+                self::UpdateUser,
+                self::ReplaceUser,
+                self::DeleteUser,
+            ],
+            'receptionist' => [
                 self::CreateAppointment,
                 self::UpdateAppointment,
                 self::ReplaceAppointment,
                 self::DeleteAppointment,
             ],
-
-            // Dentists may update appointments (check-in, complete, notes)
             'dentist' => [
                 self::UpdateAppointment,
             ],
-
-            // Patients may only act on their own appointments
             'patient' => [
                 self::CreateOwnAppointment,
                 self::UpdateOwnAppointment,
                 self::DeleteOwnAppointment,
             ],
-
             default => [],
         };
     }

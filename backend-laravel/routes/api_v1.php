@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\PatientAppointmentsController;
 use App\Http\Controllers\Api\V1\PatientsController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\V1\UserController;
 
 Route::prefix('auth')->group(function () {
     Route::post('register', [AuthController::class, 'register']);
@@ -41,4 +42,9 @@ Route::middleware('auth:api')->group(function () {
         ->scopeBindings();
     Route::patch('patients/{patient}/appointments/{appointment}', [PatientAppointmentsController::class, 'update'])
         ->scopeBindings();
+            // Users (management): list, create, show and delete use the resource routes
+    Route::apiResource('users', UserController::class)->except(['update']);
+    // PUT and PATCH use our own method names, so they are registered by hand
+    Route::put('users/{user}', [UserController::class, 'replace']);
+    Route::patch('users/{user}', [UserController::class, 'update']);
 });

@@ -1,0 +1,36 @@
+<?php
+
+namespace App\Http\Requests\Api\V1;
+
+use Illuminate\Validation\Rule;
+
+/**
+ * Validates the body of PUT /users/{user}: every field is required.
+ */
+class ReplaceUserRequest extends BaseUserRequest
+{
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    public function rules(): array
+    {
+        return [
+            'data' => 'required|array',
+            'data.attributes' => 'required|array',
+            'data.attributes.name' => 'required|string',
+            'data.attributes.email' => [
+                'required',
+                'email',
+                // The email must be unique, except for the user being replaced
+                Rule::unique('users', 'email')->ignore($this->route('user')),
+            ],
+            'data.attributes.role' => 'required|string|in:superadmin,clinic_admin,receptionist,dentist,patient',
+            'data.attributes.status' => 'required|string',
+            'data.attributes.password' => 'required|string|min:8',
+            'data.relationships.clinic.data.id' => 'required|integer|exists:clinics,clinic_id',
+            'data.relationships.branch.data.id' => 'required|integer|exists:branches,branch_id',
+        ];
+    }
+}

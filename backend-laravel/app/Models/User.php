@@ -11,6 +11,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
+use App\Http\Filters\V1\QueryFilter;
+use Illuminate\Database\Eloquent\Builder;
 
 #[Fillable(['clinic_id', 'branch_id', 'name', 'email', 'password', 'role', 'status'])]
 #[Hidden(['password', 'remember_token'])]
@@ -86,5 +88,12 @@ class User extends Authenticatable implements JWTSubject
         }
 
         return in_array($ability, $abilities, true);
+    }
+        /**
+     * Query scope: User::filter($filters) applies the filters sent in the URL.
+     */
+    public function scopeFilter(Builder $builder, QueryFilter $filters): Builder
+    {
+        return $filters->apply($builder);
     }
 }
