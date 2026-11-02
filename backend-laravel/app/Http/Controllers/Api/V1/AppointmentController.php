@@ -9,6 +9,11 @@ use App\Http\Requests\Api\V1\UpdateAppointmentRequest;
 use App\Http\Resources\V1\AppointmentResource;
 use App\Models\Appointment;
 
+/**
+ * @group Appointments
+ *
+ * Book, read, reschedule and cancel appointments.
+ */
 class AppointmentController extends APIController
 {
     /**

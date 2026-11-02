@@ -43,8 +43,9 @@ class StoreAppointmentRequest extends BaseAppointmentRequest
         $this->merge(['data' => $data]);
     }
 
-        /**
+    /**
      * Validation rules for booking an appointment (deny by default).
+     * Null-safe so Scribe can read the rules while no user is logged in.
      */
     public function rules(): array
     {
@@ -60,19 +61,21 @@ class StoreAppointmentRequest extends BaseAppointmentRequest
             'data.attributes.bookedVia' => 'sometimes|string|in:chatbot,portal,walk_in',
             'data.attributes.followUpOf' => 'sometimes|nullable|integer|exists:appointments,appointment_id',
             // Default: the patient must be the logged-in user's own patient record
-            $patientIdAttr => 'required|integer|exists:patients,patient_id|size:' . ($user->patient?->patient_id ?? 0),
+            $patientIdAttr => 'required|integer|exists:patients,patient_id'
+                . ($user ? '|size:' . ($user->patient?->patient_id ?? 0) : ''),
             'data.relationships.dentist.data.id' => 'required|integer|exists:dentists,dentist_id',
             'data.relationships.branch.data.id' => 'required|integer|exists:branches,branch_id',
             'data.relationships.service.data.id' => 'required|integer|exists:services,service_id',
         ];
 
         // Only the broad ability lifts the restriction (staff)
-        if ($user->tokenCan(Abilities::CreateAppointment)) {
+        if ($user?->tokenCan(Abilities::CreateAppointment)) {
             $rules[$patientIdAttr] = 'required|integer|exists:patients,patient_id';
         }
 
         return $rules;
     }
+
     /**
      * Same messages as the base class, plus a clear message for the patient id rule.
      */
@@ -81,5 +84,50 @@ class StoreAppointmentRequest extends BaseAppointmentRequest
         return array_merge(parent::messages(), [
             'data.relationships.patient.data.id.size' => 'You may only book appointments for yourself.',
         ]);
+    }
+
+    /**
+     * Descriptions and examples that Scribe shows in the documentation.
+     */
+    public function bodyParameters(): array
+    {
+        return [
+            'data.attributes.startTime' => [
+                'description' => 'Start of the appointment. Must be in the future.',
+                'example' => '2026-12-10 10:00:00',
+            ],
+            'data.attributes.endTime' => [
+                'description' => 'End of the appointment. Must be after the start time.',
+                'example' => '2026-12-10 11:00:00',
+            ],
+            'data.attributes.status' => [
+                'description' => 'pending or confirmed.',
+                'example' => 'pending',
+            ],
+            'data.attributes.bookedVia' => [
+                'description' => 'How it was booked: chatbot, portal or walk_in.',
+                'example' => 'portal',
+            ],
+            'data.attributes.followUpOf' => [
+                'description' => 'Id of the earlier appointment this one follows up (optional).',
+                'example' => null,
+            ],
+            'data.relationships.patient.data.id' => [
+                'description' => 'The patient id. Patients may only use their own id. On /patients/{patient}/appointments it is taken from the URL.',
+                'example' => 14,
+            ],
+            'data.relationships.dentist.data.id' => [
+                'description' => 'The dentist id.',
+                'example' => 1,
+            ],
+            'data.relationships.branch.data.id' => [
+                'description' => 'The branch id.',
+                'example' => 1,
+            ],
+            'data.relationships.service.data.id' => [
+                'description' => 'The service id.',
+                'example' => 1,
+            ],
+        ];
     }
 }

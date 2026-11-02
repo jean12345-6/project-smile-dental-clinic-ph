@@ -9,6 +9,11 @@ use App\Models\Patient;
 /**
  * Read-only view of the patients who have at least one appointment.
  */
+/**
+ * @group Patients
+ *
+ * Read patients (list and show).
+ */
 class PatientsController extends APIController
 {
     /**

@@ -12,6 +12,11 @@ use App\Models\User;
 /**
  * User management for admins: list, create, show, replace, update and delete users.
  */
+/**
+ * @group Users
+ *
+ * Manage clinic staff and patient login accounts.
+ */
 class UserController extends APIController
 {
     /**

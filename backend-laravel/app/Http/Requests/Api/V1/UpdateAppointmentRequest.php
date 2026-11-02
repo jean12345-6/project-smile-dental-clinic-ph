@@ -20,6 +20,7 @@ class UpdateAppointmentRequest extends BaseAppointmentRequest
 
     /**
      * Validation rules for updating an appointment (deny by default).
+     * Null-safe so Scribe can read the rules while no user is logged in.
      */
     public function rules(): array
     {
@@ -44,7 +45,7 @@ class UpdateAppointmentRequest extends BaseAppointmentRequest
         $rules['data.relationships.patient.data.id'] = 'prohibited';
 
         // Only the broad ability lifts the restriction (staff)
-        if ($this->user()->tokenCan(Abilities::UpdateAppointment)) {
+        if ($this->user()?->tokenCan(Abilities::UpdateAppointment)) {
             $rules['data.relationships.patient.data.id'] = 'sometimes|integer|exists:patients,patient_id';
         }
 
@@ -60,5 +61,54 @@ class UpdateAppointmentRequest extends BaseAppointmentRequest
             'data.attributes.status.in' => 'The data.attributes.status value is invalid. Please use pending, confirmed, checked_in, completed, cancelled or no_show.',
             'data.relationships.patient.data.id.prohibited' => 'You may not change the patient of an appointment.',
         ]);
+    }
+
+    /**
+     * Descriptions and examples that Scribe shows in the documentation.
+     */
+    public function bodyParameters(): array
+    {
+        return [
+            'data.attributes.startTime' => [
+                'description' => 'New start time.',
+                'example' => '2026-12-12 10:00:00',
+            ],
+            'data.attributes.endTime' => [
+                'description' => 'New end time. Must be after the start time.',
+                'example' => '2026-12-12 11:00:00',
+            ],
+            'data.attributes.status' => [
+                'description' => 'pending, confirmed, checked_in, completed, cancelled or no_show.',
+                'example' => 'confirmed',
+            ],
+            'data.attributes.bookedVia' => [
+                'description' => 'chatbot, portal or walk_in.',
+                'example' => 'portal',
+            ],
+            'data.attributes.checkInTime' => [
+                'description' => 'When the patient checked in (optional).',
+                'example' => null,
+            ],
+            'data.attributes.followUpOf' => [
+                'description' => 'Id of the earlier appointment this one follows up (optional).',
+                'example' => null,
+            ],
+            'data.relationships.patient.data.id' => [
+                'description' => 'Staff only. Patients may not change the patient of an appointment.',
+                'example' => null,
+            ],
+            'data.relationships.dentist.data.id' => [
+                'description' => 'The dentist id.',
+                'example' => 1,
+            ],
+            'data.relationships.branch.data.id' => [
+                'description' => 'The branch id.',
+                'example' => 1,
+            ],
+            'data.relationships.service.data.id' => [
+                'description' => 'The service id.',
+                'example' => 1,
+            ],
+        ];
     }
 }

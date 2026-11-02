@@ -13,6 +13,11 @@ use App\Models\Patient;
 /**
  * Appointments that belong to one patient: /api/v1/patients/{patient}/appointments
  */
+/**
+ * @group Patient Appointments
+ *
+ * The appointments of one patient. The patient id comes from the URL.
+ */
 class PatientAppointmentsController extends APIController
 {
     /**

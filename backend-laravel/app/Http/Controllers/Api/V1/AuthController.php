@@ -10,12 +10,25 @@ use App\Traits\ApiResponses;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
+
+/**
+ * @group Authentication
+ *
+ * Register, login, logout and refresh tokens.
+ */
 class AuthController extends Controller
 {
     // Gives this controller the ok(), success() and error() response helpers
     use ApiResponses;
 
     // Register: creates the account and logs the user in immediately
+    /**
+     * Register
+     *
+     * Creates the account and logs the user in immediately.
+     *
+     * @unauthenticated
+     */
     public function register(RegisterUserRequest $request)
     {
         // Self-registration is for patients only; staff roles are never set from the request
@@ -34,6 +47,14 @@ class AuthController extends Controller
     }
 
     // Login: checks the credentials and returns a token when they are correct
+
+        /**
+     * Log in
+     *
+     * Returns an access token. Send it as a Bearer token on every other request.
+     *
+     * @unauthenticated
+     */
     public function login(LoginUserRequest $request)
     {
         $credentials = $request->only('email', 'password');
