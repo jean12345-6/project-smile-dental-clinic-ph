@@ -4,6 +4,8 @@ namespace App\Http\Requests\Api\V1;
 
 use App\Permissions\V1\Abilities;
 use Illuminate\Database\Eloquent\Model;
+use App\Services\V1\SlotService;
+use Illuminate\Validation\Validator;
 
 /**
  * Validates the body of POST /appointments and POST /patients/{patient}/appointments.
@@ -128,6 +130,34 @@ class StoreAppointmentRequest extends BaseAppointmentRequest
                 'description' => 'The service id.',
                 'example' => 1,
             ],
+        ];
+    }
+        /**
+     * Runs after the normal rules pass: blocks double-booking.
+     */
+    public function after(): array
+    {
+        return [
+            function (Validator $validator) {
+                if ($validator->errors()->isNotEmpty()) {
+                    return;
+                }
+
+                $dentistId = $this->input('data.relationships.dentist.data.id');
+                $start = $this->input('data.attributes.startTime');
+                $end = $this->input('data.attributes.endTime');
+
+                if (! $dentistId || ! $start || ! $end) {
+                    return;
+                }
+
+                if (! app(SlotService::class)->isFree((int) $dentistId, $start, $end)) {
+                    $validator->errors()->add(
+                        'data.attributes.startTime',
+                        'That time is already taken. Please pick another slot.'
+                    );
+                }
+            },
         ];
     }
 }

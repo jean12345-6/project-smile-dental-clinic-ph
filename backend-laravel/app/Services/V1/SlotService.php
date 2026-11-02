@@ -94,4 +94,17 @@ class SlotService
 
         return $slots;
     }
+        /**
+     * True when the dentist has no active appointment in this time range.
+     */
+    public function isFree(int $dentistId, string $start, string $end, ?int $ignoreAppointmentId = null): bool
+    {
+        return ! DB::table('appointments')
+            ->where('dentist_id', $dentistId)
+            ->whereNotIn('status', self::FREE_STATUSES)
+            ->when($ignoreAppointmentId, fn ($q) => $q->where('appointment_id', '!=', $ignoreAppointmentId))
+            ->where('start_time', '<', $end)
+            ->where('end_time', '>', $start)
+            ->exists();
+    }
 }

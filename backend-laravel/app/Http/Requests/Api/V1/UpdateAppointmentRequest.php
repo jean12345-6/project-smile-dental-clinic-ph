@@ -3,6 +3,9 @@
 namespace App\Http\Requests\Api\V1;
 
 use App\Permissions\V1\Abilities;
+use App\Models\Appointment;
+use App\Services\V1\SlotService;
+use Illuminate\Validation\Validator;
 
 /**
  * Validates the body of PATCH /appointments/{appointment}: only the fields sent are checked.
@@ -109,6 +112,46 @@ class UpdateAppointmentRequest extends BaseAppointmentRequest
                 'description' => 'The service id.',
                 'example' => 1,
             ],
+        ];
+    }
+        /**
+     * Runs after the normal rules pass: blocks double-booking when the time or dentist changes.
+     */
+    public function after(): array
+    {
+        return [
+            function (Validator $validator) {
+                if ($validator->errors()->isNotEmpty()) {
+                    return;
+                }
+
+                $appointment = $this->route('appointment');
+                if (! $appointment instanceof Appointment) {
+                    $appointment = Appointment::find($appointment);
+                }
+                if (! $appointment) {
+                    return;
+                }
+
+                $start = $this->input('data.attributes.startTime', $appointment->start_time);
+                $end = $this->input('data.attributes.endTime', $appointment->end_time);
+                $dentistId = $this->input('data.relationships.dentist.data.id', $appointment->dentist_id);
+
+                $changed = $this->has('data.attributes.startTime')
+                    || $this->has('data.attributes.endTime')
+                    || $this->has('data.relationships.dentist.data.id');
+
+                if (! $changed) {
+                    return;
+                }
+
+                if (! app(SlotService::class)->isFree((int) $dentistId, (string) $start, (string) $end, $appointment->getKey())) {
+                    $validator->errors()->add(
+                        'data.attributes.startTime',
+                        'That time is already taken. Please pick another slot.'
+                    );
+                }
+            },
         ];
     }
 }
