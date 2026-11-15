@@ -34,6 +34,7 @@ Route::put('app-settings', [WorkflowController::class, 'saveSettings']);
 Route::post('clinic/logo', [WorkflowController::class, 'clinicLogo']);
 Route::post('clinics/{id}/admin', [WorkflowController::class, 'createClinicAdmin']);
 Route::post('ocr/upload', [WorkflowController::class, 'ocrUpload']);
+Route::post('ocr/read', [\App\Http\Controllers\Api\V1\OcrReadController::class, 'read']);
 
 // generic clinic modules — keep LAST so the specific routes above win
 Route::get('r/{res}', [ClinicController::class, 'index']);
