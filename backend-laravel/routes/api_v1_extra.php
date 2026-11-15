@@ -47,3 +47,5 @@ Route::get('my/transactions', [\App\Http\Controllers\Api\V1\PatientBillingContro
 Route::get('my/notifications', [\App\Http\Controllers\Api\V1\PatientNotificationController::class, 'index']);
 Route::post('my/notifications/read', [\App\Http\Controllers\Api\V1\PatientNotificationController::class, 'read']);
 Route::put('landing', [\App\Http\Controllers\Api\V1\LandingController::class, 'save']);
+Route::get('clinic-info', [\App\Http\Controllers\Api\V1\ClinicInfoController::class, 'show']);
+Route::put('clinic-info', [\App\Http\Controllers\Api\V1\ClinicInfoController::class, 'save']);

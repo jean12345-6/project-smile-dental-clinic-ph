@@ -1,3 +1,4 @@
+import ClinicInfoHours from './ClinicInfoHours.jsx';
 import React, { useEffect, useState } from 'react';
 import { api } from '../api.js';
 import { Crud, Field, money } from '../components.jsx';
@@ -48,6 +49,7 @@ export default function Settings() {
       fields={[{ key: 'dentist_id', label: 'Dentist', type: 'select', optionsFrom: 'dentist', required: true }, { key: 'branch_id', label: 'Branch', type: 'select', optionsFrom: 'branch', required: true }, { key: 'day_of_week', label: 'Day of week', type: 'select', options: days }, { key: 'start_time', label: 'Start', type: 'time' }, { key: 'end_time', label: 'End', type: 'time' }, { key: 'break_start', label: 'Break start', type: 'time' }, { key: 'break_end', label: 'Break end', type: 'time' }, { key: 'leave_date', label: 'Leave date', type: 'date' }]} />],
     dentists: ['Dentists', <Crud key="dn" res="dentists" title="Dentists" columns={P([{ key: 'full_name', label: 'Name' }, { key: 'specialization', label: 'Specialization' }, { key: 'license_no', label: 'License no.' }], 'dentist_id')}
       fields={[{ key: 'full_name', label: 'Full name', required: true }, { key: 'specialization', label: 'Specialization' }, { key: 'license_no', label: 'License no.' }, { key: 'user_id', label: 'User account ID', type: 'number' }]} />],
+    info: ['Clinic info and hours', <ClinicInfoHours key="ci" />],
     rules: ['Reminders and rules', <Rules key="r" />],
     faq: ['Assistant answers', <Crud key="f" res="faq" title="Questions the assistant can answer" hint="The assistant matches patient questions against these entries. Add the common questions your patients ask."
       columns={P([{ key: 'question', label: 'Question' }, { key: 'answer', label: 'Answer' }, { key: 'category', label: 'Category' }], 'faq_id')}
