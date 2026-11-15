@@ -12,6 +12,23 @@ export default function ChatDock() {
   const [busy, setBusy] = useState(false);
   const started = useRef(false);
   const end = useRef(null);
+  const openRef = useRef(open);
+  const [unread, setUnread] = useState(0);
+  const seenKey = `staff-seen-${user?.id ?? 'x'}`;
+  const lastId = useRef(0);
+
+  // replies from the clinic staff arrive here (checked every few seconds)
+  const poll = async () => {
+    try {
+      const r = await api('/chat/replies', { params: { after: lastId.current } });
+      const rows = r.data || [];
+      if (!rows.length) return;
+      lastId.current = Math.max(...rows.map((x) => x.id));
+      try { localStorage.setItem(seenKey, String(lastId.current)); } catch { /* ignore */ }
+      setMsgs((m) => [...m.map((x) => ({ ...x, options: [] })), ...rows.map((x) => ({ from: 'staff', text: x.text, options: [{ label: 'Main menu', action: 'menu', data: {} }] }))]);
+      if (!openRef.current) setUnread((n) => n + rows.length);
+    } catch { /* the next check will try again */ }
+  };
 
   const send = async (body, shown) => {
     if (shown) setMsgs((m) => [...m.map((x) => ({ ...x, options: [] })), { from: 'me', text: shown }]);
@@ -24,6 +41,16 @@ export default function ChatDock() {
     }
     setBusy(false);
   };
+
+  useEffect(() => {
+    if (!isPatient) return undefined;
+    try { lastId.current = Number(localStorage.getItem(seenKey) || 0); } catch { lastId.current = 0; }
+    poll();
+    const t = setInterval(poll, 8000);
+    return () => clearInterval(t);
+  }, [isPatient]); // eslint-disable-line
+
+  useEffect(() => { openRef.current = open; if (open) setUnread(0); }, [open]);
 
   useEffect(() => {
     if (isPatient && !started.current) { started.current = true; send({ action: 'menu' }); }
@@ -54,6 +81,7 @@ export default function ChatDock() {
       <button className="dock-launch" onClick={() => setOpen(true)} aria-label="Open the assistant">
         <img src="/logo.png" alt="" />
         <span>Ask the assistant</span>
+        {unread > 0 && <b style={{ background: '#d64545', color: '#fff', borderRadius: 999, padding: '1px 8px', fontSize: 12, marginLeft: 8 }}>{unread} new</b>}
       </button>
     );
   }
@@ -71,7 +99,8 @@ export default function ChatDock() {
       <div className="chat-body">
         {msgs.map((m, i) => (
           <div key={i} className={`bubble-row ${m.from}`}>
-            <div className={`bubble ${m.from} ${m.escalated ? 'escalated' : ''}`}>
+            <div className={`bubble ${m.from === 'staff' ? 'bot' : m.from} ${m.escalated ? 'escalated' : ''}`} style={m.from === 'staff' ? { background: 'var(--gold-soft)', border: '1px solid var(--gold)' } : undefined}>
+              {m.from === 'staff' && <div className="tag" style={{ marginBottom: 6 }}>Reply from clinic staff</div>}
               {m.text}
               {m.escalated && <div className="tag">Sent to clinic staff</div>}
             </div>

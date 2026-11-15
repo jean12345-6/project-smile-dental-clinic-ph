@@ -15,6 +15,10 @@ Route::get('stats', [StatsController::class, 'index']);
 
 Route::post('chat', [ChatController::class, 'send']);
 Route::get('chat/history', [ChatController::class, 'history']);
+Route::get('chat/replies', [\App\Http\Controllers\Api\V1\StaffInboxController::class, 'replies']);
+Route::get('chat/inbox', [\App\Http\Controllers\Api\V1\StaffInboxController::class, 'index']);
+Route::get('chat/inbox/{patientId}', [\App\Http\Controllers\Api\V1\StaffInboxController::class, 'thread']);
+Route::post('chat/inbox/{patientId}/reply', [\App\Http\Controllers\Api\V1\StaffInboxController::class, 'reply']);
 
 Route::get('queue', [WorkflowController::class, 'queue']);
 Route::post('queue/walkin', [WorkflowController::class, 'walkIn']);

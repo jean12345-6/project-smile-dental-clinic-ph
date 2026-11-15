@@ -9,6 +9,8 @@ use App\Support\Dbx;
 use App\Support\Settings;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
@@ -68,7 +70,9 @@ class ChatController extends APIController
             'book_service' => $this->pickDentist($d),
             'book_dentist' => $this->pickDate($d),
             'book_date' => $this->pickSlot($d),
-            'book_slot' => $this->confirmSlot($d),
+            'book_slot' => $this->askConfirm($d),
+            'book_confirm' => $this->confirmSlot($d),
+            'back' => $this->goBack(),
             'join_waitlist' => $this->joinWaitlist($d),
             'my_appts' => $this->myAppointments(),
             'cancel' => $this->cancel($d),
@@ -90,6 +94,9 @@ class ChatController extends APIController
 
         if ($t === '' || $has('/^(hi|hello|hey|helo|kumusta|kamusta|good (morning|afternoon|evening)|magandang)/')) {
             return $this->menu();
+        }
+        if ($has('/^(back|go back|balik|bumalik|previous)\b/')) {
+            return $this->goBack();
         }
         if ($has('/^(confirm|kumpirma|confirmed|oo po|oo|yes|sige po|sige)\b/')) {
             return $this->confirmNext();
@@ -329,16 +336,20 @@ class ChatController extends APIController
 
     private function pickDentist(array $d)
     {
+        $d = Arr::except($d, ['dentistId', 'date', 'start', 'end']);
         $opts = [];
         foreach (DB::table('dentists')->get() as $x) {
             $opts[] = $this->opt($this->dentistName($x), 'book_dentist', $d + ['dentistId' => $x->dentist_id]);
         }
+        $opts[] = $this->back('← Back to services', 'book');
+        $opts[] = $this->opt('Main menu', 'menu');
 
         return $this->out('Which dentist do you prefer?', $opts, 'book');
     }
 
     private function pickDate(array $d)
     {
+        $d = Arr::except($d, ['date', 'start', 'end']);
         $service = DB::table('services')->where('service_id', $d['serviceId'] ?? 0)->first();
         $branch = $this->branchOf((int) ($d['dentistId'] ?? 0));
         if (! $service) {
@@ -355,10 +366,14 @@ class ChatController extends APIController
         if (! $opts) {
             return $this->out('That dentist has no open slots in the next 3 weeks. I can put you on the waiting list and tell you when a slot opens.', [
                 $this->opt('Join the waiting list', 'join_waitlist', $d),
-                $this->opt('Pick another dentist', 'book_service', $d),
+                $this->back('← Pick another dentist', 'book_service', Arr::only($d, ['serviceId'])),
                 $this->opt('Main menu', 'menu'),
             ], 'book');
         }
+        $opts[] = empty($d['reschedule'])
+            ? $this->back('← Back to dentists', 'book_service', Arr::only($d, ['serviceId']))
+            : $this->back('← Back to my appointments', 'my_appts');
+        $opts[] = $this->opt('Main menu', 'menu');
 
         return $this->out('Pick a date:', $opts, 'book');
     }
@@ -375,8 +390,29 @@ class ChatController extends APIController
         if (! $opts) {
             return $this->pickDate($d);
         }
+        $opts[] = $this->back('← Back to dates', 'book_dentist', Arr::only($d, ['serviceId', 'dentistId', 'reschedule']));
+        $opts[] = $this->opt('Main menu', 'menu');
 
         return $this->out('Pick a time on ' . Carbon::parse($d['date'])->format('l, M j') . ':', $opts, 'book');
+    }
+
+    /** Last check before the booking is saved, so a wrong tap can be undone. */
+    private function askConfirm(array $d)
+    {
+        $service = DB::table('services')->where('service_id', $d['serviceId'] ?? 0)->first();
+        $dentist = DB::table('dentists')->where('dentist_id', $d['dentistId'] ?? 0)->first();
+        if (! $service || ! $dentist || empty($d['start'])) {
+            return $this->menu();
+        }
+        $moving = ! empty($d['reschedule']);
+        $text = ($moving ? "Please confirm the new time:\n" : "Please confirm your booking:\n")
+            . "• {$service->service_name}\n• " . $this->dentistName($dentist) . "\n• " . $this->when($d['start']);
+
+        return $this->out($text, [
+            $this->opt($moving ? '✅ Yes, move it' : '✅ Yes, book it', 'book_confirm', $d),
+            $this->back('← Pick another time', 'book_date', Arr::only($d, ['serviceId', 'dentistId', 'date', 'reschedule'])),
+            $this->opt('Main menu', 'menu'),
+        ], 'book');
     }
 
     private function confirmSlot(array $d)
@@ -461,7 +497,7 @@ class ChatController extends APIController
 
     private function escalate(string $why)
     {
-        return $this->out($why . " I've passed your message to our clinic staff and they will get back to you. For urgent pain or bleeding, please call the clinic.", [$this->opt('Main menu', 'menu')], 'escalated', true);
+        return $this->out($why . " I've passed your message to our clinic staff. Their reply will appear right here in this chat. For urgent pain or bleeding, please call the clinic.", [$this->opt('Main menu', 'menu')], 'escalated', true);
     }
 
     private function out(string $text, array $options = [], string $intent = 'other', bool $escalated = false)
@@ -489,6 +525,26 @@ class ChatController extends APIController
         }
 
         return $q->orderBy('service_name')->get()->unique('service_name')->values();
+    }
+
+    /** A Back button. It is also remembered so typing "back" does the same thing. */
+    private function back(string $label, string $action, array $data = []): array
+    {
+        if ($this->user) {
+            Cache::put('chat-back-' . $this->user->id, [$action, $data], 1800);
+        }
+
+        return $this->opt($label, $action, $data);
+    }
+
+    private function goBack()
+    {
+        $b = $this->user ? Cache::get('chat-back-' . $this->user->id) : null;
+        if (! is_array($b)) {
+            return $this->menu();
+        }
+
+        return $this->byAction($b[0], (array) $b[1]);
     }
 
     private function opt(string $label, string $action, array $data = []): array

@@ -56,7 +56,7 @@ class StatsController extends APIController
             'revenue' => round($paid, 2),
             'unpaid' => (float) (clone $inv)->sum('balance'),
             'lowStock' => $low,
-            'escalated' => Schema::hasTable('chat_logs') ? Scope::table(DB::table('chat_logs'), 'chat_logs', $u)->where('escalated', 1)->count() : 0,
+            'escalated' => \App\Http\Controllers\Api\V1\StaffInboxController::openCount($u), // chats still waiting for a staff reply
             'today' => $todayRows,
             'recentTreatments' => $recent,
         ]);
