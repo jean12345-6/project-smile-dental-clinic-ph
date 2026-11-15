@@ -1,0 +1,7 @@
+# The lead reviews everything. Protected files need the lead's approval.
+*                                   @jean12345-6
+/backend-laravel/routes/            @jean12345-6
+/backend-laravel/app/Support/       @jean12345-6
+/backend-laravel/database/migrations/ @jean12345-6
+/frontend-react/src/App.jsx         @jean12345-6
+/frontend-react/src/styles.css      @jean12345-6
