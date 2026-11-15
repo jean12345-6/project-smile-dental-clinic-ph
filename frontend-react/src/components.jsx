@@ -51,11 +51,12 @@ export function Field({ f, value, onChange, options }) {
 }
 
 /** A table with search, paging, add / edit / delete in a pop-up. Works for any /r/{res} resource. */
-export function Crud({ res, title, columns, fields, canAdd = true, canEdit = true, canDelete = true, rowActions, fixed = {}, hint }) {
+export function Crud({ res, title, columns, fields, canAdd = true, canEdit = true, canDelete = true, rowActions, fixed = {}, hint, defaultSort }) {
   const options = useOptions();
   const [rows, setRows] = useState(null);
   const [meta, setMeta] = useState({ total: 0, page: 1, perPage: 50 });
   const [q, setQ] = useState('');
+  const [sort, setSort] = useState(defaultSort || null); // { key, dir }
   const [page, setPage] = useState(1);
   const [error, setError] = useState([]);
   const [edit, setEdit] = useState(null); // {} for new, row for existing
@@ -63,12 +64,15 @@ export function Crud({ res, title, columns, fields, canAdd = true, canEdit = tru
   const [saving, setSaving] = useState(false);
   const pk = columns.pk;
 
-  const load = () =>
-    api('/r/' + res, { params: { q, page, ...fixed } })
+  const load = (over = {}) =>
+    api('/r/' + res, { params: { q, page, ...(sort ? { sort: sort.key, dir: sort.dir } : {}), ...fixed, ...over } })
       .then((r) => { setRows(r.data); setMeta(r.meta); setError([]); })
       .catch((e) => setError(e.messages));
 
-  useEffect(() => { load(); }, [page, res]); // eslint-disable-line
+  useEffect(() => { load(); }, [page, res, sort]); // eslint-disable-line
+  const search = () => { setPage(1); load({ page: 1 }); };
+  const clear = () => { setQ(''); setPage(1); load({ q: '', page: 1 }); };
+  const sortBy = (key) => { setPage(1); setSort((s) => (s?.key === key ? { key, dir: s.dir === 'asc' ? 'desc' : 'asc' } : { key, dir: 'asc' })); };
 
   const open = (row) => { setEdit(row || {}); setForm(row ? { ...row } : { ...fixed }); };
   const save = async (e) => {
@@ -93,7 +97,9 @@ export function Crud({ res, title, columns, fields, canAdd = true, canEdit = tru
       title={title}
       right={
         <div className="filters">
-          <input placeholder="Search…" value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && (setPage(1), load())} />
+          <input placeholder="Search…" value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && search()} />
+          <button className="btn btn-ghost btn-sm" onClick={search}>Search</button>
+          {q && <button className="btn btn-ghost btn-sm" onClick={clear}>Clear</button>}
           {canAdd && <button className="btn btn-primary btn-sm" onClick={() => open(null)}>+ Add</button>}
         </div>
       }
@@ -105,7 +111,11 @@ export function Crud({ res, title, columns, fields, canAdd = true, canEdit = tru
         <div className="table-wrap">
           <table>
             <thead>
-              <tr>{columns.map((c) => <th key={c.key}>{c.label}</th>)}<th /></tr>
+              <tr>{columns.map((c) => (
+                c.render && !c.sortable
+                  ? <th key={c.key}>{c.label}</th>
+                  : <th key={c.key} style={{ cursor: 'pointer', userSelect: 'none' }} title="Click to sort A–Z" onClick={() => sortBy(c.key)}>{c.label}{sort?.key === c.key ? (sort.dir === 'asc' ? ' ▲' : ' ▼') : ''}</th>
+              ))}<th /></tr>
             </thead>
             <tbody>
               {rows.map((r) => (

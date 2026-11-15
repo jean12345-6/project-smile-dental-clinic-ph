@@ -96,7 +96,11 @@ class ClinicController extends APIController
         $total = (clone $q)->count();
         $per = min(100, max(1, (int) $r->query('perPage', 50)));
         $page = max(1, (int) $r->query('page', 1));
-        $rows = $q->orderByDesc($pk)->forPage($page, $per)->get();
+        $sort = (string) $r->query('sort', '');
+        $dir = strtolower((string) $r->query('dir', 'asc')) === 'desc' ? 'desc' : 'asc';
+        $rows = ($sort !== '' && in_array($sort, Dbx::cols($table), true)
+            ? $q->orderBy($table . '.' . $sort, $dir)->orderByDesc($pk)
+            : $q->orderByDesc($pk))->forPage($page, $per)->get();
 
         return response()->json(['data' => $rows, 'meta' => ['total' => $total, 'page' => $page, 'perPage' => $per]]);
     }

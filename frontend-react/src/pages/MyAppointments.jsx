@@ -10,6 +10,8 @@ export default function MyAppointments() {
   const [rows, setRows] = useState(null);
   const [error, setError] = useState([]);
   const [busyId, setBusyId] = useState(null);
+  const [q, setQ] = useState('');
+  const [sort, setSort] = useState('when_desc');
 
   const load = () => {
     if (!pid) {
@@ -36,6 +38,11 @@ export default function MyAppointments() {
     }
   };
 
+  const text = (a) => [name.service(rel(a, 'service')), name.dentist(rel(a, 'dentist')), name.branch(rel(a, 'branch')), a.attributes.status, a.attributes.startTime].join(' ').toLowerCase();
+  const key = { when: (a) => a.attributes.startTime || '', service: (a) => name.service(rel(a, 'service')).toLowerCase(), dentist: (a) => name.dentist(rel(a, 'dentist')).toLowerCase() };
+  const [by, dir] = sort.split('_');
+  const list = (rows || []).filter((a) => !q || text(a).includes(q.toLowerCase())).sort((x, y) => String(key[by](x)).localeCompare(String(key[by](y))) * (dir === 'desc' ? -1 : 1));
+
   return (
     <>
       <h1 className="page-title">My appointments</h1>
@@ -44,6 +51,18 @@ export default function MyAppointments() {
         {!pid && <Empty>Your account is not linked to a patient record yet.</Empty>}
         {rows && rows.length === 0 && pid && <Empty>No appointments yet.</Empty>}
         {rows && rows.length > 0 && (
+          <div className="filters" style={{ marginBottom: 12 }}>
+            <input placeholder="Search service, dentist, status…" value={q} onChange={(e) => setQ(e.target.value)} />
+            <select value={sort} onChange={(e) => setSort(e.target.value)}>
+              <option value="when_desc">Newest first</option>
+              <option value="when_asc">Oldest first</option>
+              <option value="service_asc">Service A–Z</option>
+              <option value="dentist_asc">Dentist A–Z</option>
+            </select>
+          </div>
+        )}
+        {rows && rows.length > 0 && list.length === 0 && <Empty>No appointments match.</Empty>}
+        {rows && list.length > 0 && (
           <div className="table-wrap">
             <table>
               <thead>
@@ -57,7 +76,7 @@ export default function MyAppointments() {
                 </tr>
               </thead>
               <tbody>
-                {rows.map((a) => (
+                {list.map((a) => (
                   <tr key={a.id}>
                     <td>{fmt(a.attributes.startTime)}</td>
                     <td>{name.service(rel(a, 'service'))}</td>

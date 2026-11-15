@@ -18,6 +18,7 @@ export default function Patients() {
       <Alert>{error.join(' ')}</Alert>
       <Crud
         res="patient-records"
+        defaultSort={{ key: 'full_name', dir: 'asc' }}
         title="Patients"
         columns={Object.assign([
           { key: 'full_name', label: 'Name' }, { key: 'contact_no', label: 'Contact' }, { key: 'email', label: 'Email' },
