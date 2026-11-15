@@ -7,14 +7,28 @@ import { Alert, Card, Empty, fmt } from '../ui.jsx';
 const today = () => new Date().toISOString().slice(0, 10);
 
 export default function Book() {
-  const { lookups, isPatient, name } = useAuth();
+  const { user, lookups, isPatient, name } = useAuth();
   const navigate = useNavigate();
 
-  const [patientId, setPatientId] = useState(isPatient ? String(lookups?.patientId || '') : '');
-  const [serviceId, setServiceId] = useState('');
-  const [branchId, setBranchId] = useState('');
-  const [dentistId, setDentistId] = useState('');
-  const [date, setDate] = useState('');
+  // the choices are saved for this person, so they are still here after a refresh, a logout or a login
+  const draftKey = `book-draft-${user?.id ?? 'x'}`;
+  const [draft] = useState(() => { try { return JSON.parse(localStorage.getItem(draftKey) || '{}'); } catch { return {}; } });
+  const restored = !!(draft.serviceId || draft.dentistId || draft.date);
+
+  const [patientId, setPatientId] = useState(isPatient ? String(lookups?.patientId || '') : (draft.patientId || ''));
+  const [serviceId, setServiceId] = useState(draft.serviceId || '');
+  const [branchId, setBranchId] = useState(draft.branchId || '');
+  const [dentistId, setDentistId] = useState(draft.dentistId || '');
+  const [date, setDate] = useState(draft.date && draft.date >= today() ? draft.date : '');
+  const [dismissed, setDismissed] = useState(false);
+  useEffect(() => {
+    try { localStorage.setItem(draftKey, JSON.stringify({ patientId: isPatient ? '' : patientId, serviceId, branchId, dentistId, date })); } catch { /* ignore */ }
+  }, [patientId, serviceId, branchId, dentistId, date]); // eslint-disable-line
+  const startOver = () => {
+    try { localStorage.removeItem(draftKey); } catch { /* ignore */ }
+    setServiceId(''); setBranchId(''); setDentistId(''); setDate(''); setSlot(null); setSlots(null); setDismissed(true);
+    if (!isPatient) setPatientId('');
+  };
   const [slots, setSlots] = useState(null);
   const [slot, setSlot] = useState(null);
   const [loadingSlots, setLoadingSlots] = useState(false);
@@ -62,6 +76,7 @@ export default function Book() {
           },
         },
       });
+      try { localStorage.removeItem(draftKey); } catch { /* ignore */ }
       navigate(isPatient ? '/my-appointments' : '/appointments');
     } catch (e) {
       setError(e.messages);
@@ -105,6 +120,12 @@ export default function Book() {
     <>
       <h1 className="page-title">{isPatient ? 'Book an appointment' : 'Book for a patient'}</h1>
       <Card title="1. Choose the details">
+        {restored && !dismissed && (serviceId || dentistId || date) && (
+          <div className="alert alert-warn" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+            <span>We kept your last choices. Continue where you stopped, or start over.</span>
+            <button type="button" className="btn btn-ghost btn-sm" onClick={startOver}>Start over</button>
+          </div>
+        )}
         <Alert>{error.map((m, i) => <div key={i}>{m}</div>)}</Alert>
         <Alert kind="success">{info}</Alert>
 

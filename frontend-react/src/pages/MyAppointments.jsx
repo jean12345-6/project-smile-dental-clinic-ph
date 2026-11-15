@@ -39,7 +39,7 @@ export default function MyAppointments() {
   return (
     <>
       <h1 className="page-title">My appointments</h1>
-      <Card title="Upcoming and past" right={<Link className="btn btn-primary" to="/book">+ Book</Link>}>
+      <Card title="Upcoming and past" right={<button className="btn btn-primary" onClick={() => window.dispatchEvent(new CustomEvent('open-chat', { detail: { action: 'book', label: 'Book an appointment' } }))}>+ Book</button>}>
         <Alert>{error.map((m, i) => <div key={i}>{m}</div>)}</Alert>
         {!pid && <Empty>Your account is not linked to a patient record yet.</Empty>}
         {rows && rows.length === 0 && pid && <Empty>No appointments yet.</Empty>}

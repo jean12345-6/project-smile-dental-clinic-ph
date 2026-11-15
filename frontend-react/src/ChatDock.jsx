@@ -42,22 +42,30 @@ export default function ChatDock() {
     setBusy(false);
   };
 
+  // a different person logged in: forget the old conversation and start fresh
+  useEffect(() => {
+    started.current = false;
+    lastId.current = 0;
+    setMsgs([]); setText(''); setUnread(0); setBusy(false);
+  }, [user?.id]);
+
   useEffect(() => {
     if (!isPatient) return undefined;
     try { lastId.current = Number(localStorage.getItem(seenKey) || 0); } catch { lastId.current = 0; }
     poll();
     const t = setInterval(poll, 8000);
     return () => clearInterval(t);
-  }, [isPatient]); // eslint-disable-line
+  }, [isPatient, user?.id]); // eslint-disable-line
 
   useEffect(() => { openRef.current = open; if (open) setUnread(0); }, [open]);
 
   useEffect(() => {
     if (isPatient && !started.current) { started.current = true; send({ action: 'menu' }); }
-    const openIt = () => setOpen(true);
+    // other pages can open the panel and start an action, e.g. the "+ Book" button
+    const openIt = (e) => { setOpen(true); const d = e?.detail; if (d?.action) send({ action: d.action, data: d.data }, d.label); };
     window.addEventListener('open-chat', openIt);
     return () => window.removeEventListener('open-chat', openIt);
-  }, [isPatient]); // eslint-disable-line
+  }, [isPatient, user?.id]); // eslint-disable-line
 
   // make room for the panel on wide screens
   useEffect(() => {
