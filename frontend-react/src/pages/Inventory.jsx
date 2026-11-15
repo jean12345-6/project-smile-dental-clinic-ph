@@ -13,12 +13,12 @@ export default function Inventory() {
         title="Dental supplies"
         hint="Items at or below their reorder level are marked red and shown on the dashboard."
         columns={Object.assign([
-          { key: 'item_name', label: 'Item' }, { key: 'unit', label: 'Unit' },
+          { key: 'item_name', label: 'Item' }, { key: 'item_code', label: 'Code' }, { key: 'item_type', label: 'Type' }, { key: 'unit', label: 'Unit' }, { key: 'unit_cost', label: 'Unit cost', render: (r) => (Number(r.unit_cost) > 0 ? '\u20B1' + Number(r.unit_cost).toLocaleString() : '-') },
           { key: 'quantity', label: 'In stock', render: (r) => <strong className={Number(r.quantity) <= Number(r.reorder_level) ? 'low' : ''}>{r.quantity}{Number(r.quantity) <= Number(r.reorder_level) ? ' · reorder' : ''}</strong> },
           { key: 'reorder_level', label: 'Reorder level' }, { key: 'branch_id', label: 'Branch', render: (r) => bn(r.branch_id) },
         ], { pk: 'item_id' })}
         fields={[
-          { key: 'item_name', label: 'Item name', required: true }, { key: 'unit', label: 'Unit (box, pcs…)' },
+          { key: 'item_name', label: 'Item name', required: true }, { key: 'item_code', label: 'Item code' }, { key: 'item_type', label: 'Type (supply, instrument, medicine...)' }, { key: 'unit', label: 'Unit (box, pcs…)' }, { key: 'unit_cost', label: 'Unit cost (PHP)', type: 'number' },
           { key: 'quantity', label: 'Quantity', type: 'number' }, { key: 'reorder_level', label: 'Reorder level', type: 'number' },
           { key: 'branch_id', label: 'Branch', type: 'select', optionsFrom: 'branch' },
         ]}
