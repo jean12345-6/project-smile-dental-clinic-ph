@@ -33,15 +33,36 @@ class UserController extends APIController
     /**
      * POST /api/v1/users
      * Creates a user (needs the user:create ability).
+     * A clinic admin can only add users to their own clinic. Only the SuperAdmin can pick a clinic
+     * or create another SuperAdmin. Every user except a SuperAdmin must belong to a clinic.
      */
     public function store(StoreUserRequest $request)
     {
         if ($this->isAble('store', User::class)) {
-            // The new user joins the clinic of the admin creating them, unless a clinic was sent
+            $me = $request->user();
             $attributes = array_merge(
-                ['clinic_id' => $request->user()->clinic_id],
+                ['clinic_id' => $me->clinic_id],
                 $request->mappedAttributes()
             );
+
+            // the clinic the SuperAdmin picked (JSON:API clinicId, or clinic_id)
+            $picked = $request->input('data.attributes.clinicId') ?: $request->input('data.attributes.clinic_id') ?: $request->input('clinic_id');
+            if ($picked && $me->role === 'superadmin') {
+                $attributes['clinic_id'] = (int) $picked;
+            }
+
+            if ($me->role !== 'superadmin') {
+                $attributes['clinic_id'] = $me->clinic_id; // never another clinic
+                if (($attributes['role'] ?? '') === 'superadmin') {
+                    return $this->notAuthorized('Only the SuperAdmin can create a SuperAdmin.');
+                }
+            }
+            if (empty($attributes['clinic_id']) && ($attributes['role'] ?? '') !== 'superadmin') {
+                return $this->error('Choose a clinic for this user.', 422);
+            }
+            if (empty($attributes['status'])) {
+                $attributes['status'] = 'active';
+            }
 
             return new UserResource(User::create($attributes));
         }

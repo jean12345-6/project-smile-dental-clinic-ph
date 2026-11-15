@@ -13,9 +13,18 @@ class Scope
         return ($user && $user->role !== 'superadmin' && ! empty($user->clinic_id)) ? (int) $user->clinic_id : null;
     }
 
+    /** A staff account that belongs to no clinic. It must see nothing, never everything. */
+    public static function blind($user): bool
+    {
+        return $user && in_array($user->role, ['clinic_admin', 'receptionist', 'dentist'], true) && empty($user->clinic_id);
+    }
+
     /** Restrict a query to patients of the user's clinic, through a patient_id column. */
     public static function patients($q, string $col, $user)
     {
+        if (self::blind($user)) {
+            return $q->whereRaw('1 = 0');
+        }
         if ($c = self::clinic($user)) {
             $q->whereIn($col, fn ($s) => $s->select('patient_id')->from('patients')->where(fn ($w) => $w->where('clinic_id', $c)->orWhereNull('clinic_id')));
         }
@@ -25,6 +34,9 @@ class Scope
 
     public static function invoices($q, string $col, $user)
     {
+        if (self::blind($user)) {
+            return $q->whereRaw('1 = 0');
+        }
         if ($c = self::clinic($user)) {
             $q->whereIn($col, fn ($s) => $s->select('invoice_id')->from('invoices')->whereIn('patient_id', fn ($p) => $p->select('patient_id')->from('patients')->where(fn ($w) => $w->where('clinic_id', $c)->orWhereNull('clinic_id'))));
         }
@@ -35,6 +47,9 @@ class Scope
     /** Pick the right rule for any table, by the columns it has. */
     public static function table($q, string $table, $user)
     {
+        if (self::blind($user)) {
+            return $q->whereRaw('1 = 0');
+        }
         $c = self::clinic($user);
         if (! $c) {
             return $q;

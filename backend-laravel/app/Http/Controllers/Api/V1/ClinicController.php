@@ -138,6 +138,10 @@ class ClinicController extends APIController
         if (Dbx::has($table, 'clinic_id') && empty($data['clinic_id']) && ($c = Scope::clinic($user))) {
             $data['clinic_id'] = $c; // new rows belong to the user's clinic
         }
+        if (Dbx::has($table, 'clinic_id') && empty($data['clinic_id']) && $user->role === 'superadmin') {
+            // the SuperAdmin has no clinic of their own: use the X-Clinic-Id header, else the first clinic
+            $data['clinic_id'] = (int) ($r->header('X-Clinic-Id') ?: DB::table('clinics')->orderBy('clinic_id')->value('clinic_id'));
+        }
         if ($res === 'patient-records') {
             $data += ['status' => 'active', 'no_show_count' => 0];
         }
