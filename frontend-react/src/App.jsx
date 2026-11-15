@@ -25,6 +25,8 @@ import Schedule from './pages/Schedule.jsx';
 import Treatments from './pages/Treatments.jsx';
 import Prescriptions from './pages/Prescriptions.jsx';
 import MyBilling from './pages/MyBilling.jsx';
+import PatientDashboard from './pages/PatientDashboard.jsx';
+import MyNotifications, { NotifBadge } from './pages/MyNotifications.jsx';
    import Landing from './pages/Landing.jsx';
 import Dentists from './pages/Dentists.jsx';
 import Feedback from './pages/Feedback.jsx';
@@ -38,11 +40,13 @@ function Shell({ children }) {
   const front = admin || role === 'receptionist';
   const links = isPatient
     ? [
+        ['/my-dashboard', '📊', 'Dashboard'],
         ['#chat', '💬', 'Assistant'],
         ['/my-appointments', '📅', 'My appointments'],
         ['/my-records', '🦷', 'My records'],
         ['/my-invoices', '🧾', 'My invoices'],
         ['/my-transactions', '💳', 'My transactions'],
+        ['/my-notifications', '🔔', 'Notifications'],
         ['/waitlist', '🔔', 'My waitlist'],
       ]
     : [
@@ -84,7 +88,7 @@ function Shell({ children }) {
             </a>
           ) : (
             <NavLink key={to} to={to} className={({ isActive }) => (isActive ? 'active' : '')}>
-              <span className="ico">{icon}</span> {label}
+              <span className="ico">{icon}</span> {label}{to === '/my-notifications' && <NotifBadge />}
             </NavLink>
           ))}
         </nav>
@@ -126,7 +130,7 @@ const ADMIN = ['superadmin', 'clinic_admin'];
 
 function Home() {
   const { isPatient } = useAuth();
-  return <Navigate to={isPatient ? '/my-appointments' : '/dashboard'} replace />;
+  return <Navigate to={isPatient ? '/my-dashboard' : '/dashboard'} replace />;
 }
 
 export default function App() {
@@ -142,6 +146,8 @@ export default function App() {
       <Route path="/my-records" element={<Protected roles={PATIENT}><MyRecords /></Protected>} />
       <Route path="/my-invoices" element={<Protected roles={PATIENT}><MyBilling view="invoices" /></Protected>} />
       <Route path="/my-transactions" element={<Protected roles={PATIENT}><MyBilling view="transactions" /></Protected>} />
+      <Route path="/my-dashboard" element={<Protected roles={PATIENT}><PatientDashboard /></Protected>} />
+      <Route path="/my-notifications" element={<Protected roles={PATIENT}><MyNotifications /></Protected>} />
       <Route path="/queue" element={<Protected roles={STAFF}><Queue /></Protected>} />
       <Route path="/billing" element={<Protected roles={FRONT}><Billing /></Protected>} />
       <Route path="/patients" element={<Protected roles={STAFF}><Patients /></Protected>} />
