@@ -51,6 +51,62 @@ export default function Dashboard() {
   const todays = (s.today || []).filter((a) => filter === 'all' || (filter === 'waiting' ? ['pending', 'confirmed', 'checked_in'].includes(a.status) : a.status === 'completed'));
   const stillWaiting = (s.today || []).filter((a) => ['pending', 'confirmed', 'checked_in'].includes(a.status)).length;
 
+  const todayCard = (
+    <Card title="Today’s appointments" right={
+      <div className="chipset">{[['all', 'All'], ['waiting', 'Waiting'], ['done', 'Done']].map(([k, l]) => <button key={k} className={filter === k ? 'on' : ''} onClick={() => setFilter(k)}>{l}</button>)}</div>}>
+      {todays.length === 0 && <Empty>No appointments to show.</Empty>}
+      {todays.length > 0 && (
+        <div className="table-wrap">
+          <table>
+            <thead><tr><th>Time</th><th>Patient</th><th>Treatment</th><th>Status</th></tr></thead>
+            <tbody>
+              {todays.map((a) => (
+                <tr key={a.appointment_id}>
+                  <td>{fmt(a.start_time).slice(11)}</td>
+                  <td><div className="who"><span className="initials">{initials(a.patient)}</span>{a.patient}</div><div className="muted small" style={{ marginLeft: 40 }}>{name.dentist(a.dentist_id)}</div></td>
+                  <td>{a.service}</td>
+                  <td><Badge status={a.status} /></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </Card>
+  );
+
+  const quickCard = (
+    <Card title="Quick actions">
+      <div className="quick">
+        <Link className="btn btn-primary" to="/queue">Open the daily queue</Link>
+        {front && <Link className="btn btn-ghost" to="/book">Book for a patient</Link>}
+        <Link className="btn btn-ghost" to="/reports">View reports</Link>
+        {s.escalated > 0 && admin && <Link className="btn btn-ghost" to="/logs">{s.escalated} chats sent to staff</Link>}
+      </div>
+    </Card>
+  );
+
+  const recentCard = (
+    <Card title="Recent treatments">
+      {(s.recentTreatments || []).length === 0 && <Empty>No treatments yet.</Empty>}
+      {(s.recentTreatments || []).map((t, i) => (
+        <div className="row" key={i}><div>{t.procedure_name}<div className="muted small">{t.patient}</div></div><strong>{money(t.cost)}</strong></div>
+      ))}
+    </Card>
+  );
+
+  const statusCard = (
+    <Card title="Appointments by status">
+      {ORDER.map((k) => (
+        <div className="bar-row" key={k}>
+          <span className="bar-label"><Badge status={k} /></span>
+          <div className="bar"><div className={`bar-fill fill-${k}`} style={{ width: `${((by[k] || 0) / max) * 100}%` }} /></div>
+          <span className="bar-n">{by[k] || 0}</span>
+        </div>
+      ))}
+    </Card>
+  );
+
   return (
     <>
       {head}
@@ -70,57 +126,25 @@ export default function Dashboard() {
         </div>
       )}
 
-      <div className="split">
-        <Card title="Today’s appointments" right={
-          <div className="chipset">{[['all', 'All'], ['waiting', 'Waiting'], ['done', 'Done']].map(([k, l]) => <button key={k} className={filter === k ? 'on' : ''} onClick={() => setFilter(k)}>{l}</button>)}</div>}>
-          {todays.length === 0 && <Empty>No appointments to show.</Empty>}
-          {todays.length > 0 && (
-            <div className="table-wrap">
-              <table>
-                <thead><tr><th>Time</th><th>Patient</th><th>Treatment</th><th>Status</th></tr></thead>
-                <tbody>
-                  {todays.map((a) => (
-                    <tr key={a.appointment_id}>
-                      <td>{fmt(a.start_time).slice(11)}</td>
-                      <td><div className="who"><span className="initials">{initials(a.patient)}</span>{a.patient}</div><div className="muted small" style={{ marginLeft: 40 }}>{name.dentist(a.dentist_id)}</div></td>
-                      <td>{a.service}</td>
-                      <td><Badge status={a.status} /></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+      {admin ? (
+        // Admins: sales and charts first, with the other cards placed in the two columns so nothing is left empty.
+        <DashboardFinance
+          leftBottom={<>{statusCard}{todayCard}</>}
+          rightTop={quickCard}
+          rightBottom={recentCard}
+        />
+      ) : (
+        <>
+          <div className="split">
+            {todayCard}
+            <div>
+              {quickCard}
+              {recentCard}
             </div>
-          )}
-        </Card>
-
-        <div>
-          <Card title="Quick actions">
-            <div className="quick">
-              <Link className="btn btn-primary" to="/queue">Open the daily queue</Link>
-              {front && <Link className="btn btn-ghost" to="/book">Book for a patient</Link>}
-              <Link className="btn btn-ghost" to="/reports">View reports</Link>
-              {s.escalated > 0 && admin && <Link className="btn btn-ghost" to="/logs">{s.escalated} chats sent to staff</Link>}
-            </div>
-          </Card>
-          <Card title="Recent treatments">
-            {(s.recentTreatments || []).length === 0 && <Empty>No treatments yet.</Empty>}
-            {(s.recentTreatments || []).map((t, i) => (
-              <div className="row" key={i}><div>{t.procedure_name}<div className="muted small">{t.patient}</div></div><strong>{money(t.cost)}</strong></div>
-            ))}
-          </Card>
-        </div>
-      </div>
-
-      {admin && <DashboardFinance />}
-      <Card title="Appointments by status">
-        {ORDER.map((k) => (
-          <div className="bar-row" key={k}>
-            <span className="bar-label"><Badge status={k} /></span>
-            <div className="bar"><div className={`bar-fill fill-${k}`} style={{ width: `${((by[k] || 0) / max) * 100}%` }} /></div>
-            <span className="bar-n">{by[k] || 0}</span>
           </div>
-        ))}
-      </Card>
+          {statusCard}
+        </>
+      )}
     </>
   );
 }

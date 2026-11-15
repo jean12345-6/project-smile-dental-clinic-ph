@@ -12,13 +12,13 @@ function Bars({ rows, color = '#2563eb', color2 = '#16a34a', fmt = (v) => v }) {
   const max = Math.max(1, ...rows.map((r) => Math.max(r.value, r.value2 || 0)));
   if (!rows.length) return <Empty>No data yet.</Empty>;
   return rows.map((r) => (
-    <div className="bar-row" key={r.label} style={{ gridTemplateColumns: '120px 1fr 120px' }}>
-      <span className="bar-label">{r.label}</span>
-      <div className="bar" style={{ height: 'auto', overflow: 'visible', display: 'flex', flexDirection: 'column', gap: 3, background: 'transparent', minWidth: 0 }}>
-        <div style={{ height: 9, borderRadius: 4, background: color, width: `${Math.max(1, (r.value / max) * 100)}%` }} />
-        {r.value2 !== undefined && <div style={{ height: 9, borderRadius: 4, background: color2, width: `${Math.max(1, (r.value2 / max) * 100)}%` }} />}
+    <div className="bar-row" key={r.label}>
+      <span className="bar-label" style={{ minWidth: 110 }}>{r.label}</span>
+      <div className="bar" style={{ display: 'flex', flexDirection: 'column', gap: 2, background: 'transparent' }}>
+        <div style={{ height: 9, borderRadius: 4, background: color, width: `${(r.value / max) * 100}%` }} />
+        {r.value2 !== undefined && <div style={{ height: 9, borderRadius: 4, background: color2, width: `${(r.value2 / max) * 100}%` }} />}
       </div>
-      <span className="bar-n">{fmt(r.value)}</span>
+      <span className="bar-n" style={{ minWidth: 90, textAlign: 'right' }}>{fmt(r.value)}</span>
     </div>
   ));
 }
