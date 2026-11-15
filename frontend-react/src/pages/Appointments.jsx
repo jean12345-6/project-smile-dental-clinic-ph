@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { api } from '../api.js';
 import { useAuth } from '../auth.jsx';
 import { Alert, Badge, Card, Empty, day, fmt, rel } from '../ui.jsx';
+import { Modal } from '../components.jsx';
 
 // What staff can do next, per status
 const ACTIONS = {
@@ -23,6 +24,14 @@ export default function Appointments() {
   const [year, setYear] = useState('');
   const [error, setError] = useState([]);
   const [busyId, setBusyId] = useState(null);
+  const [view, setView] = useState(null);
+  const openView = async (a) => {
+    setView({ a, detail: null, patient: null });
+    let detail = null; let patient = null;
+    try { detail = (await api(`/appointments/${a.id}`)).data || null; } catch (e) { detail = null; }
+    try { patient = (await api(`/patients/${rel(a, 'patient')}`)).data || null; } catch (e) { patient = null; }
+    setView({ a, detail, patient });
+  };
 
   // loads every page (5 at a time), so the search and the A-Z order cover all appointments. The first page shows at once.
   const [loaded, setLoaded] = useState(null); // [done, total] while pages are still coming in
@@ -131,6 +140,7 @@ export default function Appointments() {
                     <td>{name.branch(rel(a, 'branch'))}</td>
                     <td><Badge status={a.attributes.status} /></td>
                     <td className="actions">
+                      <button className="btn btn-ghost btn-sm" onClick={() => openView(a)}>View</button>
                       {(ACTIONS[a.attributes.status] || []).map(([next, label, kind]) => (
                         <button
                           key={next}
@@ -156,6 +166,31 @@ export default function Appointments() {
           </div>
         )}
       </Card>
+      {/* MODAL-MOVED */}
+      {view && (
+          <Modal title={'Appointment - ' + name.patient(rel(view.a, 'patient'))} onClose={() => setView(null)}>
+            {[
+              ['Status', <Badge key="s" status={view.a.attributes.status} />],
+              ['Starts', fmt(view.a.attributes.startTime)],
+              ['Ends', view.a.attributes.endTime ? fmt(view.a.attributes.endTime) : '-'],
+              ['Patient', name.patient(rel(view.a, 'patient'))],
+              ['Contact', view.patient ? (view.patient.attributes.contactNo || '-') : '...'],
+              ['Email', view.patient ? (view.patient.attributes.email || '-') : '...'],
+              ['Birthdate', view.patient ? (String(view.patient.attributes.birthdate || '-').slice(0, 10)) : '...'],
+              ['Service', name.service(rel(view.a, 'service'))],
+              ['Dentist', name.dentist(rel(view.a, 'dentist'))],
+              ['Branch', name.branch(rel(view.a, 'branch'))],
+              ['Booked via', view.a.attributes.bookedVia || '-'],
+              ['Risk flag', view.a.attributes.riskFlag || '-'],
+              ['Checked in at', view.detail ? (view.detail.attributes.checkInTime ? fmt(view.detail.attributes.checkInTime) : '-') : '...'],
+              ['Booked on', view.detail ? (view.detail.attributes.createdAt ? fmt(view.detail.attributes.createdAt) : '-') : '...'],
+            ].map(([k, v]) => (
+              <div key={k} style={{ display: 'flex', gap: 12, padding: '6px 0', borderBottom: '1px solid var(--line, #eee)' }}>
+                <strong style={{ width: 120, flex: 'none' }}>{k}</strong><span>{v}</span>
+              </div>
+            ))}
+          </Modal>
+        )}
     </>
   );
 }
