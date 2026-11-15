@@ -24,6 +24,7 @@ import Clinics from './pages/Clinics.jsx';
 import Schedule from './pages/Schedule.jsx';
 import Treatments from './pages/Treatments.jsx';
 import Prescriptions from './pages/Prescriptions.jsx';
+import MyBilling from './pages/MyBilling.jsx';
    import Landing from './pages/Landing.jsx';
 import Dentists from './pages/Dentists.jsx';
 import Feedback from './pages/Feedback.jsx';
@@ -40,6 +41,8 @@ function Shell({ children }) {
         ['#chat', '💬', 'Assistant'],
         ['/my-appointments', '📅', 'My appointments'],
         ['/my-records', '🦷', 'My records'],
+        ['/my-invoices', '🧾', 'My invoices'],
+        ['/my-transactions', '💳', 'My transactions'],
         ['/waitlist', '🔔', 'My waitlist'],
       ]
     : [
@@ -137,6 +140,8 @@ export default function App() {
       <Route path="/" element={<Protected><Home /></Protected>} />
       <Route path="/assistant" element={<Navigate to="/my-appointments" replace />} />
       <Route path="/my-records" element={<Protected roles={PATIENT}><MyRecords /></Protected>} />
+      <Route path="/my-invoices" element={<Protected roles={PATIENT}><MyBilling view="invoices" /></Protected>} />
+      <Route path="/my-transactions" element={<Protected roles={PATIENT}><MyBilling view="transactions" /></Protected>} />
       <Route path="/queue" element={<Protected roles={STAFF}><Queue /></Protected>} />
       <Route path="/billing" element={<Protected roles={FRONT}><Billing /></Protected>} />
       <Route path="/patients" element={<Protected roles={STAFF}><Patients /></Protected>} />

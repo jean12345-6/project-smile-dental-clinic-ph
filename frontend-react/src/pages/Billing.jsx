@@ -3,6 +3,9 @@ import { api } from '../api.js';
 import { useAuth } from '../auth.jsx';
 import { Field, Modal, money } from '../components.jsx';
 import { Alert, Card, Empty, fmt } from '../ui.jsx';
+import { invoiceStatus } from './MyBilling.jsx';
+
+const BADGE = { paid: 'badge-completed', partial: 'badge-confirmed', unpaid: 'badge-pending', overdue: 'badge-cancelled' };
 
 export default function Billing() {
   const { name } = useAuth();
@@ -12,8 +15,19 @@ export default function Billing() {
   const [pay, setPay] = useState(null);
   const [hist, setHist] = useState(null);
   const [f, setF] = useState({ method: 'cash' });
+  const [st, setSt] = useState('');
+  const [mon, setMon] = useState('');
+  const [qry, setQry] = useState('');
 
-  const load = () => api('/r/invoices').then((r) => setRows(r.data)).catch((e) => setError(e.messages));
+  const load = async () => {
+    try {
+      const first = await api('/r/invoices', { params: { page: 1 } });
+      let all = first.data || [];
+      const pages = Math.min(Math.ceil((first.meta?.total || 0) / (first.meta?.perPage || 50)), 40);
+      for (let p = 2; p <= pages; p += 1) all = all.concat((await api('/r/invoices', { params: { page: p } })).data || []);
+      setRows(all);
+    } catch (e) { setError(e.messages); }
+  };
   useEffect(() => { load(); }, []);
 
   const doPay = async (e) => {
@@ -27,29 +41,40 @@ export default function Billing() {
     const r = await api('/r/payments', { params: { invoice_id: inv.invoice_id } });
     setHist({ inv, rows: r.data });
   };
-  const totalBal = (rows || []).reduce((s, r) => s + Number(r.balance || 0), 0);
+  const shown = (rows || []).filter((r) => (!st || invoiceStatus(r) === st) && (!mon || String(r.date_issued).slice(0, 7) === mon) && (!qry || name.patient(r.patient_id).toLowerCase().includes(qry.toLowerCase())));
+  const totalBal = shown.reduce((s, r) => s + Number(r.balance || 0), 0);
 
   return (
     <>
       <h1 className="page-title">Billing and payments</h1>
       <Alert>{error.map((m, i) => <div key={i}>{m}</div>)}</Alert>
       <Alert kind="success">{ok}</Alert>
-      <div className="stats"><div className="stat"><div className="stat-value">{money(totalBal)}</div><div className="stat-label">Unpaid on this page</div></div></div>
-      <Card title="Invoices" right={<span className="muted small">Create an invoice from the Daily queue after a visit is completed.</span>}>
-        {rows && rows.length === 0 && <Empty>No invoices yet.</Empty>}
-        {rows && rows.length > 0 && (
+      <div className="stats"><div className="stat"><div className="stat-value">{money(totalBal)}</div><div className="stat-label">Unpaid in this list</div></div></div>
+      <Card title="Invoices" right={
+        <div className="filters">
+          <input placeholder="Patient name…" value={qry} onChange={(e) => setQry(e.target.value)} />
+          <select value={st} onChange={(e) => setSt(e.target.value)}>
+            <option value="">All statuses</option>
+            {['unpaid', 'partial', 'paid', 'overdue'].map((x) => <option key={x} value={x}>{x}</option>)}
+          </select>
+          <input type="month" value={mon} onChange={(e) => setMon(e.target.value)} title="Month" />
+          {(st || mon || qry) && <button className="btn btn-ghost btn-sm" onClick={() => { setSt(''); setMon(''); setQry(''); }}>Reset</button>}
+        </div>}>
+        <p className="muted small">Create an invoice from the Daily queue after a visit is completed. Overdue means unpaid for more than 30 days.</p>
+        {rows && shown.length === 0 && <Empty>No invoices match.</Empty>}
+        {rows && shown.length > 0 && (
           <div className="table-wrap">
             <table>
               <thead><tr><th>Invoice</th><th>Patient</th><th>Issued</th><th>Total</th><th>Balance</th><th>Status</th><th /></tr></thead>
               <tbody>
-                {rows.map((r) => (
+                {shown.map((r) => (
                   <tr key={r.invoice_id}>
                     <td>#{r.invoice_id}</td>
                     <td>{name.patient(r.patient_id)}</td>
                     <td>{fmt(r.date_issued).slice(0, 10)}</td>
                     <td>{money(r.total_amount)}</td>
                     <td><strong>{money(r.balance)}</strong></td>
-                    <td><span className={`badge ${Number(r.balance) > 0 ? 'badge-pending' : 'badge-completed'}`}>{Number(r.balance) > 0 ? 'unpaid' : 'paid'}</span></td>
+                    <td><span className={`badge ${BADGE[invoiceStatus(r)]}`}>{invoiceStatus(r)}</span></td>
                     <td className="actions">
                       {Number(r.balance) > 0 && <button className="btn btn-primary btn-sm" onClick={() => { setPay(r); setF({ method: 'cash', amount: r.balance }); }}>Record payment</button>}
                       <button className="btn btn-ghost btn-sm" onClick={() => showHist(r)}>Payments</button>

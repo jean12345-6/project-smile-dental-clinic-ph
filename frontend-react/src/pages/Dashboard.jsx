@@ -5,6 +5,7 @@ import { useAuth } from '../auth.jsx';
 import { money } from '../components.jsx';
 import { toggleTheme } from '../theme.js';
 import { Alert, Badge, Card, Empty, fmt } from '../ui.jsx';
+import DashboardFinance from './DashboardFinance.jsx';
 
 const ORDER = ['pending', 'confirmed', 'checked_in', 'in_treatment', 'completed', 'cancelled', 'no_show'];
 const initials = (n = '') => n.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join('').toUpperCase();
@@ -110,6 +111,7 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {admin && <DashboardFinance />}
       <Card title="Appointments by status">
         {ORDER.map((k) => (
           <div className="bar-row" key={k}>
