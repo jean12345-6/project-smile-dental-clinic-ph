@@ -24,10 +24,11 @@ import Clinics from './pages/Clinics.jsx';
 import Schedule from './pages/Schedule.jsx';
 import Treatments from './pages/Treatments.jsx';
 import Prescriptions from './pages/Prescriptions.jsx';
+import Landing from './pages/Landing.jsx';
+import LandingEditor from './pages/LandingEditor.jsx';
 import MyBilling from './pages/MyBilling.jsx';
 import PatientDashboard from './pages/PatientDashboard.jsx';
 import MyNotifications, { NotifBadge } from './pages/MyNotifications.jsx';
-   import Landing from './pages/Landing.jsx';
 import Dentists from './pages/Dentists.jsx';
 import Feedback from './pages/Feedback.jsx';
 
@@ -68,6 +69,7 @@ function Shell({ children }) {
         admin && ['/settings', '⚙️', 'Clinic settings'],
         admin && ['/logs', '🛡️', 'Logs'],
         role === 'superadmin' && ['/clinics', '🏥', 'Clinics'],
+        admin && ['/landing-editor', '🌐', 'Landing page'],
         admin && ['/users', '🔑', 'Users'],
       ].filter(Boolean);
 
@@ -133,6 +135,13 @@ function Home() {
   return <Navigate to={isPatient ? '/my-dashboard' : '/dashboard'} replace />;
 }
 
+function Root() {
+  const { user, loading } = useAuth();
+  if (loading) return <div className="center">Loading...</div>;
+  if (!user) return <Landing />;
+  return <Protected><Home /></Protected>;
+}
+
 export default function App() {
   return (
     <>
@@ -141,7 +150,9 @@ export default function App() {
          <Route path="/welcome" element={<Landing />} />
       <Route path="/register" element={<Register />} />
       <Route path="/clinics" element={<Protected roles={['superadmin']}><Clinics /></Protected>} />
-      <Route path="/" element={<Protected><Home /></Protected>} />
+      <Route path="/" element={<Root />} />
+      <Route path="/landing" element={<Landing />} />
+      <Route path="/landing-editor" element={<Protected roles={ADMIN}><LandingEditor /></Protected>} />
       <Route path="/assistant" element={<Navigate to="/my-appointments" replace />} />
       <Route path="/my-records" element={<Protected roles={PATIENT}><MyRecords /></Protected>} />
       <Route path="/my-invoices" element={<Protected roles={PATIENT}><MyBilling view="invoices" /></Protected>} />

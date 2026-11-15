@@ -46,3 +46,4 @@ Route::get('stats/finance', [\App\Http\Controllers\Api\V1\FinanceController::cla
 Route::get('my/transactions', [\App\Http\Controllers\Api\V1\PatientBillingController::class, 'transactions']);
 Route::get('my/notifications', [\App\Http\Controllers\Api\V1\PatientNotificationController::class, 'index']);
 Route::post('my/notifications/read', [\App\Http\Controllers\Api\V1\PatientNotificationController::class, 'read']);
+Route::put('landing', [\App\Http\Controllers\Api\V1\LandingController::class, 'save']);

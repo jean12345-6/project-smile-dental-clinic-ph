@@ -1,33 +1,9 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { DEFAULTS, FALLBACK_TESTIMONIALS, loadLanding } from '../landingDefaults.js';
 
-const services = [
-  { name: 'Cleaning & Prophylaxis', desc: 'Professional cleaning and preventive care to remove tartar and protect enamel.', icon: 'tooth' },
-  { name: 'Fillings & Restorations', desc: "Composite fillings that match your natural tooth colour — durable and virtually invisible.", icon: 'check' },
-  { name: 'Root Canal Therapy', desc: 'Pain-free endodontic treatment to save infected teeth and eliminate discomfort.', icon: 'heart' },
-  { name: 'Crowns & Bridges', desc: 'High-quality porcelain crowns and bridges for a natural, beautiful smile.', icon: 'shield' },
-  { name: 'Orthodontics', desc: 'Traditional braces and modern clear aligners for children, teens, and adults.', icon: 'tooth' },
-  { name: 'Teeth Whitening', desc: 'Professional-grade whitening for noticeably brighter teeth — safe and effective.', icon: 'bolt' },
-];
-
-const whyUs = [
-  { title: 'Safe & sterile environment', desc: 'Every instrument is sterilized to international standards. Your health and safety are non-negotiable.', icon: 'shield' },
-  { title: 'Minimal wait times', desc: "We respect your schedule. Our streamlined booking system ensures you're seen on time, every time.", icon: 'clock' },
-  { title: 'Gentle, compassionate care', desc: 'Anxious about the dentist? Our team is trained to keep you calm, informed, and comfortable.', icon: 'heart' },
-  { title: 'Advanced technology', desc: 'Digital X-rays, intraoral cameras, and modern equipment for accurate diagnosis.', icon: 'bolt' },
-];
-
-const team = [
-  { name: 'Dr. Maria Santos', role: 'General Dentistry & Orthodontics', years: '10+ years of experience' },
-  { name: 'Dr. Juan Reyes', role: 'Pediatric & Prosthodontics', years: '15+ years of experience' },
-  { name: 'Our clinical team', role: 'Dental assistants & staff', years: 'Dedicated to your comfort' },
-];
-
-const testimonials = [
-  { quote: "Dr. Maria was incredibly professional and gentle. I've always had dental anxiety but I felt completely at ease. My smile has never looked better!", name: 'Sarah M.' },
-  { quote: 'The clinic is spotless, modern, and the staff are genuinely caring. From booking to follow-up, everything was seamless.', name: 'Carlos R.' },
-  { quote: 'Brought my daughter for her first filling and Dr. Reyes made the whole experience fun and stress-free. Highly recommend for families!', name: 'Ana L.' },
-];
+const ICONS = { svc: ['tooth', 'check', 'heart', 'shield', 'tooth', 'bolt'], why: ['shield', 'clock', 'heart', 'bolt'] };
+const range = (n) => Array.from({ length: n }, (_, i) => i + 1);
 
 const navy = '#0b1a33';
 const navy2 = '#13223f';
@@ -65,6 +41,13 @@ function IconCircle({ name, bg, color }) {
 }
 
 export default function Landing() {
+  const [data, setData] = useState({ content: DEFAULTS, testimonials: FALLBACK_TESTIMONIALS });
+  useEffect(() => { loadLanding().then(setData); }, []);
+  const c = data.content;
+  const services = range(6).map((i) => ({ name: c[`svc.${i}.name`], desc: c[`svc.${i}.desc`], icon: ICONS.svc[i - 1] })).filter((x) => x.name);
+  const whyUs = range(4).map((i) => ({ title: c[`why.${i}.title`], desc: c[`why.${i}.desc`], icon: ICONS.why[i - 1] })).filter((x) => x.title);
+  const team = range(3).map((i) => ({ name: c[`team.${i}.name`], role: c[`team.${i}.role`], years: c[`team.${i}.years`] })).filter((x) => x.name);
+  const testimonials = data.testimonials;
   return (
     <div style={{ background: cream, minHeight: '100vh' }}>
       {/* HEADER */}
@@ -95,12 +78,11 @@ export default function Landing() {
         </svg>
         <div style={{ position: 'relative', zIndex: 1 }}>
           <h1 style={{ color: '#fff', fontSize: 44, fontWeight: 700, margin: '0 0 12px', maxWidth: 820, marginLeft: 'auto', marginRight: 'auto' }}>
-            Trusted dental care in the Philippines
+            {c['hero.title']}
           </h1>
-          <p style={{ color: gold, fontSize: 19, fontWeight: 600, margin: '0 0 14px' }}>Your smile is our priority</p>
+          <p style={{ color: gold, fontSize: 19, fontWeight: 600, margin: '0 0 14px' }}>{c['hero.tagline']}</p>
           <p style={{ color: '#b9c2d6', fontSize: 15, maxWidth: 620, margin: '0 auto 28px' }}>
-            Experience compassionate, world-class dental care from our team of expert dentists.
-            We combine cutting-edge technology with a gentle touch — because your comfort matters.
+            {c['hero.desc']}
           </p>
           <div style={{ display: 'flex', gap: 16, justifyContent: 'center', marginBottom: 36 }}>
             <a href="#services" style={{ background: gold, color: navy, fontWeight: 700, fontSize: 14, padding: '14px 30px', borderRadius: 26, textDecoration: 'none' }}>Our Services</a>
@@ -125,16 +107,16 @@ export default function Landing() {
           <div>
             <div style={{ fontSize: 15, fontWeight: 700, color: navy, marginBottom: 6 }}>Clinic hours</div>
             <span style={{ background: '#dff3e4', color: '#1d7a3c', fontSize: 11, padding: '3px 10px', borderRadius: 10 }}>Open today</span>
-            <div style={{ fontSize: 13, color: '#6b7280', marginTop: 8 }}>Monday – Friday: 8:00 AM – 7:00 PM</div>
-            <div style={{ fontSize: 13, color: '#6b7280' }}>Saturday: 8:00 AM – 3:00 PM</div>
+            <div style={{ fontSize: 13, color: '#6b7280', marginTop: 8 }}>{c['hours.weekday']}</div>
+            <div style={{ fontSize: 13, color: '#6b7280' }}>{c['hours.sat']}</div>
           </div>
           <div>
             <div style={{ fontSize: 15, fontWeight: 700, color: navy, marginBottom: 6 }}>Emergency line</div>
-            <div style={{ fontSize: 13, color: '#6b7280' }}>0917-123-4567</div>
+            <div style={{ fontSize: 13, color: '#6b7280' }}>{c['contact.emergency']}</div>
           </div>
           <div>
             <div style={{ fontSize: 15, fontWeight: 700, color: navy, marginBottom: 6 }}>Location</div>
-            <div style={{ fontSize: 13, color: '#6b7280' }}>123 Dental Plaza, Metro Manila, Philippines</div>
+            <div style={{ fontSize: 13, color: '#6b7280' }}>{c['contact.address']}</div>
           </div>
         </div>
       </section>
@@ -192,10 +174,11 @@ export default function Landing() {
         <h2 style={sectionTitle}>What our patients say</h2>
         <p style={sectionSub}>Real feedback from real patients who trust us with their smiles.</p>
         <div style={{ maxWidth: 1240, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 22 }}>
-          {testimonials.map((t) => (
-            <div key={t.name} style={card}>
+          {testimonials.map((t, i) => (
+            <div key={t.name + i} style={card}>
               <div style={{ fontSize: 28, color: gold, lineHeight: 1 }}>&ldquo;</div>
               <div style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.6, margin: '8px 0 16px' }}>{t.quote}</div>
+              {t.rating ? <div style={{ color: gold, fontSize: 14, marginBottom: 4 }}>{'★'.repeat(t.rating)}{'☆'.repeat(5 - t.rating)}</div> : null}
               <div style={{ fontSize: 13, fontWeight: 700, color: navy }}>— {t.name}, Patient</div>
             </div>
           ))}
@@ -209,22 +192,22 @@ export default function Landing() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 22 }}>
           <div style={card}>
             <div style={{ fontSize: 13, fontWeight: 700, color: navy, marginBottom: 8 }}>Our address</div>
-            <div style={{ fontSize: 12, color: '#6b7280' }}>123 Dental Plaza, Metro Manila, Philippines</div>
+            <div style={{ fontSize: 12, color: '#6b7280' }}>{c['contact.address']}</div>
           </div>
           <div style={card}>
             <div style={{ fontSize: 13, fontWeight: 700, color: navy, marginBottom: 8 }}>Call us</div>
-            <div style={{ fontSize: 12, color: '#6b7280' }}>(02) 8123-4567</div>
-            <div style={{ fontSize: 12, color: '#6b7280' }}>0917-123-4567</div>
+            <div style={{ fontSize: 12, color: '#6b7280' }}>{c['contact.phone1']}</div>
+            <div style={{ fontSize: 12, color: '#6b7280' }}>{c['contact.phone2']}</div>
           </div>
           <div style={card}>
             <div style={{ fontSize: 13, fontWeight: 700, color: navy, marginBottom: 8 }}>Email us</div>
-            <div style={{ fontSize: 12, color: '#6b7280' }}>info@projectsmile.com</div>
+            <div style={{ fontSize: 12, color: '#6b7280' }}>{c['contact.email']}</div>
           </div>
           <div style={card}>
             <div style={{ fontSize: 13, fontWeight: 700, color: navy, marginBottom: 8 }}>Opening hours</div>
-            <div style={{ fontSize: 12, color: '#6b7280' }}>Mon–Fri: 8:00 AM – 7:00 PM</div>
-            <div style={{ fontSize: 12, color: '#6b7280' }}>Saturday: 8:00 AM – 3:00 PM</div>
-            <div style={{ fontSize: 12, color: '#6b7280' }}>Sunday: Closed</div>
+            <div style={{ fontSize: 12, color: '#6b7280' }}>{c['hours.weekday']}</div>
+            <div style={{ fontSize: 12, color: '#6b7280' }}>{c['hours.sat']}</div>
+            <div style={{ fontSize: 12, color: '#6b7280' }}>{c['hours.sun']}</div>
           </div>
         </div>
       </section>
@@ -234,7 +217,7 @@ export default function Landing() {
         <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 24, maxWidth: 1240, margin: '0 auto' }}>
           <div>
             <div style={{ color: gold, fontWeight: 700, fontSize: 17, marginBottom: 8 }}>PROJECT SMILE</div>
-            <div style={{ color: '#b9c2d6', fontSize: 12, maxWidth: 260 }}>Your trusted partner for comprehensive dental care and beautiful smiles in the Philippines.</div>
+            <div style={{ color: '#b9c2d6', fontSize: 12, maxWidth: 260 }}>{c['footer.text']}</div>
           </div>
           <div>
             <div style={{ color: '#fff', fontSize: 13, fontWeight: 700, marginBottom: 10 }}>Quick links</div>
@@ -248,7 +231,7 @@ export default function Landing() {
           <div>
             <div style={{ color: '#fff', fontSize: 13, fontWeight: 700, marginBottom: 10 }}>Contact</div>
             <div style={{ color: '#b9c2d6', fontSize: 12, lineHeight: 2 }}>
-              (02) 8123-4567<br />info@projectsmile.com<br />123 Dental Plaza, Metro Manila, Philippines
+              {c['contact.phone1']}<br />{c['contact.email']}<br />{c['contact.address']}
             </div>
           </div>
         </div>
