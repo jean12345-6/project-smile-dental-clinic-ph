@@ -81,7 +81,7 @@ export default function Dashboard() {
         <Link className="btn btn-primary" to="/queue">Open the daily queue</Link>
         {front && <Link className="btn btn-ghost" to="/book">Book for a patient</Link>}
         <Link className="btn btn-ghost" to="/reports">View reports</Link>
-        {s.escalated > 0 && admin && <Link className="btn btn-ghost" to="/logs">{s.escalated} chats sent to staff</Link>}
+        {admin && <Link className="btn btn-ghost" to="/logs">{s.escalated > 0 ? `${s.escalated} chats sent to staff` : 'Chat logs'}</Link>}
       </div>
     </Card>
   );
