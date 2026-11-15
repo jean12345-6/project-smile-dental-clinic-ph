@@ -2,6 +2,7 @@ import React from 'react';
 import { Navigate, NavLink, Route, Routes, useNavigate } from 'react-router-dom';
 import { useAuth } from './auth.jsx';
 import { toggleTheme } from './theme.js';
+import Icon from './Icon.jsx';
 import Login from './pages/Login.jsx';
 import Book from './pages/Book.jsx';
 import MyAppointments from './pages/MyAppointments.jsx';
@@ -41,36 +42,36 @@ function Shell({ children }) {
   const front = admin || role === 'receptionist';
   const links = isPatient
     ? [
-        ['/my-dashboard', '📊', 'Dashboard'],
-        ['#chat', '💬', 'Assistant'],
-        ['/my-appointments', '📅', 'My appointments'],
-        ['/my-records', '🦷', 'My records'],
-        ['/my-invoices', '🧾', 'My invoices'],
-        ['/my-transactions', '💳', 'My transactions'],
-        ['/my-notifications', '🔔', 'Notifications'],
-        ['/waitlist', '🔔', 'My waitlist'],
+        ['/my-dashboard', 'dashboard', 'Dashboard'],
+        ['#chat', 'chat', 'Assistant'],
+        ['/my-appointments', 'calendar', 'My appointments'],
+        ['/my-records', 'tooth', 'My records'],
+        ['/my-invoices', 'receipt', 'My invoices'],
+        ['/my-transactions', 'card', 'My transactions'],
+        ['/my-notifications', 'bell', 'Notifications'],
+        ['/waitlist', 'clock', 'My waitlist'],
       ]
     : [
-        ['/dashboard', '📊', 'Dashboard'],
-        ['/queue', '🧑‍⚕️', 'Daily queue'],
-        ['/appointments', '📅', 'Appointments'],
-        front && ['/book', '➕', 'Book for patient'],
-        ['/patients', '👥', 'Patients'],
-        ['/schedule', '🗓', 'Doctor schedule'],
-        ['/treatments', '📋', 'Treatments'],
-        ['/prescriptions', '💊', 'Prescriptions'],
-        front && ['/billing', '💳', 'Billing'],
-        front && ['/waitlist', '🔔', 'Waitlist'],
-        ['/inventory', '📦', 'Inventory'],
-        admin && ['/dentists', '🦷', 'Dentists'],
-        admin && ['/feedback', '💬', 'Feedback'],
-        front && ['/ocr', '📄', 'Scanned forms'],
-        ['/reports', '📈', 'Reports'],
-        admin && ['/settings', '⚙️', 'Clinic settings'],
-        admin && ['/logs', '🛡️', 'Logs'],
-        role === 'superadmin' && ['/clinics', '🏥', 'Clinics'],
-        admin && ['/landing-editor', '🌐', 'Landing page'],
-        admin && ['/users', '🔑', 'Users'],
+        ['/dashboard', 'dashboard', 'Dashboard'],
+        ['/queue', 'list', 'Daily queue'],
+        ['/appointments', 'calendar', 'Appointments'],
+        front && ['/book', 'plus', 'Book for patient'],
+        ['/patients', 'users', 'Patients'],
+        ['/schedule', 'schedule', 'Doctor schedule'],
+        ['/treatments', 'clipboard', 'Treatments'],
+        ['/prescriptions', 'pill', 'Prescriptions'],
+        front && ['/billing', 'card', 'Billing'],
+        front && ['/waitlist', 'clock', 'Waitlist'],
+        ['/inventory', 'box', 'Inventory'],
+        admin && ['/dentists', 'tooth', 'Dentists'],
+        admin && ['/feedback', 'star', 'Feedback'],
+        front && ['/ocr', 'file', 'Scanned forms'],
+        ['/reports', 'chart', 'Reports'],
+        admin && ['/settings', 'settings', 'Clinic settings'],
+        admin && ['/logs', 'shield', 'Logs'],
+        role === 'superadmin' && ['/clinics', 'building', 'Clinics'],
+        admin && ['/landing-editor', 'globe', 'Landing page'],
+        admin && ['/users', 'key', 'Users'],
       ].filter(Boolean);
 
   return (
@@ -86,11 +87,11 @@ function Shell({ children }) {
         <nav>
           {links.map(([to, icon, label]) => to === '#chat' ? (
             <a key={to} href="#chat" onClick={(e) => { e.preventDefault(); window.dispatchEvent(new Event('open-chat')); }}>
-              <span className="ico">{icon}</span> {label}
+              <span className="ico"><Icon name={icon} /></span> {label}
             </a>
           ) : (
             <NavLink key={to} to={to} className={({ isActive }) => (isActive ? 'active' : '')}>
-              <span className="ico">{icon}</span> {label}{to === '/my-notifications' && <NotifBadge />}
+              <span className="ico"><Icon name={icon} /></span> {label}{to === '/my-notifications' && <NotifBadge />}
             </NavLink>
           ))}
         </nav>

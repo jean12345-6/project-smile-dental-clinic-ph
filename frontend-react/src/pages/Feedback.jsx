@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { api } from '../api.js';
 import { Crud } from '../components.jsx';
 
@@ -15,7 +15,7 @@ export default function Feedback() {
         canDelete={true}
         columns={Object.assign([
           { key: 'patient_id', label: 'Patient ID' },
-          { key: 'rating', label: 'Rating', render: (r) => '★'.repeat(Number(r.rating) || 0) + ` (${r.rating ?? '-'})` },
+          { key: 'rating', label: 'Rating', render: (r) => `${r.rating ?? '-'} / 5` },
           { key: 'comment', label: 'Comment' },
           { key: 'date_submitted', label: 'Date' },
           { key: 'is_read', label: 'Status', render: (r) => (Number(r.is_read) ? 'Read' : 'New') },

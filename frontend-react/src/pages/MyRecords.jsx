@@ -35,7 +35,7 @@ export default function MyRecords() {
       <Alert>{error.join(' ')}</Alert>
       <Alert kind="success">{ok}</Alert>
       <div className="stats"><div className="stat"><div className="stat-value">{money(owed)}</div><div className="stat-label">Unpaid balance</div></div><div className="stat"><div className="stat-value">{d.tx.length}</div><div className="stat-label">Treatments on file</div></div></div>
-      {d.sm && <Card title="Summary of my visits"><div className="alert alert-warn">⚠ {d.sm.label}</div><p>{d.sm.summary}</p></Card>}
+      {d.sm && <Card title="Summary of my visits"><div className="alert alert-warn">{d.sm.label}</div><p>{d.sm.summary}</p></Card>}
       {toRate.length > 0 && (
         <Card title="How was your visit?">
           {toRate.map((a) => <div className="row" key={a.id}><span>Visit on {fmt(a.attributes.startTime).slice(0, 10)}</span><button className="btn btn-primary btn-sm" onClick={() => { setRate(a.id); setF({ rating: 5 }); }}>Rate</button></div>)}
@@ -52,7 +52,7 @@ export default function MyRecords() {
       {rate && (
         <Modal title="Rate your visit" onClose={() => setRate(null)}>
           <form onSubmit={submit}>
-            <Field f={{ label: 'Rating', type: 'select', options: [5, 4, 3, 2, 1].map((n) => ({ value: n, label: '★'.repeat(n) + ` (${n})` })) }} value={f.rating} options={{}} onChange={(v) => setF({ ...f, rating: v })} />
+            <Field f={{ label: 'Rating', type: 'select', options: [5, 4, 3, 2, 1].map((n) => ({ value: n, label: `${n} out of 5` })) }} value={f.rating} options={{}} onChange={(v) => setF({ ...f, rating: v })} />
             <Field f={{ label: 'Comment', type: 'textarea' }} value={f.comment} options={{}} onChange={(v) => setF({ ...f, comment: v })} />
             <div className="modal-foot"><button type="button" className="btn btn-ghost" onClick={() => setRate(null)}>Cancel</button><button className="btn btn-primary">Send</button></div>
           </form>

@@ -45,7 +45,7 @@ export default function StaffInbox() {
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(260px, 1fr) minmax(0, 2fr)', gap: 18, alignItems: 'start' }}>
         <Card title="Conversations">
           {list === null && <p className="muted">Loading…</p>}
-          {list && shown.length === 0 && <Empty>{filter === 'open' ? 'Nothing is waiting for a reply. 🎉' : 'No conversations.'}</Empty>}
+          {list && shown.length === 0 && <Empty>{filter === 'open' ? 'Nothing is waiting for a reply.' : 'No conversations.'}</Empty>}
           {shown.map((t) => (
             <button key={t.patientId} onClick={() => setSel(t.patientId)}
               style={{ display: 'block', width: '100%', textAlign: 'left', padding: '12px 14px', marginBottom: 8, borderRadius: 12, cursor: 'pointer', font: 'inherit', color: 'var(--ink)', background: sel === t.patientId ? 'var(--gold-soft)' : 'var(--card2)', border: `1px solid ${sel === t.patientId ? 'var(--gold)' : 'var(--line)'}` }}>

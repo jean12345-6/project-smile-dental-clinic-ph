@@ -34,7 +34,7 @@ export default function Patients() {
       />
       {sum && (
         <Modal title={`Summary · ${sum.p.full_name}`} onClose={() => setSum(null)}>
-          <div className="alert alert-warn">⚠ {sum.label}</div>
+          <div className="alert alert-warn">{sum.label}</div>
           <p>{sum.summary}</p>
         </Modal>
       )}

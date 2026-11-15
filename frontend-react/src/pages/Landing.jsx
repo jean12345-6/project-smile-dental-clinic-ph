@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Stars } from '../Icon.jsx';
 import { Link } from 'react-router-dom';
 import { DEFAULTS, FALLBACK_TESTIMONIALS, loadLanding } from '../landingDefaults.js';
 
@@ -178,7 +179,7 @@ export default function Landing() {
             <div key={t.name + i} style={card}>
               <div style={{ fontSize: 28, color: gold, lineHeight: 1 }}>&ldquo;</div>
               <div style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.6, margin: '8px 0 16px' }}>{t.quote}</div>
-              {t.rating ? <div style={{ color: gold, fontSize: 14, marginBottom: 4 }}>{'★'.repeat(t.rating)}{'☆'.repeat(5 - t.rating)}</div> : null}
+              {t.rating ? <div style={{ color: gold, fontSize: 14, marginBottom: 4 }}><Stars n={t.rating} /></div> : null}
               <div style={{ fontSize: 13, fontWeight: 700, color: navy }}>— {t.name}, Patient</div>
             </div>
           ))}
