@@ -22,10 +22,10 @@ export default function Patients() {
         title="Patients"
         columns={Object.assign([
           { key: 'full_name', label: 'Name' }, { key: 'contact_no', label: 'Contact' }, { key: 'email', label: 'Email' },
-          { key: 'no_show_count', label: 'No-shows' },
+          { key: 'gender', label: 'Gender' }, { key: 'created_at', label: 'Registered', render: (r) => String(r.created_at || '').slice(0, 10) }, { key: 'no_show_count', label: 'No-shows' },
         ], { pk: 'patient_id' })}
         fields={[
-          { key: 'full_name', label: 'Full name', required: true }, { key: 'birthdate', label: 'Birthdate', type: 'date' },
+          { key: 'full_name', label: 'Full name', required: true }, { key: 'birthdate', label: 'Birthdate', type: 'date' }, { key: 'gender', label: 'Gender', type: 'select', options: [{ value: 'Female', label: 'Female' }, { value: 'Male', label: 'Male' }, { value: 'Other', label: 'Other' }] },
           { key: 'contact_no', label: 'Contact no.' }, { key: 'email', label: 'Email', type: 'email' },
           { key: 'address', label: 'Address' }, { key: 'medical_history', label: 'Medical history', type: 'textarea' },
         ]}

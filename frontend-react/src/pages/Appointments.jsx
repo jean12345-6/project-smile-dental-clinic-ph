@@ -20,6 +20,7 @@ export default function Appointments() {
   const [sort, setSort] = useState('when_desc');
   const [status, setStatus] = useState('');
   const [date, setDate] = useState('');
+  const [year, setYear] = useState('');
   const [error, setError] = useState([]);
   const [busyId, setBusyId] = useState(null);
 
@@ -65,8 +66,9 @@ export default function Appointments() {
     dentist: (a) => name.dentist(rel(a, 'dentist')).toLowerCase(),
   };
   const [by, dir] = sort.split('_');
+  const years = [...new Set((rows || []).map((a) => String(a.attributes.startTime || '').slice(0, 4)).filter(Boolean))].sort().reverse();
   const filtered = (rows || [])
-    .filter((a) => (!status || a.attributes.status === status) && (!date || day(a.attributes.startTime) === date) && (!query || text(a).includes(query.toLowerCase())))
+    .filter((a) => (!status || a.attributes.status === status) && (!date || day(a.attributes.startTime) === date) && (!year || String(a.attributes.startTime || '').slice(0, 4) === year) && (!query || text(a).includes(query.toLowerCase())))
     .sort((x, y) => String(key[by](x)).localeCompare(String(key[by](y))) * (dir === 'desc' ? -1 : 1));
   const pages = Math.max(1, Math.ceil(filtered.length / PER));
   const shown = filtered.slice((page - 1) * PER, page * PER);
@@ -96,6 +98,7 @@ export default function Appointments() {
                 <option key={s} value={s}>{s.replace('_', ' ')}</option>
               ))}
             </select>
+            <select value={year} onChange={(e) => { setYear(e.target.value); setPage(1); }}><option value="">All years</option>{years.map((y) => <option key={y} value={y}>{y}</option>)}</select>
             <input type="date" value={date} onChange={(e) => { setDate(e.target.value); setPage(1); }} />
           </div>
         }
