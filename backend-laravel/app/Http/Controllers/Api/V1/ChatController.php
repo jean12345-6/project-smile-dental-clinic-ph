@@ -109,13 +109,13 @@ class ChatController extends APIController
         if ($has('/book|appoint|reserve|magpa|mag-?book|pa-?book|schedule me|gusto ko magpa|slot|available/')) {
             return $this->pickService();
         }
-        if ($has('/balance|utang|unpaid|owe|bayarin|how much do i|magkano ang utang|bill/')) {
+        if ($has('/balance|utang|unpaid|\bowe\b|bayarin|how much do i|magkano ang utang|\bbill/')) {
             return $this->balance();
         }
-        if ($has('/history|past|dati|last visit|huling|nakaraan|treatment ko/')) {
+        if ($has('/history|\bpast\b|\bdati\b|last visit|huling|nakaraan|treatment ko/')) {
             return $this->history_();
         }
-        if ($has('/hour|open|oras|bukas|sarado|close|where|saan|location|address|branch|sangay|lugar/')) {
+        if ($has('/hour|\bopen|oras|bukas|sarado|\bclose|\bwhere|saan|location|address|branch|sangay|lugar/')) {
             return $this->hours();
         }
         // a specific service in the message (English, Filipino or common words)
