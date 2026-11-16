@@ -35,7 +35,7 @@ class ClinicController extends APIController
             'payments' => ['payments', 'payment_id', self::STAFF, ['superadmin', 'clinic_admin', 'receptionist'], ['method']],
             'inventory' => ['inventory', 'item_id', self::STAFF, ['superadmin', 'clinic_admin', 'receptionist'], ['item_name']],
             'feedback' => ['feedback', 'feedback_id', [...self::STAFF, 'patient'], [...self::ADMIN, 'patient'], ['comment']],
-            'reminders' => ['reminders', 'reminder_id', self::STAFF, ['superadmin'], []],
+            'reminders' => ['reminders', 'reminder_id', self::STAFF, ['superadmin'], ['type', 'channel', 'send_status']],
             'chat-logs' => ['chat_logs', 'chat_id', self::STAFF, ['superadmin'], ['message_in', 'message_out']],
             'ocr' => ['ocr_batches', 'batch_id', self::STAFF, ['superadmin', 'clinic_admin', 'receptionist'], ['extracted_text']],
             'audit-logs' => ['audit_logs', 'audit_id', self::ADMIN, [], ['action', 'table_name']],
@@ -101,6 +101,18 @@ class ClinicController extends APIController
         $rows = ($sort !== '' && in_array($sort, Dbx::cols($table), true)
             ? $q->orderBy($table . '.' . $sort, $dir)->orderByDesc($pk)
             : $q->orderByDesc($pk))->forPage($page, $per)->get();
+
+        // show the patient name beside each reminder (reminders only store appointment_id)
+        if ($res === 'reminders' && $rows->isNotEmpty()) {
+            $ids = $rows->pluck('appointment_id')->filter()->unique()->all();
+            $names = DB::table('appointments')
+                ->join('patients', 'patients.patient_id', '=', 'appointments.patient_id')
+                ->whereIn('appointments.appointment_id', $ids)
+                ->pluck('patients.full_name', 'appointments.appointment_id');
+            foreach ($rows as $row) {
+                $row->patient_name = $names[$row->appointment_id] ?? null;
+            }
+        }
 
         return response()->json(['data' => $rows, 'meta' => ['total' => $total, 'page' => $page, 'perPage' => $per]]);
     }

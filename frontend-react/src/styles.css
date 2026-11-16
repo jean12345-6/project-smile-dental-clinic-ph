@@ -337,3 +337,6 @@ td { font-size: 16px; padding: 16px 14px; }
   .sidebar { width: 100%; }
   td { font-size: 15px; padding: 12px 10px; }
 }
+
+/* view-only tables: hide the empty actions cell so no stray line shows */
+td.actions:empty { border-bottom: none; padding: 0; }
