@@ -180,7 +180,7 @@ class ChatController extends APIController
             }
         }
 
-        return $this->out("Hi {$name}! 😁 I'm the SmileSync assistant. I can book, move or cancel your appointment and answer questions about the clinic. Type in English or Filipino, or tap a button.", $opts, 'greeting');
+        return $this->out("Hi {$name}! I'm the SmileSync assistant. I can book, move or cancel your appointment and answer questions about the clinic. Type in English or Filipino, or tap a button.", $opts, 'greeting');
     }
 
     private function services()
@@ -244,7 +244,7 @@ class ChatController extends APIController
         $a->status = 'confirmed';
         $a->save();
 
-        return $this->out('Thank you! ✅ Your appointment on ' . $this->when($a->start_time) . ' is confirmed.', [$this->opt('My appointments', 'my_appts'), $this->opt('Main menu', 'menu')], 'confirm');
+        return $this->out('Thank you! Your appointment on ' . $this->when($a->start_time) . ' is confirmed.', [$this->opt('My appointments', 'my_appts'), $this->opt('Main menu', 'menu')], 'confirm');
     }
 
     private function confirmOffer(array $d)
@@ -254,7 +254,7 @@ class ChatController extends APIController
         }
         [$ok, $msg] = app(WaitlistService::class)->confirm((int) ($d['id'] ?? 0), (int) $this->patient->patient_id);
 
-        return $this->out(($ok ? '✅ ' : '') . $msg, [$this->opt('My appointments', 'my_appts'), $this->opt('Main menu', 'menu')], 'waitlist_confirm');
+        return $this->out(($ok ? '' : '') . $msg, [$this->opt('My appointments', 'my_appts'), $this->opt('Main menu', 'menu')], 'waitlist_confirm');
     }
 
     // ------------------------------------------------------------------ personal answers
@@ -409,7 +409,7 @@ class ChatController extends APIController
             . "• {$service->service_name}\n• " . $this->dentistName($dentist) . "\n• " . $this->when($d['start']);
 
         return $this->out($text, [
-            $this->opt($moving ? '✅ Yes, move it' : '✅ Yes, book it', 'book_confirm', $d),
+            $this->opt($moving ? 'Yes, move it' : 'Yes, book it', 'book_confirm', $d),
             $this->back('← Pick another time', 'book_date', Arr::only($d, ['serviceId', 'dentistId', 'date', 'reschedule'])),
             $this->opt('Main menu', 'menu'),
         ], 'book');
@@ -433,7 +433,7 @@ class ChatController extends APIController
             }
             $a->forceFill(['start_time' => $d['start'], 'end_time' => $d['end'], 'dentist_id' => $d['dentistId'], 'status' => 'pending'])->save();
 
-            return $this->out('Done! ✅ Your appointment is moved to ' . $this->when($d['start']) . '.', [$this->opt('My appointments', 'my_appts'), $this->opt('Main menu', 'menu')], 'reschedule');
+            return $this->out('Done! Your appointment is moved to ' . $this->when($d['start']) . '.', [$this->opt('My appointments', 'my_appts'), $this->opt('Main menu', 'menu')], 'reschedule');
         }
 
         $threshold = (int) Settings::get($this->user->clinic_id ?? null, 'no_show_threshold', 3); // set by the clinic (FR-28)
@@ -452,7 +452,7 @@ class ChatController extends APIController
             'booked_via' => 'chatbot',
         ]))->save();
 
-        return $this->out("You're booked! ✅\n{$service->service_name} on " . $this->when($d['start']) . '.' . "\nWe will remind you before the visit.", [$this->opt('My appointments', 'my_appts'), $this->opt('Main menu', 'menu')], 'booked');
+        return $this->out("You're booked!\n{$service->service_name} on " . $this->when($d['start']) . '.' . "\nWe will remind you before the visit.", [$this->opt('My appointments', 'my_appts'), $this->opt('Main menu', 'menu')], 'booked');
     }
 
     private function joinWaitlist(array $d)
@@ -468,7 +468,7 @@ class ChatController extends APIController
             ]);
         }
 
-        return $this->out("You're on the waiting list. 🔔 I'll offer you the first slot that opens up.", [$this->opt('Main menu', 'menu')], 'waitlist');
+        return $this->out("You're on the waiting list. I'll offer you the first slot that opens up.", [$this->opt('Main menu', 'menu')], 'waitlist');
     }
 
     private function cancel(array $d)
