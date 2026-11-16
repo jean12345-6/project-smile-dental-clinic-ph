@@ -12,6 +12,7 @@ export async function api(path, { method = 'GET', body, params } = {}) {
 
   const headers = { Accept: 'application/json', 'Content-Type': 'application/json' };
   if (getToken()) headers.Authorization = `Bearer ${getToken()}`;
+  try { const wc = localStorage.getItem('smilesync-clinic'); if (wc) headers['X-Clinic-Id'] = wc; } catch (e) { /* ignore */ }
 
   let res;
   try {

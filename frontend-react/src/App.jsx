@@ -17,6 +17,7 @@ import Patients from './pages/Patients.jsx';
 import Inventory from './pages/Inventory.jsx';
 import Reports from './pages/Reports.jsx';
 import Logs from './pages/Logs.jsx';
+import ChatLogs from './pages/ChatLogs.jsx';
 import Settings from './pages/Settings.jsx';
 import OCR from './pages/OCR.jsx';
 import MyRecords from './pages/MyRecords.jsx';
@@ -71,6 +72,7 @@ function Shell({ children }) {
         ['/reports', 'chart', 'Reports'],
         admin && ['/settings', 'settings', 'Clinic settings'],
         admin && ['/logs', 'shield', 'Logs'],
+        admin && ['/chat-logs', 'chat', 'Chat logs'],
         role === 'superadmin' && ['/clinics', 'building', 'Clinics'],
         admin && ['/landing-editor', 'globe', 'Landing page'],
         admin && ['/users', 'key', 'Users'],
@@ -168,6 +170,7 @@ export default function App() {
       <Route path="/inventory" element={<Protected roles={STAFF}><Inventory /></Protected>} />
       <Route path="/reports" element={<Protected roles={STAFF}><Reports /></Protected>} />
       <Route path="/logs" element={<Protected roles={ADMIN}><Logs /></Protected>} />
+      <Route path="/chat-logs" element={<Protected roles={ADMIN}><ChatLogs /></Protected>} />
       <Route path="/settings" element={<Protected roles={ADMIN}><Settings /></Protected>} />
       <Route path="/ocr" element={<Protected roles={FRONT}><OCR /></Protected>} />
       <Route path="/book" element={<Protected roles={FRONT}><Book /></Protected>} />

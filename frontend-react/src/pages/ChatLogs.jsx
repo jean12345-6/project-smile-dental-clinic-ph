@@ -1,5 +1,6 @@
 import React from 'react';
-import { Crud, useOptions } from '../components.jsx';
+import { Crud } from '../components.jsx';
+import { useAuth } from '../auth.jsx';
 
 const when = (r) => {
   const d = new Date(String(r.timestamp || r.created_at || '').replace(' ', 'T'));
@@ -25,9 +26,9 @@ const plain = (text) => {
 };
 
 export default function ChatLogs() {
-  const opt = useOptions();
+  const { lookups } = useAuth();
   const patientName = (id) =>
-    id ? (opt.patient.find((p) => String(p.value) === String(id)) || {}).label || `Patient #${id}` : 'Guest';
+    id ? (lookups?.patients || []).find((p) => String(p.patient_id) === String(id))?.name || `Patient #${id}` : 'Guest';
 
   return (
     <>

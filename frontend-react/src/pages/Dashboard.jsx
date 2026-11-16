@@ -17,11 +17,17 @@ export default function Dashboard() {
   const [error, setError] = useState([]);
   const [note, setNote] = useState('');
   const [filter, setFilter] = useState('all');
+  const [clinics, setClinics] = useState([]);
+  const [wc, setWc] = useState(() => localStorage.getItem('smilesync-clinic') || '');
   const admin = ['superadmin', 'clinic_admin'].includes(user?.role);
   const front = admin || user?.role === 'receptionist';
 
   const load = () => api('/stats').then(setS).catch((e) => setError(e.messages));
   useEffect(() => { load(); }, []);
+  useEffect(() => {
+    if (user?.role === 'superadmin') api('/r/clinics').then((r) => setClinics(r.data || [])).catch(() => {});
+  }, [user?.role]);
+  const pickClinic = (v) => { setWc(v); try { localStorage.setItem('smilesync-clinic', v); } catch (e) { /* ignore */ } };
 
   const runReminders = async () => {
     try {
@@ -38,6 +44,14 @@ export default function Dashboard() {
         <p className="page-sub" style={{ margin: 0 }}>Here is the clinic today.</p>
       </div>
       <div className="top-actions">
+        {user?.role === 'superadmin' && clinics.length > 0 && (
+          <label className="muted small" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+            Adding records to
+            <select value={wc || clinics[0].clinic_id} onChange={(e) => pickClinic(e.target.value)}>
+              {clinics.map((c) => <option key={c.clinic_id} value={c.clinic_id}>{c.clinic_name}</option>)}
+            </select>
+          </label>
+        )}
         <button className="btn btn-ghost" onClick={toggleTheme}>Toggle theme</button>
         {admin && <button className="btn btn-ghost" onClick={runReminders}>Run reminders</button>}
         {front && <Link className="btn btn-primary" to="/book">New appointment</Link>}
@@ -81,7 +95,7 @@ export default function Dashboard() {
         <Link className="btn btn-primary" to="/queue">Open the daily queue</Link>
         {front && <Link className="btn btn-ghost" to="/book">Book for a patient</Link>}
         <Link className="btn btn-ghost" to="/reports">View reports</Link>
-        {admin && <Link className="btn btn-ghost" to="/logs">{s.escalated > 0 ? `${s.escalated} chats sent to staff` : 'Chat logs'}</Link>}
+        {admin && <Link className="btn btn-ghost" to="/chat-logs">{s.escalated > 0 ? `${s.escalated} chats sent to staff` : 'Chat logs'}</Link>}
       </div>
     </Card>
   );
