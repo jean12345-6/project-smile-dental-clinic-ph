@@ -28,6 +28,7 @@ import Treatments from './pages/Treatments.jsx';
 import Prescriptions from './pages/Prescriptions.jsx';
 import DentalChart from './pages/DentalChart.jsx';
 import Landing from './pages/Landing.jsx';
+import TreatmentHistory from './pages/TreatmentHistory.jsx';
 import LandingEditor from './pages/LandingEditor.jsx';
 import MyBilling from './pages/MyBilling.jsx';
 import PatientDashboard from './pages/PatientDashboard.jsx';
@@ -60,8 +61,7 @@ function Shell({ children }) {
         front && ['/book', 'plus', 'Book for patient'],
         ['/patients', 'users', 'Patients'],
         ['/schedule', 'schedule', 'Doctor schedule'],
-        ['/treatments', 'clipboard', 'Treatments'],
-        ['/prescriptions', 'pill', 'Prescriptions'],
+        ['/treatment-history', 'clipboard', 'Treatments'],
         ['/dental-chart', 'tooth', 'Dental chart'],
         front && ['/billing', 'card', 'Billing'],
         front && ['/waitlist', 'clock', 'Waitlist'],
@@ -179,6 +179,7 @@ export default function App() {
       <Route path="/treatments" element={<Protected roles={STAFF}><Treatments /></Protected>} />
       <Route path="/prescriptions" element={<Protected roles={STAFF}><Prescriptions /></Protected>} />
       <Route path="/dental-chart" element={<Protected roles={STAFF}><DentalChart /></Protected>} />
+      <Route path="/treatment-history" element={<Protected roles={STAFF}><TreatmentHistory /></Protected>} />
       <Route path="/waitlist" element={<Protected><Waitlist /></Protected>} />
       <Route path="/dashboard" element={<Protected roles={STAFF}><Dashboard /></Protected>} />
       <Route path="/appointments" element={<Protected roles={STAFF}><Appointments /></Protected>} />
