@@ -1,0 +1,619 @@
+name: 'Clinic workflow'
+description: |-
+
+  Daily queue, check-in, walk-ins, invoices, reports, reminders, patient summary and OCR upload.
+endpoints:
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: api/v1/queue
+    metadata:
+      custom: []
+      groupName: 'Clinic workflow'
+      groupDescription: |-
+
+        Daily queue, check-in, walk-ins, invoices, reports, reminders, patient summary and OCR upload.
+      subgroup: ''
+      subgroupDescription: ''
+      title: "GET /queue?date=&dentistId= — today's patients in order of arrival or appointment time."
+      description: ''
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 401
+        content: '{"errors":[{"status":401,"message":"Unauthenticated","source":""}]}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          access-control-allow-origin: '*'
+        description: null
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - POST
+    uri: api/v1/queue/walkin
+    metadata:
+      custom: []
+      groupName: 'Clinic workflow'
+      groupDescription: |-
+
+        Daily queue, check-in, walk-ins, invoices, reports, reminders, patient summary and OCR upload.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'POST /queue/walkin {patientId, dentistId, serviceId}'
+      description: ''
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - POST
+    uri: 'api/v1/queue/{id}/status'
+    metadata:
+      custom: []
+      groupName: 'Clinic workflow'
+      groupDescription: |-
+
+        Daily queue, check-in, walk-ins, invoices, reports, reminders, patient summary and OCR upload.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'POST /queue/{id}/status {status} — move an appointment through its statuses.'
+      description: ''
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        custom: []
+        name: id
+        description: 'The ID of the queue.'
+        required: true
+        example: architecto
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      id: architecto
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - POST
+    uri: 'api/v1/queue/{id}/followup'
+    metadata:
+      custom: []
+      groupName: 'Clinic workflow'
+      groupDescription: |-
+
+        Daily queue, check-in, walk-ins, invoices, reports, reminders, patient summary and OCR upload.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'POST /queue/{id}/followup {date} — books a follow-up at the first open slot of that day.'
+      description: ''
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        custom: []
+        name: id
+        description: 'The ID of the queue.'
+        required: true
+        example: architecto
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      id: architecto
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - POST
+    uri: api/v1/invoices/generate
+    metadata:
+      custom: []
+      groupName: 'Clinic workflow'
+      groupDescription: |-
+
+        Daily queue, check-in, walk-ins, invoices, reports, reminders, patient summary and OCR upload.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'POST /invoices/generate {appointmentId} — builds an invoice from the treatments done (or the service price).'
+      description: ''
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: 'api/v1/patient-summary/{id}'
+    metadata:
+      custom: []
+      groupName: 'Clinic workflow'
+      groupDescription: |-
+
+        Daily queue, check-in, walk-ins, invoices, reports, reminders, patient summary and OCR upload.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'GET /patient-summary/{id} — automatic summary, clearly labelled.'
+      description: ''
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        custom: []
+        name: id
+        description: 'The ID of the patient summary.'
+        required: true
+        example: architecto
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      id: architecto
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 401
+        content: '{"errors":[{"status":401,"message":"Unauthenticated","source":""}]}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          access-control-allow-origin: '*'
+        description: null
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: api/v1/reports
+    metadata:
+      custom: []
+      groupName: 'Clinic workflow'
+      groupDescription: |-
+
+        Daily queue, check-in, walk-ins, invoices, reports, reminders, patient summary and OCR upload.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'GET /reports?from=&to='
+      description: ''
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 401
+        content: '{"errors":[{"status":401,"message":"Unauthenticated","source":""}]}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          access-control-allow-origin: '*'
+        description: null
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - POST
+    uri: api/v1/reminders/run
+    metadata:
+      custom: []
+      groupName: 'Clinic workflow'
+      groupDescription: |-
+
+        Daily queue, check-in, walk-ins, invoices, reports, reminders, patient summary and OCR upload.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'POST /reminders/run — the same job the schedule runs (php artisan smilesync:reminders).'
+      description: ''
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - POST
+    uri: 'api/v1/waitlist/{id}/confirm'
+    metadata:
+      custom: []
+      groupName: 'Clinic workflow'
+      groupDescription: |-
+
+        Daily queue, check-in, walk-ins, invoices, reports, reminders, patient summary and OCR upload.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'POST /waitlist/{id}/confirm — the patient takes the offered slot and the appointment is created.'
+      description: ''
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        custom: []
+        name: id
+        description: 'The ID of the waitlist.'
+        required: true
+        example: architecto
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      id: architecto
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: api/v1/app-settings
+    metadata:
+      custom: []
+      groupName: 'Clinic workflow'
+      groupDescription: |-
+
+        Daily queue, check-in, walk-ins, invoices, reports, reminders, patient summary and OCR upload.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'GET /app-settings — reminder timing, no-show threshold, offer expiry.'
+      description: ''
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 401
+        content: '{"errors":[{"status":401,"message":"Unauthenticated","source":""}]}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          access-control-allow-origin: '*'
+        description: null
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - PUT
+    uri: api/v1/app-settings
+    metadata:
+      custom: []
+      groupName: 'Clinic workflow'
+      groupDescription: |-
+
+        Daily queue, check-in, walk-ins, invoices, reports, reminders, patient summary and OCR upload.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'PUT /app-settings'
+      description: ''
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - POST
+    uri: api/v1/clinic/logo
+    metadata:
+      custom: []
+      groupName: 'Clinic workflow'
+      groupDescription: |-
+
+        Daily queue, check-in, walk-ins, invoices, reports, reminders, patient summary and OCR upload.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'POST /clinic/logo (multipart: image) — the clinic logo (FR-07).'
+      description: ''
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - POST
+    uri: 'api/v1/clinics/{id}/admin'
+    metadata:
+      custom: []
+      groupName: 'Clinic workflow'
+      groupDescription: |-
+
+        Daily queue, check-in, walk-ins, invoices, reports, reminders, patient summary and OCR upload.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'POST /clinics/{id}/admin {name,email,password} — SuperAdmin creates the Clinic Administrator account (FR-06).'
+      description: ''
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        custom: []
+        name: id
+        description: 'The ID of the clinic.'
+        required: true
+        example: architecto
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      id: architecto
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - POST
+    uri: api/v1/ocr/upload
+    metadata:
+      custom: []
+      groupName: 'Clinic workflow'
+      groupDescription: |-
+
+        Daily queue, check-in, walk-ins, invoices, reports, reminders, patient summary and OCR upload.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'POST /ocr/upload (multipart: image, patientId, text?)'
+      description: ''
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null

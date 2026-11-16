@@ -1,24 +1,24 @@
-name: Users
+name: Waitlist
 description: |-
 
-  Manage clinic staff and patient login accounts.
+  Join the waiting list when a slot is full. A freed slot is offered to the first person waiting.
 endpoints:
   -
     custom: []
     httpMethods:
       - GET
-    uri: api/v1/users
+    uri: api/v1/waitlist
     metadata:
       custom: []
-      groupName: Users
+      groupName: Waitlist
       groupDescription: |-
 
-        Manage clinic staff and patient login accounts.
+        Join the waiting list when a slot is full. A freed slot is offered to the first person waiting.
       subgroup: ''
       subgroupDescription: ''
       title: |-
-        GET /api/v1/users
-        Lists every user with the filters and sorting from the URL.
+        GET /api/v1/waitlist
+        Staff see everyone. A patient sees only their own entries.
       description: ''
       authenticated: true
       deprecated: false
@@ -28,8 +28,20 @@ endpoints:
       Accept: application/json
     urlParameters: []
     cleanUrlParameters: []
-    queryParameters: []
-    cleanQueryParameters: []
+    queryParameters:
+      status:
+        custom: []
+        name: status
+        description: 'Filter: waiting, offered.'
+        required: false
+        example: waiting
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+    cleanQueryParameters:
+      status: waiting
     bodyParameters: []
     cleanBodyParameters: []
     fileParameters: []
@@ -55,18 +67,18 @@ endpoints:
     custom: []
     httpMethods:
       - POST
-    uri: api/v1/users
+    uri: api/v1/waitlist
     metadata:
       custom: []
-      groupName: Users
+      groupName: Waitlist
       groupDescription: |-
 
-        Manage clinic staff and patient login accounts.
+        Join the waiting list when a slot is full. A freed slot is offered to the first person waiting.
       subgroup: ''
       subgroupDescription: ''
       title: |-
-        POST /api/v1/users
-        Creates a user (needs the user:create ability).
+        POST /api/v1/waitlist
+        Join the waiting list. A patient joins for themselves. Staff must send patientId.
       description: ''
       authenticated: true
       deprecated: false
@@ -79,737 +91,67 @@ endpoints:
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
-      data:
+      patientId:
         custom: []
-        name: data
-        description: ''
-        required: true
-        example: []
-        type: object
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        deprecated: false
-      data.attributes:
-        custom: []
-        name: data.attributes
-        description: ''
-        required: true
-        example: []
-        type: object
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        deprecated: false
-      data.attributes.name:
-        custom: []
-        name: data.attributes.name
-        description: ''
-        required: true
-        example: architecto
-        type: string
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        deprecated: false
-      data.attributes.email:
-        custom: []
-        name: data.attributes.email
-        description: 'Must be a valid email address.'
-        required: true
-        example: zbailey@example.net
-        type: string
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        deprecated: false
-      data.attributes.role:
-        custom: []
-        name: data.attributes.role
-        description: ''
-        required: true
-        example: dentist
-        type: string
-        enumValues:
-          - superadmin
-          - clinic_admin
-          - receptionist
-          - dentist
-          - patient
-        exampleWasSpecified: false
-        nullable: false
-        deprecated: false
-      data.attributes.status:
-        custom: []
-        name: data.attributes.status
-        description: ''
+        name: patientId
+        description: 'Required for staff only.'
         required: false
-        example: architecto
-        type: string
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        deprecated: false
-      data.attributes.password:
-        custom: []
-        name: data.attributes.password
-        description: 'Must be at least 8 characters.'
-        required: true
-        example: ']|{+-0pBNvYg'
-        type: string
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        deprecated: false
-      data.relationships.clinic.data:
-        custom: []
-        name: data.relationships.clinic.data
-        description: ''
-        required: false
-        example: []
-        type: object
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        deprecated: false
-      data.relationships.clinic:
-        custom: []
-        name: data.relationships.clinic
-        description: ''
-        required: false
-        example: []
-        type: object
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        deprecated: false
-      data.relationships:
-        custom: []
-        name: data.relationships
-        description: ''
-        required: false
-        example: []
-        type: object
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        deprecated: false
-      data.relationships.clinic.data.id:
-        custom: []
-        name: data.relationships.clinic.data.id
-        description: 'Must match an existing stored value.'
-        required: false
-        example: 16
+        example: 14
         type: integer
         enumValues: []
-        exampleWasSpecified: false
+        exampleWasSpecified: true
         nullable: false
         deprecated: false
-      data.relationships.branch.data:
+      serviceId:
         custom: []
-        name: data.relationships.branch.data
+        name: serviceId
         description: ''
-        required: false
-        example: []
-        type: object
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        deprecated: false
-      data.relationships.branch:
-        custom: []
-        name: data.relationships.branch
-        description: ''
-        required: false
-        example: []
-        type: object
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        deprecated: false
-      data.relationships.branch.data.id:
-        custom: []
-        name: data.relationships.branch.data.id
-        description: 'Must match an existing stored value.'
-        required: false
-        example: 16
+        required: true
+        example: 1
         type: integer
         enumValues: []
-        exampleWasSpecified: false
+        exampleWasSpecified: true
         nullable: false
+        deprecated: false
+      branchId:
+        custom: []
+        name: branchId
+        description: ''
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      dentistId:
+        custom: []
+        name: dentistId
+        description: 'Any dentist if empty.'
+        required: false
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: true
+        deprecated: false
+      preferredDate:
+        custom: []
+        name: preferredDate
+        description: 'Any date if empty. YYYY-MM-DD.'
+        required: false
+        example: '2026-11-09'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: true
         deprecated: false
     cleanBodyParameters:
-      data:
-        attributes:
-          name: architecto
-          email: zbailey@example.net
-          role: dentist
-          status: architecto
-          password: ']|{+-0pBNvYg'
-        relationships:
-          clinic:
-            data:
-              id: 16
-          branch:
-            data:
-              id: 16
-    fileParameters: []
-    responses: []
-    responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
-    controller: null
-    method: null
-    route: null
-  -
-    custom: []
-    httpMethods:
-      - GET
-    uri: 'api/v1/users/{id}'
-    metadata:
-      custom: []
-      groupName: Users
-      groupDescription: |-
-
-        Manage clinic staff and patient login accounts.
-      subgroup: ''
-      subgroupDescription: ''
-      title: 'GET /api/v1/users/{user}'
-      description: ''
-      authenticated: true
-      deprecated: false
-    headers:
-      Authorization: 'Bearer {YOUR_AUTH_KEY}'
-      Content-Type: application/json
-      Accept: application/json
-    urlParameters:
-      id:
-        custom: []
-        name: id
-        description: 'The ID of the user.'
-        required: true
-        example: 1
-        type: integer
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        deprecated: false
-    cleanUrlParameters:
-      id: 1
-    queryParameters: []
-    cleanQueryParameters: []
-    bodyParameters: []
-    cleanBodyParameters: []
-    fileParameters: []
-    responses:
-      -
-        custom: []
-        status: 401
-        content: '{"errors":[{"status":401,"message":"Unauthenticated","source":""}]}'
-        headers:
-          cache-control: 'no-cache, private'
-          content-type: application/json
-          access-control-allow-origin: '*'
-        description: null
-    responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
-    controller: null
-    method: null
-    route: null
-  -
-    custom: []
-    httpMethods:
-      - DELETE
-    uri: 'api/v1/users/{id}'
-    metadata:
-      custom: []
-      groupName: Users
-      groupDescription: |-
-
-        Manage clinic staff and patient login accounts.
-      subgroup: ''
-      subgroupDescription: ''
-      title: |-
-        DELETE /api/v1/users/{user}
-        Deletes the user (needs user:delete).
-      description: ''
-      authenticated: true
-      deprecated: false
-    headers:
-      Authorization: 'Bearer {YOUR_AUTH_KEY}'
-      Content-Type: application/json
-      Accept: application/json
-    urlParameters:
-      id:
-        custom: []
-        name: id
-        description: 'The ID of the user.'
-        required: true
-        example: 1
-        type: integer
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        deprecated: false
-    cleanUrlParameters:
-      id: 1
-    queryParameters: []
-    cleanQueryParameters: []
-    bodyParameters: []
-    cleanBodyParameters: []
-    fileParameters: []
-    responses: []
-    responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
-    controller: null
-    method: null
-    route: null
-  -
-    custom: []
-    httpMethods:
-      - PUT
-    uri: 'api/v1/users/{user_id}'
-    metadata:
-      custom: []
-      groupName: Users
-      groupDescription: |-
-
-        Manage clinic staff and patient login accounts.
-      subgroup: ''
-      subgroupDescription: ''
-      title: |-
-        PUT /api/v1/users/{user}
-        Replaces the whole user: every field is required (needs user:replace).
-      description: ''
-      authenticated: true
-      deprecated: false
-    headers:
-      Authorization: 'Bearer {YOUR_AUTH_KEY}'
-      Content-Type: application/json
-      Accept: application/json
-    urlParameters:
-      user_id:
-        custom: []
-        name: user_id
-        description: 'The ID of the user.'
-        required: true
-        example: 1
-        type: integer
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        deprecated: false
-    cleanUrlParameters:
-      user_id: 1
-    queryParameters: []
-    cleanQueryParameters: []
-    bodyParameters:
-      data:
-        custom: []
-        name: data
-        description: ''
-        required: true
-        example: []
-        type: object
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        deprecated: false
-      data.attributes:
-        custom: []
-        name: data.attributes
-        description: ''
-        required: true
-        example: []
-        type: object
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        deprecated: false
-      data.attributes.name:
-        custom: []
-        name: data.attributes.name
-        description: ''
-        required: true
-        example: architecto
-        type: string
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        deprecated: false
-      data.attributes.email:
-        custom: []
-        name: data.attributes.email
-        description: 'Must be a valid email address.'
-        required: true
-        example: zbailey@example.net
-        type: string
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        deprecated: false
-      data.attributes.role:
-        custom: []
-        name: data.attributes.role
-        description: ''
-        required: true
-        example: receptionist
-        type: string
-        enumValues:
-          - superadmin
-          - clinic_admin
-          - receptionist
-          - dentist
-          - patient
-        exampleWasSpecified: false
-        nullable: false
-        deprecated: false
-      data.attributes.status:
-        custom: []
-        name: data.attributes.status
-        description: ''
-        required: true
-        example: architecto
-        type: string
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        deprecated: false
-      data.attributes.password:
-        custom: []
-        name: data.attributes.password
-        description: 'Must be at least 8 characters.'
-        required: true
-        example: ']|{+-0pBNvYg'
-        type: string
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        deprecated: false
-      data.relationships.clinic.data:
-        custom: []
-        name: data.relationships.clinic.data
-        description: ''
-        required: false
-        example: []
-        type: object
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        deprecated: false
-      data.relationships.clinic:
-        custom: []
-        name: data.relationships.clinic
-        description: ''
-        required: false
-        example: []
-        type: object
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        deprecated: false
-      data.relationships:
-        custom: []
-        name: data.relationships
-        description: ''
-        required: false
-        example: []
-        type: object
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        deprecated: false
-      data.relationships.clinic.data.id:
-        custom: []
-        name: data.relationships.clinic.data.id
-        description: 'Must match an existing stored value.'
-        required: true
-        example: 16
-        type: integer
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        deprecated: false
-      data.relationships.branch.data:
-        custom: []
-        name: data.relationships.branch.data
-        description: ''
-        required: false
-        example: []
-        type: object
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        deprecated: false
-      data.relationships.branch:
-        custom: []
-        name: data.relationships.branch
-        description: ''
-        required: false
-        example: []
-        type: object
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        deprecated: false
-      data.relationships.branch.data.id:
-        custom: []
-        name: data.relationships.branch.data.id
-        description: 'Must match an existing stored value.'
-        required: true
-        example: 16
-        type: integer
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        deprecated: false
-    cleanBodyParameters:
-      data:
-        attributes:
-          name: architecto
-          email: zbailey@example.net
-          role: receptionist
-          status: architecto
-          password: ']|{+-0pBNvYg'
-        relationships:
-          clinic:
-            data:
-              id: 16
-          branch:
-            data:
-              id: 16
-    fileParameters: []
-    responses: []
-    responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
-    controller: null
-    method: null
-    route: null
-  -
-    custom: []
-    httpMethods:
-      - PATCH
-    uri: 'api/v1/users/{user_id}'
-    metadata:
-      custom: []
-      groupName: Users
-      groupDescription: |-
-
-        Manage clinic staff and patient login accounts.
-      subgroup: ''
-      subgroupDescription: ''
-      title: |-
-        PATCH /api/v1/users/{user}
-        Updates only the fields that were sent (needs user:update).
-      description: ''
-      authenticated: true
-      deprecated: false
-    headers:
-      Authorization: 'Bearer {YOUR_AUTH_KEY}'
-      Content-Type: application/json
-      Accept: application/json
-    urlParameters:
-      user_id:
-        custom: []
-        name: user_id
-        description: 'The ID of the user.'
-        required: true
-        example: 1
-        type: integer
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        deprecated: false
-    cleanUrlParameters:
-      user_id: 1
-    queryParameters: []
-    cleanQueryParameters: []
-    bodyParameters:
-      data.attributes:
-        custom: []
-        name: data.attributes
-        description: ''
-        required: false
-        example: []
-        type: object
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        deprecated: false
-      data:
-        custom: []
-        name: data
-        description: ''
-        required: false
-        example: []
-        type: object
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        deprecated: false
-      data.attributes.name:
-        custom: []
-        name: data.attributes.name
-        description: ''
-        required: false
-        example: architecto
-        type: string
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        deprecated: false
-      data.attributes.email:
-        custom: []
-        name: data.attributes.email
-        description: 'Must be a valid email address.'
-        required: false
-        example: zbailey@example.net
-        type: string
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        deprecated: false
-      data.attributes.role:
-        custom: []
-        name: data.attributes.role
-        description: ''
-        required: false
-        example: receptionist
-        type: string
-        enumValues:
-          - superadmin
-          - clinic_admin
-          - receptionist
-          - dentist
-          - patient
-        exampleWasSpecified: false
-        nullable: false
-        deprecated: false
-      data.attributes.status:
-        custom: []
-        name: data.attributes.status
-        description: ''
-        required: false
-        example: architecto
-        type: string
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        deprecated: false
-      data.attributes.password:
-        custom: []
-        name: data.attributes.password
-        description: 'Must be at least 8 characters.'
-        required: false
-        example: ']|{+-0pBNvYg'
-        type: string
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        deprecated: false
-      data.relationships.clinic.data:
-        custom: []
-        name: data.relationships.clinic.data
-        description: ''
-        required: false
-        example: []
-        type: object
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        deprecated: false
-      data.relationships.clinic:
-        custom: []
-        name: data.relationships.clinic
-        description: ''
-        required: false
-        example: []
-        type: object
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        deprecated: false
-      data.relationships:
-        custom: []
-        name: data.relationships
-        description: ''
-        required: false
-        example: []
-        type: object
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        deprecated: false
-      data.relationships.clinic.data.id:
-        custom: []
-        name: data.relationships.clinic.data.id
-        description: 'Must match an existing stored value.'
-        required: false
-        example: 16
-        type: integer
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        deprecated: false
-      data.relationships.branch.data:
-        custom: []
-        name: data.relationships.branch.data
-        description: ''
-        required: false
-        example: []
-        type: object
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        deprecated: false
-      data.relationships.branch:
-        custom: []
-        name: data.relationships.branch
-        description: ''
-        required: false
-        example: []
-        type: object
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        deprecated: false
-      data.relationships.branch.data.id:
-        custom: []
-        name: data.relationships.branch.data.id
-        description: 'Must match an existing stored value.'
-        required: false
-        example: 16
-        type: integer
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        deprecated: false
-    cleanBodyParameters:
-      data:
-        attributes:
-          name: architecto
-          email: zbailey@example.net
-          role: receptionist
-          status: architecto
-          password: ']|{+-0pBNvYg'
-        relationships:
-          clinic:
-            data:
-              id: 16
-          branch:
-            data:
-              id: 16
+      patientId: 14
+      serviceId: 1
+      branchId: 1
+      dentistId: 1
+      preferredDate: '2026-11-09'
     fileParameters: []
     responses: []
     responseFields: []
