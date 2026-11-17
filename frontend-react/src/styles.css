@@ -340,3 +340,11 @@ td { font-size: 16px; padding: 16px 14px; }
 
 /* view-only tables: hide the empty actions cell so no stray line shows */
 td.actions:empty { border-bottom: none; padding: 0; }
+
+
+/* landing header: wrap the top menu on phones so the page does not scroll sideways */
+@media (max-width: 760px) {
+  header > div { flex-wrap: wrap; justify-content: center; gap: 12px; }
+  header nav { flex-wrap: wrap; justify-content: center; gap: 16px; }
+  header, header > div { max-width: 100%; }
+}
