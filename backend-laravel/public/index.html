@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0a1430" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" href="/icon-192.png" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
+    <title>SmileSync</title>
+    <script type="module" crossorigin src="/assets/index-B2iThRVV.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-Cq7r6hrC.css">
+  </head>
+  <body>
+    <div id="root"></div>
+    <script>
+      if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
+    </script>
+    <button id="pwa-install" hidden style="position:fixed;right:16px;bottom:16px;z-index:9999;background:#d4af37;color:#0b1a33;border:0;border-radius:10px;padding:12px 18px;font:600 14px Poppins,system-ui,sans-serif;box-shadow:0 6px 18px rgba(0,0,0,.25);cursor:pointer">Install app</button>
+    <script>
+      (function () {
+        var saved = null;
+        var btn = document.getElementById("pwa-install");
+        window.addEventListener("beforeinstallprompt", function (e) {
+          e.preventDefault();
+          saved = e;
+          btn.hidden = false;
+        });
+        btn.addEventListener("click", function () {
+          if (!saved) return;
+          saved.prompt();
+          saved.userChoice.then(function () { saved = null; btn.hidden = true; });
+        });
+        window.addEventListener("appinstalled", function () { btn.hidden = true; });
+        if (window.matchMedia("(display-mode: standalone)").matches) btn.hidden = true;
+      })();
+    </script>
+  </body>
+</html>
