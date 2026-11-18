@@ -3,7 +3,7 @@ const BASE = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api/v1';
 export const getToken = () => localStorage.getItem('token');
 
 export async function api(path, { method = 'GET', body, params } = {}) {
-  const url = new URL(BASE + path);
+  const url = new URL(BASE + path, window.location.origin);
   if (params) {
     Object.entries(params).forEach(([k, v]) => {
       if (v !== undefined && v !== null && v !== '') url.searchParams.set(k, v);
