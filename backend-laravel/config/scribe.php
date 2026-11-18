@@ -9,6 +9,12 @@ use function Knuckles\Scribe\Config\removeStrategies;
 
 // Only the most common configs are shown. See the https://scribe.knuckles.wtf/laravel/reference/config for all.
 
+// Scribe is a dev-only package. A production install (composer --no-dev)
+// has no Scribe classes, so this file must not touch them there.
+if (! class_exists(AuthIn::class)) {
+    return [];
+}
+
 return [
     // The HTML <title> for the generated documentation.
     'title' => config('app.name').' API Documentation',
