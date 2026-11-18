@@ -18,6 +18,9 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // Clinic isolation must be registered here, not from a route file:
+        // route:cache stops route files from being evaluated in production.
+        \App\Support\Boot::register();
         // Appointment models are protected by AppointmentPolicy
         Gate::policy(Appointment::class, AppointmentPolicy::class);
         Gate::policy(User::class, UserPolicy::class);
