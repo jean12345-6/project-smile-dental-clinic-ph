@@ -1,13 +1,20 @@
 {
+  "id": "/",
   "name": "SmileSync",
   "short_name": "SmileSync",
   "description": "AI-powered dental clinic workflow system for Project Smile Dental Clinic",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "orientation": "portrait-primary",
+  "lang": "en-PH",
+  "dir": "ltr",
   "background_color": "#0a1430",
   "theme_color": "#0a1430",
+  "categories": ["health", "medical", "productivity"],
   "icons": [
     { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ]
 }

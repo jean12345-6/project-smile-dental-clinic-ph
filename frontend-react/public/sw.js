@@ -1,5 +1,5 @@
 // Minimal service worker: makes the app installable and keeps the app shell available offline.
-const CACHE = 'smilesync-shell-v1';
+const CACHE = 'smilesync-shell-v2';
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(['/', '/logo.png', '/manifest.webmanifest']))); self.skipWaiting(); });
 self.addEventListener('activate', (e) => { e.waitUntil(caches.keys().then((k) => Promise.all(k.filter((x) => x !== CACHE).map((x) => caches.delete(x))))); self.clients.claim(); });
 self.addEventListener('fetch', (e) => {
