@@ -104,6 +104,37 @@ class AssistantAI
             $L[] = "Service: {$s->service_name}; price PHP " . number_format((float) $s->price, 2) . "; takes {$s->duration_min} minutes";
         }
 
+        // Which dentist works on which day, so "sino ang dentist bukas?" can be answered. Free
+        // times still come from the booking flow, never from here.
+        $names = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        // Scoped through the dentist's user account, which is what carries the clinic, so one
+        // clinic never sees another clinic's dentists.
+        $dentists = DB::table('dentists')
+            ->join('users', 'users.id', '=', 'dentists.user_id')
+            ->when($clinicId, fn ($q) => $q->where('users.clinic_id', $clinicId))
+            ->get(['dentists.dentist_id', 'dentists.full_name', 'dentists.specialization']);
+        foreach ($dentists as $d) {
+            $rows = DB::table('dentist_schedules')->where('dentist_id', $d->dentist_id)
+                ->whereNotNull('day_of_week')->get(['day_of_week', 'start_time', 'end_time']);
+            $days = $rows->pluck('day_of_week')->unique()->sort()
+                ->map(fn ($n) => $names[(int) $n] ?? '')->filter()->implode(', ');
+            $line = 'Dentist: ' . $d->full_name;
+            if (! empty($d->specialization)) {
+                $line .= ' (' . $d->specialization . ')';
+            }
+            $line .= $days !== '' ? '; works on ' . $days . '.' : '; working days not recorded.';
+            $L[] = $line;
+        }
+        $ids = $dentists->pluck('dentist_id')->all();
+        $leave = $ids ? DB::table('dentist_schedules')->whereIn('dentist_id', $ids)
+            ->whereNotNull('leave_date')
+            ->whereDate('leave_date', '>=', $now->toDateString())
+            ->join('dentists', 'dentists.dentist_id', '=', 'dentist_schedules.dentist_id')
+            ->get(['dentists.full_name', 'dentist_schedules.leave_date']) : collect();
+        foreach ($leave as $lv) {
+            $L[] = $lv->full_name . ' is on leave on ' . date('l, j F Y', strtotime($lv->leave_date)) . '.';
+        }
+
         foreach (DB::table('faq_entries')->when($clinicId, fn ($q) => $q->where('clinic_id', $clinicId))->get() as $f) {
             $L[] = "Clinic answer to \"{$f->question}\": {$f->answer}";
         }
@@ -147,7 +178,9 @@ class AssistantAI
         You are not permitted to give clinical advice of any kind.
 
         Do not book, move or cancel an appointment yourself and do not promise a specific slot. If
-        the patient wants to book, tell them to tap "Book an appointment" or to type "book".
+        the patient wants to book, tell them to tap "Book an appointment" or to type "book". You may
+        say which dentists work on a given day, but never say that a particular time is free: free
+        times are shown only by the booking flow, so send the patient there to see them.
 
         One subject is not covered by the clinic facts and you may still answer it: questions about
         what you are. You are the clinic's automated assistant, software and not a person, and you
