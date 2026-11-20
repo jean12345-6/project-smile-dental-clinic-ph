@@ -293,11 +293,29 @@ t('Scheduling','An appointment in the past is refused',
     return ok($r['code']>=400,'HTTP '.$r['code'],$r['ms']); });
 
 /* ===================== WAITING LIST ===================== */
+// TC-25: WaitlistController::store needs serviceId and branchId (camelCase, required) plus an
+// optional preferredDate. It refuses a second active entry for the same patient, service and branch,
+// so we read the patient's own waitlist first and pick a service/branch pair not already active.
 t('Waiting list','A patient joins the waiting list',
-  'POST /waitlist with a preferred date','The entry is saved',
-  function() { global $pt; $r = req('POST','/api/v1/waitlist',$pt,
-      ['preferred_date'=>date('Y-m-d',strtotime('+7 day'))]);
-    return ok(in_array($r['code'],[200,201]),'HTTP '.$r['code'],$r['ms']); });
+  'POST /waitlist with serviceId, branchId and a preferred date','The entry is saved',
+  function() { global $pt,$pdo,$CLINIC;
+    $g = req('GET','/api/v1/waitlist',$pt);
+    if ($g['code']!==200) return skip('Could not read the patient waitlist (HTTP '.$g['code'].')');
+    $taken = [];
+    foreach (listOf($g['json']) as $w) {
+      if (in_array($w['status'] ?? '', ['waiting','offered'], true)) $taken[($w['serviceId'] ?? 0).'-'.($w['branchId'] ?? 0)] = true;
+    }
+    $b = $pdo->prepare('SELECT branch_id FROM branches WHERE clinic_id = ? ORDER BY branch_id');
+    $b->execute([$CLINIC]); $branches = $b->fetchAll(PDO::FETCH_COLUMN);
+    $services = $pdo->query('SELECT service_id FROM services ORDER BY service_id')->fetchAll(PDO::FETCH_COLUMN);
+    $pick = null;
+    foreach ($services as $sv) { foreach ($branches as $br) {
+      if (!isset($taken[$sv.'-'.$br])) { $pick = [(int)$sv,(int)$br]; break 2; }
+    } }
+    if (!$pick) return skip('This patient is already waiting for every service and branch');
+    $r = req('POST','/api/v1/waitlist',$pt,['serviceId'=>$pick[0],'branchId'=>$pick[1],
+      'preferredDate'=>date('Y-m-d',strtotime('+7 day'))]);
+    return ok(in_array($r['code'],[200,201]),'HTTP '.$r['code'].why($r),$r['ms']); });
 
 t('Waiting list','Staff can see the waiting list',
   'Call /waitlist with the receptionist token','The waiting list is returned',
@@ -360,14 +378,15 @@ t('Clinic visit','A patient history summary is returned',
     return ok($r['code']===200,'HTTP '.$r['code'],$r['ms']); });
 
 /* ===================== BILLING ===================== */
+// TC-33: WorkflowController::generateInvoice reads appointmentId (camelCase), not appointment_id.
 t('Billing','An invoice is generated for a visit',
   'POST /invoices/generate','The invoice is created with a total',
   function() { global $rc,$pdo;
     $q = $pdo->prepare("SELECT a.appointment_id FROM appointments a JOIN patients p ON p.patient_id=a.patient_id WHERE p.clinic_id = ? AND a.status='completed' ORDER BY a.appointment_id DESC LIMIT 1");
     $q->execute([$GLOBALS['CLINIC']]); $a = $q->fetchColumn();
     if (!$a) return skip('No appointment on record');
-    $r = req('POST','/api/v1/invoices/generate',$rc,['appointment_id'=>$a]);
-    return ok(in_array($r['code'],[200,201]),'HTTP '.$r['code'],$r['ms']); });
+    $r = req('POST','/api/v1/invoices/generate',$rc,['appointmentId'=>$a]);
+    return ok(in_array($r['code'],[200,201]),'HTTP '.$r['code'].why($r),$r['ms']); });
 
 // TC-34: /r/payments needs invoice_id and an amount that is not more than the invoice balance.
 // paid_at is set by the server. Pick an invoice that still has a balance of at least 100.
