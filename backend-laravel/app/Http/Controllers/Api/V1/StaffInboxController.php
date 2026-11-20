@@ -132,7 +132,17 @@ class StaffInboxController extends APIController
         ]);
         Dbx::audit($u, 'create', 'chat_logs', $id, null, ['patient_id' => $patientId, 'staff_reply' => mb_substr($text, 0, 200)]);
 
-        return response()->json(['ok' => true, 'id' => $id]);
+        // Reach the patient outside the system as well, so a reply is not missed until they
+        // happen to open the portal again.
+        $patient = DB::table('patients')->where('patient_id', $patientId)->first();
+        $name = $patient->full_name ?? 'there';
+        $sent = app(\App\Services\V1\Notifier::class)->toPatient(
+            $patient,
+            'A reply from your dental clinic',
+            "Hi {$name}, our clinic staff have replied to your message:\n\n{$text}\n\nOpen the SmileSync assistant to read it and reply."
+        );
+
+        return response()->json(['ok' => true, 'id' => $id, 'notified' => $sent]);
     }
 
     /** GET /api/v1/chat/replies?after=ID — the logged-in patient's staff replies. */

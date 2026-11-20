@@ -534,6 +534,15 @@ class ChatController extends APIController
 
     private function escalate(string $why)
     {
+        // Let the clinic know by mail too, so an escalated question is not waiting unseen in the
+        // inbox until someone happens to sign in.
+        $who = $this->patient->full_name ?? ($this->user->name ?? 'A patient');
+        app(\App\Services\V1\Notifier::class)->toClinic(
+            $this->clinicId(),
+            'A patient question needs a reply',
+            "{$who} asked the assistant:\n\n\"{$this->in}\"\n\nThe assistant could not answer it, so it has been passed to staff. Open the staff inbox in SmileSync to reply."
+        );
+
         return $this->out($why . " I've passed your message to our clinic staff. Their reply will appear right here in this chat. For urgent pain or bleeding, please call the clinic.", [$this->opt('Main menu', 'menu')], 'escalated', true);
     }
 
