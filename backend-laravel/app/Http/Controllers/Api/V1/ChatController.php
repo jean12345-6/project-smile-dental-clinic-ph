@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Models\Appointment;
+use App\Services\V1\AssistantAI;
 use App\Services\V1\SlotService;
 use App\Services\V1\WaitlistService;
 use App\Support\Dbx;
@@ -154,6 +155,15 @@ class ChatController extends APIController
 
         if ($faq = $this->matchFaq($t)) {
             return $this->out($faq->answer, [$this->opt('Main menu', 'menu')], 'faq');
+        }
+
+        // No rule matched. Let the language model answer from the clinic's own data.
+        if ($reply = app(AssistantAI::class)->answer($this->in, $this->clinicId(), $this->patient)) {
+            return $this->out($reply, [
+                $this->opt('Book an appointment', 'book'),
+                $this->opt('Talk to staff', 'staff'),
+                $this->opt('Main menu', 'menu'),
+            ], 'ai_answer');
         }
 
         return $this->escalate("I'm not sure how to answer that.");
@@ -494,6 +504,14 @@ class ChatController extends APIController
     }
 
     // ------------------------------------------------------------------ escalation + output
+
+    /** The clinic the conversation belongs to, so the assistant answers with that clinic's data. */
+    private function clinicId(): ?int
+    {
+        $cid = $this->patient->clinic_id ?? $this->user->clinic_id ?? null;
+
+        return $cid ? (int) $cid : null;
+    }
 
     private function escalate(string $why)
     {
