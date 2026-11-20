@@ -2,6 +2,7 @@
 
 namespace App\Services\V1;
 
+use App\Support\Settings;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 
@@ -72,6 +73,19 @@ class AssistantAI
             $name = $b->branch_name ?? $b->name ?? 'Branch';
             $hours = isset($b->open_time) ? substr((string) $b->open_time, 0, 5) . ' to ' . substr((string) ($b->close_time ?? ''), 0, 5) : 'see clinic hours';
             $L[] = "Branch: {$name}; address: " . ($b->address ?? 'n/a') . "; open {$hours}";
+        }
+
+        // Per-day opening hours set by the clinic. These are more specific than the branch's own
+        // open and close times, so they are given last and marked as the ones that decide.
+        $days = ['mon' => 'Monday', 'tue' => 'Tuesday', 'wed' => 'Wednesday', 'thu' => 'Thursday',
+            'fri' => 'Friday', 'sat' => 'Saturday', 'sun' => 'Sunday'];
+        foreach ($days as $k => $name) {
+            $v = Settings::get($clinicId, 'hours.' . $k, null);
+            if ($v) {
+                $L[] = strtolower((string) $v) === 'closed'
+                    ? "Opening hours on {$name}: closed."
+                    : "Opening hours on {$name}: " . str_replace('-', ' to ', (string) $v) . ' (these clinic hours decide, not the branch times above).';
+            }
         }
 
         $services = DB::table('services')->when($clinicId, fn ($q) => $q->where('clinic_id', $clinicId))
