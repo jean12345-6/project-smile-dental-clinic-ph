@@ -209,6 +209,16 @@ class ClinicController extends APIController
         if ($res === 'inventory') {
             $data['quantity'] = $data['quantity'] ?? 0;
             $data['reorder_level'] = $data['reorder_level'] ?? 5;
+            // Inventory hangs off a branch, not a clinic, and branch_id has no
+            // default in the table, so a create without one failed with a 500.
+            if (empty($data['branch_id'])) {
+                $data['branch_id'] = $user->branch_id ?: DB::table('branches')
+                    ->when(Scope::clinic($user), fn ($q, $cl) => $q->where('clinic_id', $cl))
+                    ->orderBy('branch_id')->value('branch_id');
+            }
+            if (empty($data['branch_id'])) {
+                return Dbx::err('Please choose a branch for this item.');
+            }
         }
 
         $id = DB::transaction(function () use ($table, $data, $res) {
