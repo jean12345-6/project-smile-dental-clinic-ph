@@ -26,9 +26,11 @@ class AssistantAI
             return null;
         }
 
-        $prompt = $this->systemPrompt($this->facts($clinicId, $patient));
-
         try {
+            // Gathering the facts is inside the guard too: a fault here must fall back to the
+            // rules like any other failure, never break the conversation.
+            $prompt = $this->systemPrompt($this->facts($clinicId, $patient));
+
             $text = $provider === 'gemini'
                 ? $this->askGemini($key, $model, $prompt, $question)
                 : $this->askAnthropic($key, $model, $prompt, $question);
@@ -126,9 +128,10 @@ class AssistantAI
             $L[] = $line;
         }
         $ids = $dentists->pluck('dentist_id')->all();
-        $leave = $ids ? DB::table('dentist_schedules')->whereIn('dentist_id', $ids)
-            ->whereNotNull('leave_date')
-            ->whereDate('leave_date', '>=', $now->toDateString())
+        $leave = $ids ? DB::table('dentist_schedules')
+            ->whereIn('dentist_schedules.dentist_id', $ids)
+            ->whereNotNull('dentist_schedules.leave_date')
+            ->whereDate('dentist_schedules.leave_date', '>=', $now->toDateString())
             ->join('dentists', 'dentists.dentist_id', '=', 'dentist_schedules.dentist_id')
             ->get(['dentists.full_name', 'dentist_schedules.leave_date']) : collect();
         foreach ($leave as $lv) {
