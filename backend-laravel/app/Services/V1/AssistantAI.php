@@ -65,6 +65,12 @@ class AssistantAI
     {
         $L = [];
 
+        // The patient may ask about "today", "tomorrow" or a named day, so the model needs to
+        // know where in the week it is. Clinic time, not server time.
+        $now = now()->timezone('Asia/Manila');
+        $L[] = 'Today is ' . $now->format('l, j F Y') . '.';
+        $L[] = 'Tomorrow is ' . $now->copy()->addDay()->format('l, j F Y') . '.';
+
         $clinic = $clinicId ? DB::table('clinics')->where('clinic_id', $clinicId)->first() : null;
         $L[] = 'Clinic: ' . ($clinic->clinic_name ?? 'the clinic');
 
@@ -148,6 +154,14 @@ class AssistantAI
 
         Write at most three sentences, in the same language the patient used: English, Filipino or a
         mixture of the two. Be warm and plain. Give amounts in pesos as written in the facts.
+
+        Patients write the way they speak. Read these everyday Filipino words as the service they
+        refer to: linis, paglilinis or cleaning is oral prophylaxis; pasta is a composite filling;
+        bunot or pabunot is a tooth extraction; pustiso is a denture; paputi is teeth whitening;
+        konsulta or checkup is a consultation; brace is braces. Note also that "bukas" means both
+        "open" and "tomorrow"; decide from the rest of the sentence, and if the patient is asking
+        about tomorrow, work out which day that is from the date given in the facts and answer with
+        that day's hours.
 
         Clinic facts:
         {$facts}
