@@ -25,7 +25,19 @@ export default function Dashboard() {
   const load = () => api('/stats').then(setS).catch((e) => setError(e.messages));
   useEffect(() => { load(); }, []);
   useEffect(() => {
-    if (user?.role === 'superadmin') api('/r/clinics').then((r) => setClinics(r.data || [])).catch(() => {});
+    if (user?.role !== 'superadmin') return;
+    api('/r/clinics').then((r) => {
+      // Lowest clinic_id first, so the home clinic leads the list.
+      const list = [...(r.data || [])].sort((a, b) => Number(a.clinic_id) - Number(b.clinic_id));
+      setClinics(list);
+      // With nothing stored the box displayed the first clinic while the API
+      // fell back to another one, so the label and the clinic that records
+      // actually went to could disagree. Settle it on first load.
+      if (list.length && !localStorage.getItem('smilesync-clinic')) {
+        setWc(String(list[0].clinic_id));
+        try { localStorage.setItem('smilesync-clinic', String(list[0].clinic_id)); } catch (e) { /* ignore */ }
+      }
+    }).catch(() => {});
   }, [user?.role]);
   const pickClinic = (v) => { setWc(v); try { localStorage.setItem('smilesync-clinic', v); } catch (e) { /* ignore */ } };
 
