@@ -382,7 +382,7 @@ t('Clinic visit','A patient history summary is returned',
 t('Billing','An invoice is generated for a visit',
   'POST /invoices/generate','The invoice is created with a total',
   function() { global $rc,$pdo;
-    $q = $pdo->prepare("SELECT a.appointment_id FROM appointments a JOIN patients p ON p.patient_id=a.patient_id WHERE p.clinic_id = ? AND a.status='completed' ORDER BY a.appointment_id DESC LIMIT 1");
+    $q = $pdo->prepare("SELECT a.appointment_id FROM appointments a JOIN patients p ON p.patient_id=a.patient_id LEFT JOIN invoices i ON i.appointment_id=a.appointment_id WHERE p.clinic_id = ? AND a.status='completed' AND i.invoice_id IS NULL ORDER BY a.appointment_id DESC LIMIT 1");
     $q->execute([$GLOBALS['CLINIC']]); $a = $q->fetchColumn();
     if (!$a) return skip('No appointment on record');
     $r = req('POST','/api/v1/invoices/generate',$rc,['appointmentId'=>$a]);
