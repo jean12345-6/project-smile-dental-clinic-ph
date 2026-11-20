@@ -105,6 +105,15 @@ class ChatController extends APIController
         if ($has('/pain|sakit|masakit|dugo|bleed|swell|namamaga|lagnat|fever|antibiotic|gamot|medicine|infect|allerg|sensitiv|ngipin ko|toothache|nana|pus/')) {
             return $this->escalate('Questions about symptoms or treatment need a dentist.');
         }
+        // A question that touches more than one subject is answered as a whole by the model, because
+        // the rules below return on the first match and would answer only the first part.
+        if ($this->multiTopic($t) && ($reply = app(AssistantAI::class)->answer($this->in, $this->clinicId(), $this->patient))) {
+            return $this->out($reply, [
+                $this->opt('Book an appointment', 'book'),
+                $this->opt('Main menu', 'menu'),
+            ], 'ai_answer');
+        }
+
         if ($has('/resched|palitan|ilipat|ibang (oras|araw)|move my/')) {
             return $this->myAppointments('Which appointment do you want to move?');
         }
@@ -504,6 +513,36 @@ class ChatController extends APIController
     }
 
     // ------------------------------------------------------------------ escalation + output
+
+    /**
+     * True when the message asks about two or more different subjects, for example the opening
+     * hours and the price of a service in one sentence. Messages that ask to book, move or cancel
+     * are never treated this way: those are actions and stay with the booking flow.
+     */
+    private function multiTopic(string $t): bool
+    {
+        if (preg_match('/book|appoint|reserve|magpa|mag-?book|pa-?book|schedule me|slot|resched|palitan|ilipat|cancel|kansel|ikansel/', $t)) {
+            return false;
+        }
+
+        $topics = [
+            '/hour|\bopen|oras|bukas|sarado|\bclose/',                      // opening hours
+            '/\bwhere|saan|location|address|branch|sangay|lugar/',          // branches
+            '/price|magkano|how much|rate|presyo|cost|fee|rates|bayad/',    // prices
+            '/balance|utang|unpaid|\bowe\b|bayarin|\bbill/',                // balance
+            '/history|\bpast\b|\bdati\b|last visit|huling|nakaraan/',       // past visits
+            '/next|susunod|kailan|when is my|appointment ko|schedule ko/',  // next appointment
+        ];
+
+        $hits = 0;
+        foreach ($topics as $re) {
+            if (preg_match($re, $t)) {
+                $hits++;
+            }
+        }
+
+        return $hits >= 2;
+    }
 
     /** The clinic the conversation belongs to, so the assistant answers with that clinic's data. */
     private function clinicId(): ?int
