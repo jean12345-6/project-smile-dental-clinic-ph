@@ -61,6 +61,7 @@ function login(?array $acc): ?string {
     global $PASS;
     $r = req('POST', '/api/v1/auth/login', null, ['email' => $acc['email'], 'password' => $PASS]);
     foreach (['access_token','token'] as $k) if (!empty($r['json'][$k])) return $r['json'][$k];
+    foreach (['access_token','token'] as $k) if (!empty($r['json']['data'][$k])) return $r['json']['data'][$k];
     return $r['json']['data']['token'] ?? null;
 }
 
@@ -101,6 +102,16 @@ function t(string $module, string $scenario, string $steps, string $expected, ca
     printf("%-7s %-26s %-6s %s\n", $id, substr($module,0,26), $status, substr($scenario,0,60));
 }
 function ok(bool $c, string $msg, int $ms = 0): array { return [$c, $msg, $ms]; }
+function why(array $r): string {
+    if (in_array($r['code'], [200,201], true)) return '';
+    $j = $r['json'];
+    $m = $j['message'] ?? $j['error'] ?? null;
+    if (!empty($j['errors']) && is_array($j['errors'])) {
+        $f = array_key_first($j['errors']);
+        $m = $f . ': ' . (is_array($j['errors'][$f]) ? ($j['errors'][$f][0] ?? '') : $j['errors'][$f]);
+    }
+    return $m ? ' - ' . substr((string)$m, 0, 90) : ' - ' . substr(trim($r['raw']), 0, 90);
+}
 function skip(string $why): array { return [null, $why, 0]; }
 function listOf($j): array {
     if (is_array($j)) { foreach (['data','items','rows','results'] as $k) if (isset($j[$k]) && is_array($j[$k])) return $j[$k]; }
@@ -133,8 +144,9 @@ t('Authentication','The signed-in account is returned',
 
 t('Authentication','A new token can be issued before expiry',
   'Call /auth/refresh with a valid token','A new token is returned',
-  function() { global $pt; $r = req('POST','/api/v1/auth/refresh',$pt);
-    $has = !empty($r['json']['access_token']) || !empty($r['json']['token']);
+  function() { global $ACC; $tok = login($ACC['patient']);   // throwaway: refresh invalidates the old token
+    $r = req('POST','/api/v1/auth/refresh',$tok); $j = $r['json'];
+    $has = !empty($j['access_token']) || !empty($j['token']) || !empty($j['data']['access_token']) || !empty($j['data']['token']);
     return ok($r['code']===200 && $has,'HTTP '.$r['code'],$r['ms']); });
 
 t('Authentication','The clinic list is public',
@@ -160,8 +172,8 @@ t('Role and clinic scope','A receptionist cannot open the finance dashboard',
 
 t('Role and clinic scope','A dentist cannot create user accounts',
   'POST /users with the dentist token','Access is denied (403)',
-  function() { global $dt; $r = req('POST','/api/v1/users',$dt,['name'=>'x','email'=>'x'.time().'@t.test','password'=>'password','role'=>'receptionist']);
-    return ok(in_array($r['code'],[401,403]),'HTTP '.$r['code'],$r['ms']); });
+  function() { global $dt; $n='QA Probe '.date('His'); $r = req('POST','/api/v1/users',$dt,['name'=>$n,'email'=>'qa'.time().'@probe.test','password'=>'Password123!','password_confirmation'=>'Password123!','role'=>'receptionist','status'=>'active']);
+    return ok(in_array($r['code'],[401,403]),'HTTP '.$r['code'].why($r),$r['ms']); });
 
 t('Role and clinic scope','Staff see only their own clinic records',
   'List patients as staff and compare clinic_id','Every row belongs to the same clinic',
@@ -299,8 +311,11 @@ t('Clinic visit','A walk-in patient is added to the queue',
   function() { global $rc,$CLINIC,$pdo;
     $p = $pdo->prepare('SELECT patient_id FROM patients WHERE clinic_id = ? ORDER BY patient_id LIMIT 1');
     $p->execute([$CLINIC]); $pid = $p->fetchColumn();
-    $r = req('POST','/api/v1/queue/walkin',$rc,['patient_id'=>$pid]);
-    return ok(in_array($r['code'],[200,201]),'HTTP '.$r['code'],$r['ms']); });
+    $d = $pdo->query('SELECT dentist_id FROM dentists ORDER BY dentist_id LIMIT 1')->fetchColumn();
+    $sv = $pdo->query('SELECT service_id FROM services ORDER BY service_id LIMIT 1')->fetchColumn();
+    $b = $pdo->prepare('SELECT branch_id FROM branches WHERE clinic_id = ? LIMIT 1'); $b->execute([$CLINIC]); $bid = $b->fetchColumn();
+    $r = req('POST','/api/v1/queue/walkin',$rc,['patient_id'=>$pid,'dentist_id'=>$d,'service_id'=>$sv,'branch_id'=>$bid]);
+    return ok(in_array($r['code'],[200,201]),'HTTP '.$r['code'].why($r),$r['ms']); });
 
 t('Clinic visit','A dentist records a treatment',
   'POST a treatment through /r/treatments','The treatment is saved',
@@ -323,11 +338,11 @@ t('Clinic visit','A dentist records a prescription',
     return ok(in_array($r['code'],[200,201]),'HTTP '.$r['code'],$r['ms']); });
 
 t('Clinic visit','A dental chart entry is saved',
-  'POST a chart entry through /r/dental_chart','The entry is saved',
+  'POST a chart entry through /r/dental-chart','The entry is saved',
   function() { global $dt,$pdo,$CLINIC;
     $p = $pdo->prepare('SELECT patient_id FROM patients WHERE clinic_id = ? LIMIT 1');
     $p->execute([$CLINIC]); $pid = $p->fetchColumn();
-    $r = req('POST','/api/v1/r/dental_chart',$dt,['patient_id'=>$pid,'tooth_no'=>'11','condition'=>'Filled','date_updated'=>date('Y-m-d')]);
+    $r = req('POST','/api/v1/r/dental-chart',$dt,['patient_id'=>$pid,'tooth_no'=>'11','condition'=>'Filled','date_updated'=>date('Y-m-d')]);
     return ok(in_array($r['code'],[200,201]),'HTTP '.$r['code'],$r['ms']); });
 
 t('Clinic visit','A patient history summary is returned',
@@ -342,7 +357,8 @@ t('Clinic visit','A patient history summary is returned',
 t('Billing','An invoice is generated for a visit',
   'POST /invoices/generate','The invoice is created with a total',
   function() { global $rc,$pdo;
-    $a = $pdo->query('SELECT appointment_id FROM appointments ORDER BY appointment_id DESC LIMIT 1')->fetchColumn();
+    $q = $pdo->prepare("SELECT a.appointment_id FROM appointments a JOIN patients p ON p.patient_id=a.patient_id WHERE p.clinic_id = ? AND a.status='completed' ORDER BY a.appointment_id DESC LIMIT 1");
+    $q->execute([$GLOBALS['CLINIC']]); $a = $q->fetchColumn();
     if (!$a) return skip('No appointment on record');
     $r = req('POST','/api/v1/invoices/generate',$rc,['appointment_id'=>$a]);
     return ok(in_array($r['code'],[200,201]),'HTTP '.$r['code'],$r['ms']); });
@@ -353,7 +369,7 @@ t('Billing','A payment is recorded',
     $i = $pdo->query('SELECT invoice_id FROM invoices ORDER BY invoice_id DESC LIMIT 1')->fetchColumn();
     if (!$i) return skip('No invoice on record');
     $r = req('POST','/api/v1/r/payments',$rc,['invoice_id'=>$i,'amount'=>100,'method'=>'Cash','paid_at'=>date('Y-m-d H:i:s')]);
-    return ok(in_array($r['code'],[200,201]),'HTTP '.$r['code'],$r['ms']); });
+    return ok(in_array($r['code'],[200,201]),'HTTP '.$r['code'].why($r),$r['ms']); });
 
 t('Billing','A patient can see their own transactions',
   'Call /my/transactions with the patient token','The transaction list is returned',
@@ -370,8 +386,8 @@ t('Patient records','Staff can open a patient record',
     return ok($r['code']===200,'HTTP '.$r['code'],$r['ms']); });
 
 t('Patient records','A new patient record is created',
-  'POST a patient through /r/patients','The record is saved',
-  function() { global $rc; $r = req('POST','/api/v1/r/patients',$rc,
+  'POST a patient through /r/patient-records','The record is saved',
+  function() { global $rc; $r = req('POST','/api/v1/r/patient-records',$rc,
       ['full_name'=>'Test Patient '.date('His'),'contact_no'=>'09170000000','status'=>'active']);
     return ok(in_array($r['code'],[200,201]),'HTTP '.$r['code'],$r['ms']); });
 
@@ -397,7 +413,7 @@ t('Inventory and reports','An inventory item is created',
   function() { global $ad; $r = req('POST','/api/v1/r/inventory',$ad,
       ['item_name'=>'Test gloves '.date('His'),'item_code'=>'TG'.date('His'),'item_type'=>'Supply',
        'quantity'=>10,'unit'=>'box','unit_cost'=>250,'reorder_level'=>2]);
-    return ok(in_array($r['code'],[200,201]),'HTTP '.$r['code'],$r['ms']); });
+    return ok(in_array($r['code'],[200,201]),'HTTP '.$r['code'].why($r),$r['ms']); });
 
 t('Inventory and reports','The dashboard counters are returned',
   'Call /stats with the receptionist token','The counters are returned',
@@ -423,7 +439,7 @@ t('Clinic configuration','Clinic information is readable',
 t('Clinic configuration','An administrator updates the clinic contact number',
   'PUT /clinic-info with a new contact number','The change is saved',
   function() { global $ad; $r = req('PUT','/api/v1/clinic-info',$ad,['contact_no'=>'0917'.date('Hism')]);
-    return ok($r['code']===200,'HTTP '.$r['code'],$r['ms']); });
+    return ok($r['code']===200,'HTTP '.$r['code'].why($r),$r['ms']); });
 
 t('Clinic configuration','The landing page data is public',
   'Call /public/landing without signing in','The landing content is returned',
@@ -437,19 +453,19 @@ t('Clinic configuration','A service can be added',
     return ok(in_array($r['code'],[200,201]),'HTTP '.$r['code'],$r['ms']); });
 
 t('Clinic configuration','Dentist schedules are readable',
-  'Call /r/dentist_schedules with the admin token','The schedules are returned',
-  function() { global $ad; $r = req('GET','/api/v1/r/dentist_schedules',$ad);
+  'Call /r/schedules with the admin token','The schedules are returned',
+  function() { global $ad; $r = req('GET','/api/v1/r/schedules',$ad);
     return ok($r['code']===200,'HTTP '.$r['code'].', '.count(listOf($r['json'])).' rows',$r['ms']); });
 
 /* ===================== AUDIT AND SUPERADMIN ===================== */
 t('Audit trail','Changes are written to the audit log',
-  'Call /r/audit_logs after the earlier updates','New audit rows are present',
-  function() { global $ad; $r = req('GET','/api/v1/r/audit_logs',$ad);
+  'Call /r/audit-logs after the earlier updates','New audit rows are present',
+  function() { global $ad; $r = req('GET','/api/v1/r/audit-logs',$ad);
     return ok($r['code']===200 && count(listOf($r['json']))>0,'HTTP '.$r['code'].', '.count(listOf($r['json'])).' rows',$r['ms']); });
 
 t('Audit trail','Sign-in sessions are logged',
-  'Call /r/session_logs with the admin token','Session rows are present',
-  function() { global $ad; $r = req('GET','/api/v1/r/session_logs',$ad);
+  'Call /r/session-logs with the admin token','Session rows are present',
+  function() { global $ad; $r = req('GET','/api/v1/r/session-logs',$ad);
     return ok($r['code']===200,'HTTP '.$r['code'].', '.count(listOf($r['json'])).' rows',$r['ms']); });
 
 t('SuperAdmin','The SuperAdmin can list every clinic',
