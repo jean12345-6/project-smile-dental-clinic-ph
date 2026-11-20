@@ -40,6 +40,10 @@ class AssistantAI
 
         $text = trim((string) $text);
         if ($text === '' || str_contains(strtoupper($text), 'ESCALATE')) {
+            // Recorded so the clinic can see which questions the assistant could not answer from
+            // its own data. A run of these usually means something is missing from the settings.
+            logger()->info('Assistant AI declined: ' . ($text === '' ? '(empty reply)' : mb_substr($text, 0, 200)));
+
             return null;
         }
 
