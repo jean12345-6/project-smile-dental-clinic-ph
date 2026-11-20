@@ -170,9 +170,13 @@ t('Role and clinic scope','A receptionist cannot open the finance dashboard',
   function() { global $rc; $r = req('GET','/api/v1/stats/finance',$rc);
     return ok(in_array($r['code'],[401,403]),'HTTP '.$r['code'],$r['ms']); });
 
+// TC-10: StoreUserRequest needs the JSON:API shape (data.attributes.*). The old flat body failed
+// validation (422) before the permission check ran, so it never proved the dentist is blocked.
 t('Role and clinic scope','A dentist cannot create user accounts',
   'POST /users with the dentist token','Access is denied (403)',
-  function() { global $dt; $n='QA Probe '.date('His'); $r = req('POST','/api/v1/users',$dt,['name'=>$n,'email'=>'qa'.time().'@probe.test','password'=>'Password123!','password_confirmation'=>'Password123!','role'=>'receptionist','status'=>'active']);
+  function() { global $dt; $r = req('POST','/api/v1/users',$dt,['data'=>['attributes'=>[
+      'name'=>'QA Probe '.date('His'),'email'=>'qa'.time().'@probe.test','password'=>'Password123!',
+      'role'=>'receptionist','status'=>'active']]]);
     return ok(in_array($r['code'],[401,403]),'HTTP '.$r['code'].why($r),$r['ms']); });
 
 t('Role and clinic scope','Staff see only their own clinic records',
@@ -306,15 +310,17 @@ t('Clinic visit','The daily queue is returned',
   function() { global $rc; $r = req('GET','/api/v1/queue',$rc);
     return ok($r['code']===200,'HTTP '.$r['code'].', '.count(listOf($r['json'])).' in queue',$r['ms']); });
 
+// TC-28: WorkflowController::walkIn validates patientId, dentistId, serviceId (camelCase).
+// The branch is read from the dentist's schedule, so we pick a dentist that has one.
 t('Clinic visit','A walk-in patient is added to the queue',
   'POST /queue/walkin','The walk-in appears in the queue',
   function() { global $rc,$CLINIC,$pdo;
     $p = $pdo->prepare('SELECT patient_id FROM patients WHERE clinic_id = ? ORDER BY patient_id LIMIT 1');
     $p->execute([$CLINIC]); $pid = $p->fetchColumn();
-    $d = $pdo->query('SELECT dentist_id FROM dentists ORDER BY dentist_id LIMIT 1')->fetchColumn();
+    $d = $pdo->query('SELECT dentist_id FROM dentist_schedules WHERE day_of_week IS NOT NULL ORDER BY dentist_id LIMIT 1')->fetchColumn();
     $sv = $pdo->query('SELECT service_id FROM services ORDER BY service_id LIMIT 1')->fetchColumn();
-    $b = $pdo->prepare('SELECT branch_id FROM branches WHERE clinic_id = ? LIMIT 1'); $b->execute([$CLINIC]); $bid = $b->fetchColumn();
-    $r = req('POST','/api/v1/queue/walkin',$rc,['patient_id'=>$pid,'dentist_id'=>$d,'service_id'=>$sv,'branch_id'=>$bid]);
+    if (!$pid || !$d || !$sv) return skip('Missing patient, dentist schedule or service');
+    $r = req('POST','/api/v1/queue/walkin',$rc,['patientId'=>(int)$pid,'dentistId'=>(int)$d,'serviceId'=>(int)$sv]);
     return ok(in_array($r['code'],[200,201]),'HTTP '.$r['code'].why($r),$r['ms']); });
 
 t('Clinic visit','A dentist records a treatment',
@@ -363,12 +369,15 @@ t('Billing','An invoice is generated for a visit',
     $r = req('POST','/api/v1/invoices/generate',$rc,['appointment_id'=>$a]);
     return ok(in_array($r['code'],[200,201]),'HTTP '.$r['code'],$r['ms']); });
 
+// TC-34: /r/payments needs invoice_id and an amount that is not more than the invoice balance.
+// paid_at is set by the server. Pick an invoice that still has a balance of at least 100.
 t('Billing','A payment is recorded',
   'POST a payment through /r/payments','The payment is saved',
   function() { global $rc,$pdo;
-    $i = $pdo->query('SELECT invoice_id FROM invoices ORDER BY invoice_id DESC LIMIT 1')->fetchColumn();
-    if (!$i) return skip('No invoice on record');
-    $r = req('POST','/api/v1/r/payments',$rc,['invoice_id'=>$i,'amount'=>100,'method'=>'Cash','paid_at'=>date('Y-m-d H:i:s')]);
+    $q = $pdo->prepare('SELECT i.invoice_id FROM invoices i JOIN patients p ON p.patient_id=i.patient_id WHERE p.clinic_id = ? AND i.balance >= 100 ORDER BY i.invoice_id DESC LIMIT 1');
+    $q->execute([$GLOBALS['CLINIC']]); $i = $q->fetchColumn();
+    if (!$i) return skip('No invoice with a balance of at least 100');
+    $r = req('POST','/api/v1/r/payments',$rc,['invoice_id'=>(int)$i,'amount'=>100,'method'=>'Cash']);
     return ok(in_array($r['code'],[200,201]),'HTTP '.$r['code'].why($r),$r['ms']); });
 
 t('Billing','A patient can see their own transactions',
@@ -436,9 +445,15 @@ t('Clinic configuration','Clinic information is readable',
   function() { global $rc; $r = req('GET','/api/v1/clinic-info',$rc);
     return ok($r['code']===200,'HTTP '.$r['code'],$r['ms']); });
 
-t('Clinic configuration','An administrator updates the clinic contact number',
-  'PUT /clinic-info with a new contact number','The change is saved',
-  function() { global $ad; $r = req('PUT','/api/v1/clinic-info',$ad,['contact_no'=>'0917'.date('Hism')]);
+// TC-46: PUT /clinic-info needs {info:{...}, hours:{mon..sun}}. We read the current values first and
+// send the same hours back, so the real opening hours are not changed. Only phone2 is updated.
+t('Clinic configuration','An administrator updates the clinic secondary phone number',
+  'GET /clinic-info, change phone2, PUT it back with the same hours','The change is saved',
+  function() { global $ad;
+    $g = req('GET','/api/v1/clinic-info',$ad);
+    if ($g['code']!==200 || empty($g['json']['info']) || empty($g['json']['hours'])) return skip('Could not read current clinic info (HTTP '.$g['code'].')');
+    $info = $g['json']['info']; $info['phone2'] = '0917'.date('Hism');
+    $r = req('PUT','/api/v1/clinic-info',$ad,['info'=>$info,'hours'=>$g['json']['hours']]);
     return ok($r['code']===200,'HTTP '.$r['code'].why($r),$r['ms']); });
 
 t('Clinic configuration','The landing page data is public',
