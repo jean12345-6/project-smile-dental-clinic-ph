@@ -27,7 +27,7 @@ export default function MyRecords() {
   if (!d) return <Alert>{error.join(' ')}</Alert>;
   const owed = d.inv.reduce((s, i) => s + Number(i.balance), 0);
   const rated = new Set(d.fb.map((x) => String(x.appointment_id)));
-  const toRate = d.ap.filter((a) => !rated.has(String(a.id)));
+  const toRate = d.ap.filter((a) => String(a.attributes?.status).toLowerCase() === 'completed' && !rated.has(String(a.id)));
 
   return (
     <>
