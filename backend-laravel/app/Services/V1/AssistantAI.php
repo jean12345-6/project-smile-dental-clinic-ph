@@ -187,7 +187,16 @@ class AssistantAI
             throw new \RuntimeException('HTTP ' . $r->status());
         }
 
-        return $r->json('content.0.text');
+        // The reply is a list of blocks and the answer is not always the first one: when the model
+        // reasons before answering, the reasoning comes first. Take the text blocks only.
+        $parts = [];
+        foreach ((array) $r->json('content', []) as $block) {
+            if (($block['type'] ?? '') === 'text' && isset($block['text'])) {
+                $parts[] = $block['text'];
+            }
+        }
+
+        return trim(implode("\n", $parts));
     }
 
     private function askGemini(string $key, string $model, string $system, string $question): ?string
@@ -203,6 +212,13 @@ class AssistantAI
             throw new \RuntimeException('HTTP ' . $r->status());
         }
 
-        return $r->json('candidates.0.content.parts.0.text');
+        $parts = [];
+        foreach ((array) $r->json('candidates.0.content.parts', []) as $part) {
+            if (isset($part['text'])) {
+                $parts[] = $part['text'];
+            }
+        }
+
+        return trim(implode("\n", $parts));
     }
 }
