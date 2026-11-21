@@ -30,7 +30,7 @@ try {
 
 $ACC = [];
 foreach (['superadmin','clinic_admin','receptionist','dentist','patient'] as $role) {
-    $q = $pdo->prepare("SELECT email, clinic_id FROM users WHERE role = ? AND status <> 'inactive' ORDER BY user_id LIMIT 1");
+    $q = $pdo->prepare("SELECT email, clinic_id FROM users WHERE role = ? AND status <> 'inactive' ORDER BY id LIMIT 1");
     $q->execute([$role]);
     $ACC[$role] = $q->fetch(PDO::FETCH_ASSOC) ?: null;
 }
@@ -220,16 +220,57 @@ t('Assistant','A patient can read staff replies',
 
 /* ===================== SCHEDULING ===================== */
 $SLOT = null; $APPT = null;
+
+/**
+ * The appointments endpoint takes the JSON:API shape used throughout this API: the times in
+ * attributes and the ids in relationships. An earlier version of these cases sent a flat body
+ * (patient_id, start_time), which validation refused before any booking rule was reached.
+ */
+function apptBody($pid, array $ids, string $start, ?string $end): array {
+    return ['data' => [
+        'attributes' => array_filter([
+            'startTime' => $start, 'endTime' => $end, 'status' => 'pending', 'bookedVia' => 'portal',
+        ]),
+        'relationships' => [
+            'patient' => ['data' => ['id' => (int) $pid]],
+            'dentist' => ['data' => ['id' => (int) $ids['dentistId']]],
+            'branch'  => ['data' => ['id' => (int) $ids['branchId']]],
+            'service' => ['data' => ['id' => (int) $ids['serviceId']]],
+        ],
+    ]];
+}
+
+/** The first service, dentist and branch this clinic offers, for the booking cases below. */
+function bookingIds(string $token): ?array {
+    $l = req('GET','/api/v1/lookups',$token);
+    $svc = $l['json']['services'][0]['service_id'] ?? null;
+    $brn = $l['json']['branches'][0]['branch_id'] ?? null;
+    $dens = array_column($l['json']['dentists'] ?? [], 'dentist_id');
+    if (!$svc || !$brn || !$dens) return null;
+    return ['serviceId' => $svc, 'branchId' => $brn, 'dentists' => $dens];
+}
+
 t('Scheduling','Open slots are listed for booking',
-  'Call /slots for a dentist and a future date','At least one open slot is returned',
-  function() { global $pt,$SLOT; 
-    for ($d=1; $d<=14; $d++) {
-      $date = date('Y-m-d', strtotime("+$d day"));
-      $r = req('GET','/api/v1/slots?date='.$date,$pt);
-      $rows = listOf($r['json']);
-      if ($r['code']===200 && $rows) { $SLOT = ['date'=>$date,'rows'=>$rows]; return ok(true, count($rows).' slots on '.$date, $r['ms']); }
+  'Call /slots with a dentist, a service, a branch and a future date','At least one open slot is returned',
+  function() { global $pt,$SLOT;
+    // /slots requires dentistId, serviceId and date. Sending only the date is refused with 422,
+    // which is what this case used to do, so it could never pass and every booking case below
+    // was skipped as a result.
+    $ids = bookingIds($pt);
+    if (!$ids) return ok(false,'Lookups did not return a service, a branch and a dentist');
+    foreach ($ids['dentists'] as $den) {
+      for ($d=1; $d<=14; $d++) {
+        $date = date('Y-m-d', strtotime("+$d day"));
+        $qs = http_build_query(['dentistId'=>$den,'serviceId'=>$ids['serviceId'],'branchId'=>$ids['branchId'],'date'=>$date]);
+        $r = req('GET','/api/v1/slots?'.$qs,$pt);
+        $rows = listOf($r['json']);
+        if ($r['code']===200 && $rows) {
+          $SLOT = ['date'=>$date,'rows'=>$rows,'serviceId'=>$ids['serviceId'],'branchId'=>$ids['branchId'],'dentistId'=>$den];
+          return ok(true, count($rows).' slots on '.$date.' for dentist '.$den, $r['ms']);
+        }
+      }
     }
-    return ok(false,'No open slot found in the next 14 days'); });
+    return ok(false,'No open slot found for any dentist in the next 14 days'); });
 
 t('Scheduling','Reference lists for booking are available',
   'Call /lookups','Services, dentists and branches are returned',
@@ -243,17 +284,9 @@ t('Scheduling','An appointment is created on an open slot',
     $p = $pdo->prepare('SELECT patient_id FROM patients WHERE clinic_id = ? ORDER BY patient_id LIMIT 1');
     $p->execute([$CLINIC]); $pid = $p->fetchColumn();
     $s = $SLOT['rows'][0];
-    $body = array_filter([
-      'patient_id'=>$pid,
-      'dentist_id'=>$s['dentist_id'] ?? null,
-      'service_id'=>$s['service_id'] ?? null,
-      'branch_id'=>$s['branch_id'] ?? null,
-      'start_time'=>$s['start_time'] ?? ($SLOT['date'].' 09:00:00'),
-      'end_time'=>$s['end_time'] ?? null,
-    ], fn($v) => $v !== null);
-    $r = req('POST','/api/v1/appointments',$rc,$body);
-    $APPT = $r['json']['appointment_id'] ?? ($r['json']['data']['appointment_id'] ?? null);
-    return ok(in_array($r['code'],[200,201]) && $APPT,'HTTP '.$r['code'].($APPT?', id '.$APPT:''),$r['ms']); });
+    $r = req('POST','/api/v1/appointments',$rc, apptBody($pid,$SLOT,$s['startTime'],$s['endTime'] ?? null));
+    $APPT = $r['json']['data']['id'] ?? null;
+    return ok(in_array($r['code'],[200,201]) && $APPT,'HTTP '.$r['code'].why($r).($APPT?', id '.$APPT:''),$r['ms']); });
 
 t('Scheduling','The same slot cannot be booked twice',
   'POST the identical appointment a second time','The second request is refused',
@@ -262,19 +295,18 @@ t('Scheduling','The same slot cannot be booked twice',
     $p = $pdo->prepare('SELECT patient_id FROM patients WHERE clinic_id = ? ORDER BY patient_id LIMIT 1');
     $p->execute([$CLINIC]); $pid = $p->fetchColumn();
     $s = $SLOT['rows'][0];
-    $body = array_filter(['patient_id'=>$pid,'dentist_id'=>$s['dentist_id']??null,'service_id'=>$s['service_id']??null,
-      'branch_id'=>$s['branch_id']??null,'start_time'=>$s['start_time']??($SLOT['date'].' 09:00:00'),'end_time'=>$s['end_time']??null],
-      fn($v)=>$v!==null);
-    $r = req('POST','/api/v1/appointments',$rc,$body);
-    return ok($r['code']>=400,'HTTP '.$r['code'],$r['ms']); });
+    $r = req('POST','/api/v1/appointments',$rc, apptBody($pid,$SLOT,$s['startTime'],$s['endTime'] ?? null));
+    return ok($r['code']>=400,'HTTP '.$r['code'].why($r),$r['ms']); });
 
 t('Scheduling','An appointment can be moved to another time',
   'PATCH the appointment with a new start time','The new time is saved',
   function() { global $rc,$APPT;
     if (!$APPT) return skip('No appointment was created');
-    $new = date('Y-m-d H:i:s', strtotime('+21 day 10:00'));
-    $r = req('PATCH','/api/v1/appointments/'.$APPT,$rc,['start_time'=>$new]);
-    return ok($r['code']===200,'HTTP '.$r['code'],$r['ms']); });
+    $start = date('Y-m-d 10:00:00', strtotime('+21 day'));
+    $end   = date('Y-m-d 11:00:00', strtotime('+21 day'));
+    $r = req('PATCH','/api/v1/appointments/'.$APPT,$rc,
+      ['data'=>['attributes'=>['startTime'=>$start,'endTime'=>$end]]]);
+    return ok($r['code']===200,'HTTP '.$r['code'].why($r),$r['ms']); });
 
 t('Scheduling','An appointment can be cancelled',
   'DELETE the appointment','The appointment is cancelled',
@@ -285,11 +317,16 @@ t('Scheduling','An appointment can be cancelled',
 
 t('Scheduling','An appointment in the past is refused',
   'POST an appointment with yesterday as the start time','The request is refused',
-  function() { global $rc,$CLINIC,$pdo;
+  function() { global $rc,$pt,$CLINIC,$pdo;
+    // A complete, valid booking apart from the date, so the refusal comes from the rule about
+    // the past and not from a malformed body, which is what it used to prove.
+    $ids = bookingIds($pt);
+    if (!$ids) return skip('Lookups did not return a service, a branch and a dentist');
+    $ids['dentistId'] = $ids['dentists'][0];
     $p = $pdo->prepare('SELECT patient_id FROM patients WHERE clinic_id = ? ORDER BY patient_id LIMIT 1');
     $p->execute([$CLINIC]); $pid = $p->fetchColumn();
-    $r = req('POST','/api/v1/appointments',$rc,
-      ['patient_id'=>$pid,'start_time'=>date('Y-m-d H:i:s',strtotime('-1 day'))]);
+    $r = req('POST','/api/v1/appointments',$rc, apptBody($pid,$ids,
+      date('Y-m-d H:i:s',strtotime('-1 day')), date('Y-m-d H:i:s',strtotime('-1 day +30 minutes'))));
     return ok($r['code']>=400,'HTTP '.$r['code'],$r['ms']); });
 
 /* ===================== WAITING LIST ===================== */
@@ -460,8 +497,8 @@ t('Inventory and reports','The finance dashboard is returned to an administrator
 
 /* ===================== CONFIGURATION ===================== */
 t('Clinic configuration','Clinic information is readable',
-  'Call /clinic-info with a signed-in token','The clinic details are returned',
-  function() { global $rc; $r = req('GET','/api/v1/clinic-info',$rc);
+  'Call /clinic-info with an administrator token','The clinic details are returned',
+  function() { global $ad; $r = req('GET','/api/v1/clinic-info',$ad);
     return ok($r['code']===200,'HTTP '.$r['code'],$r['ms']); });
 
 // TC-46: PUT /clinic-info needs {info:{...}, hours:{mon..sun}}. We read the current values first and

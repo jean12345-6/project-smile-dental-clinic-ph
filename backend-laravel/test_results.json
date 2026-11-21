@@ -1,0 +1,553 @@
+{
+    "run_at": "2026-11-21 23:37:50",
+    "base_url": "http://localhost:8000",
+    "totals": {
+        "tot": 54,
+        "pass": 53,
+        "fail": 0,
+        "skipn": 1,
+        "rate": 100
+    },
+    "results": [
+        {
+            "id": "TC-01",
+            "module": "Authentication",
+            "scenario": "Patient signs in with correct credentials",
+            "steps": "Send email and password to /auth/login",
+            "expected": "An access token is returned",
+            "actual": "Token received",
+            "status": "PASS",
+            "ms": 0
+        },
+        {
+            "id": "TC-02",
+            "module": "Authentication",
+            "scenario": "Sign-in with a wrong password is refused",
+            "steps": "Send a valid email with a wrong password",
+            "expected": "The request is rejected (401)",
+            "actual": "HTTP 401",
+            "status": "PASS",
+            "ms": 641
+        },
+        {
+            "id": "TC-03",
+            "module": "Authentication",
+            "scenario": "A request without a token is refused",
+            "steps": "Call /auth/me with no Authorization header",
+            "expected": "The request is rejected (401)",
+            "actual": "HTTP 401",
+            "status": "PASS",
+            "ms": 410
+        },
+        {
+            "id": "TC-04",
+            "module": "Authentication",
+            "scenario": "The signed-in account is returned",
+            "steps": "Call /auth/me with the patient token",
+            "expected": "The response carries the same email",
+            "actual": "HTTP 200",
+            "status": "PASS",
+            "ms": 428
+        },
+        {
+            "id": "TC-05",
+            "module": "Authentication",
+            "scenario": "A new token can be issued before expiry",
+            "steps": "Call /auth/refresh with a valid token",
+            "expected": "A new token is returned",
+            "actual": "HTTP 200",
+            "status": "PASS",
+            "ms": 476
+        },
+        {
+            "id": "TC-06",
+            "module": "Authentication",
+            "scenario": "The clinic list is public",
+            "steps": "Call /auth/clinics without signing in",
+            "expected": "A list of clinics is returned",
+            "actual": "HTTP 200, 2 clinics",
+            "status": "PASS",
+            "ms": 428
+        },
+        {
+            "id": "TC-07",
+            "module": "Role and clinic scope",
+            "scenario": "A patient cannot open the staff inbox",
+            "steps": "Call /chat/inbox with the patient token",
+            "expected": "Access is denied (403)",
+            "actual": "HTTP 403",
+            "status": "PASS",
+            "ms": 432
+        },
+        {
+            "id": "TC-08",
+            "module": "Role and clinic scope",
+            "scenario": "A patient cannot list all patients",
+            "steps": "Call /patients with the patient token",
+            "expected": "Access is denied (403)",
+            "actual": "HTTP 403",
+            "status": "PASS",
+            "ms": 466
+        },
+        {
+            "id": "TC-09",
+            "module": "Role and clinic scope",
+            "scenario": "A receptionist cannot open the finance dashboard",
+            "steps": "Call /stats/finance with the receptionist token",
+            "expected": "Access is denied (403)",
+            "actual": "HTTP 403",
+            "status": "PASS",
+            "ms": 435
+        },
+        {
+            "id": "TC-10",
+            "module": "Role and clinic scope",
+            "scenario": "A dentist cannot create user accounts",
+            "steps": "POST /users with the dentist token",
+            "expected": "Access is denied (403)",
+            "actual": "HTTP 403 - 0: ",
+            "status": "PASS",
+            "ms": 441
+        },
+        {
+            "id": "TC-11",
+            "module": "Role and clinic scope",
+            "scenario": "Staff see only their own clinic records",
+            "steps": "List patients as staff and compare clinic_id",
+            "expected": "Every row belongs to the same clinic",
+            "actual": "15 rows, all in clinic 1",
+            "status": "PASS",
+            "ms": 450
+        },
+        {
+            "id": "TC-12",
+            "module": "Role and clinic scope",
+            "scenario": "Administrators can list staff accounts",
+            "steps": "Call /users with the admin token",
+            "expected": "The account list is returned",
+            "actual": "HTTP 200, 15 accounts",
+            "status": "PASS",
+            "ms": 461
+        },
+        {
+            "id": "TC-13",
+            "module": "Assistant",
+            "scenario": "The assistant answers a patient message",
+            "steps": "POST /chat with a greeting",
+            "expected": "A reply is returned",
+            "actual": "HTTP 200",
+            "status": "PASS",
+            "ms": 445
+        },
+        {
+            "id": "TC-14",
+            "module": "Assistant",
+            "scenario": "The assistant answers a question about services",
+            "steps": "POST /chat asking what services are offered",
+            "expected": "A reply mentioning services is returned",
+            "actual": "HTTP 200",
+            "status": "PASS",
+            "ms": 2793
+        },
+        {
+            "id": "TC-15",
+            "module": "Assistant",
+            "scenario": "Chat history is kept for the patient",
+            "steps": "Call /chat/history after sending messages",
+            "expected": "Earlier messages are returned",
+            "actual": "HTTP 200, 10 messages",
+            "status": "PASS",
+            "ms": 437
+        },
+        {
+            "id": "TC-16",
+            "module": "Assistant",
+            "scenario": "Staff can open the escalated chat inbox",
+            "steps": "Call /chat/inbox with the receptionist token",
+            "expected": "The inbox is returned",
+            "actual": "HTTP 200, 3 chats",
+            "status": "PASS",
+            "ms": 451
+        },
+        {
+            "id": "TC-17",
+            "module": "Assistant",
+            "scenario": "A patient can read staff replies",
+            "steps": "Call /chat/replies with the patient token",
+            "expected": "The reply list is returned",
+            "actual": "HTTP 200",
+            "status": "PASS",
+            "ms": 412
+        },
+        {
+            "id": "TC-18",
+            "module": "Scheduling",
+            "scenario": "Open slots are listed for booking",
+            "steps": "Call /slots with a dentist, a service, a branch and a future date",
+            "expected": "At least one open slot is returned",
+            "actual": "14 slots on 2026-11-23 for dentist 1",
+            "status": "PASS",
+            "ms": 443
+        },
+        {
+            "id": "TC-19",
+            "module": "Scheduling",
+            "scenario": "Reference lists for booking are available",
+            "steps": "Call /lookups",
+            "expected": "Services, dentists and branches are returned",
+            "actual": "HTTP 200",
+            "status": "PASS",
+            "ms": 461
+        },
+        {
+            "id": "TC-20",
+            "module": "Scheduling",
+            "scenario": "An appointment is created on an open slot",
+            "steps": "POST /appointments using an open slot",
+            "expected": "The appointment is saved",
+            "actual": "HTTP 201, id 379",
+            "status": "PASS",
+            "ms": 550
+        },
+        {
+            "id": "TC-21",
+            "module": "Scheduling",
+            "scenario": "The same slot cannot be booked twice",
+            "steps": "POST the identical appointment a second time",
+            "expected": "The second request is refused",
+            "actual": "HTTP 422 - 0: ",
+            "status": "PASS",
+            "ms": 472
+        },
+        {
+            "id": "TC-22",
+            "module": "Scheduling",
+            "scenario": "An appointment can be moved to another time",
+            "steps": "PATCH the appointment with a new start time",
+            "expected": "The new time is saved",
+            "actual": "HTTP 200",
+            "status": "PASS",
+            "ms": 522
+        },
+        {
+            "id": "TC-23",
+            "module": "Scheduling",
+            "scenario": "An appointment can be cancelled",
+            "steps": "DELETE the appointment",
+            "expected": "The appointment is cancelled",
+            "actual": "HTTP 200",
+            "status": "PASS",
+            "ms": 488
+        },
+        {
+            "id": "TC-24",
+            "module": "Scheduling",
+            "scenario": "An appointment in the past is refused",
+            "steps": "POST an appointment with yesterday as the start time",
+            "expected": "The request is refused",
+            "actual": "HTTP 422",
+            "status": "PASS",
+            "ms": 443
+        },
+        {
+            "id": "TC-25",
+            "module": "Waiting list",
+            "scenario": "A patient joins the waiting list",
+            "steps": "POST /waitlist with serviceId, branchId and a preferred date",
+            "expected": "The entry is saved",
+            "actual": "HTTP 201",
+            "status": "PASS",
+            "ms": 449
+        },
+        {
+            "id": "TC-26",
+            "module": "Waiting list",
+            "scenario": "Staff can see the waiting list",
+            "steps": "Call /waitlist with the receptionist token",
+            "expected": "The waiting list is returned",
+            "actual": "HTTP 200, 9 entries",
+            "status": "PASS",
+            "ms": 451
+        },
+        {
+            "id": "TC-27",
+            "module": "Clinic visit",
+            "scenario": "The daily queue is returned",
+            "steps": "Call /queue with the receptionist token",
+            "expected": "The queue for today is returned",
+            "actual": "HTTP 200, 2 in queue",
+            "status": "PASS",
+            "ms": 416
+        },
+        {
+            "id": "TC-28",
+            "module": "Clinic visit",
+            "scenario": "A walk-in patient is added to the queue",
+            "steps": "POST /queue/walkin",
+            "expected": "The walk-in appears in the queue",
+            "actual": "HTTP 201",
+            "status": "PASS",
+            "ms": 470
+        },
+        {
+            "id": "TC-29",
+            "module": "Clinic visit",
+            "scenario": "A dentist records a treatment",
+            "steps": "POST a treatment through /r/treatments",
+            "expected": "The treatment is saved",
+            "actual": "HTTP 201",
+            "status": "PASS",
+            "ms": 456
+        },
+        {
+            "id": "TC-30",
+            "module": "Clinic visit",
+            "scenario": "A dentist records a prescription",
+            "steps": "POST a prescription through /r/prescriptions",
+            "expected": "The prescription is saved",
+            "actual": "HTTP 201",
+            "status": "PASS",
+            "ms": 456
+        },
+        {
+            "id": "TC-31",
+            "module": "Clinic visit",
+            "scenario": "A dental chart entry is saved",
+            "steps": "POST a chart entry through /r/dental-chart",
+            "expected": "The entry is saved",
+            "actual": "HTTP 201",
+            "status": "PASS",
+            "ms": 500
+        },
+        {
+            "id": "TC-32",
+            "module": "Clinic visit",
+            "scenario": "A patient history summary is returned",
+            "steps": "Call /patient-summary/{id} with the dentist token",
+            "expected": "The summary is returned",
+            "actual": "HTTP 200",
+            "status": "PASS",
+            "ms": 441
+        },
+        {
+            "id": "TC-33",
+            "module": "Billing",
+            "scenario": "An invoice is generated for a visit",
+            "steps": "POST /invoices/generate",
+            "expected": "The invoice is created with a total",
+            "actual": "No appointment on record",
+            "status": "SKIP",
+            "ms": 0
+        },
+        {
+            "id": "TC-34",
+            "module": "Billing",
+            "scenario": "A payment is recorded",
+            "steps": "POST a payment through /r/payments",
+            "expected": "The payment is saved",
+            "actual": "HTTP 201",
+            "status": "PASS",
+            "ms": 456
+        },
+        {
+            "id": "TC-35",
+            "module": "Billing",
+            "scenario": "A patient can see their own transactions",
+            "steps": "Call /my/transactions with the patient token",
+            "expected": "The transaction list is returned",
+            "actual": "HTTP 200",
+            "status": "PASS",
+            "ms": 452
+        },
+        {
+            "id": "TC-36",
+            "module": "Patient records",
+            "scenario": "Staff can open a patient record",
+            "steps": "Call /patients/{id} with the receptionist token",
+            "expected": "The record is returned",
+            "actual": "HTTP 200",
+            "status": "PASS",
+            "ms": 436
+        },
+        {
+            "id": "TC-37",
+            "module": "Patient records",
+            "scenario": "A new patient record is created",
+            "steps": "POST a patient through /r/patient-records",
+            "expected": "The record is saved",
+            "actual": "HTTP 201",
+            "status": "PASS",
+            "ms": 487
+        },
+        {
+            "id": "TC-38",
+            "module": "Scanned forms",
+            "scenario": "The form reader endpoint responds",
+            "steps": "POST /ocr/read without an API key configured",
+            "expected": "Either text is returned or the feature reports it is off",
+            "actual": "HTTP 422 (reader is optional)",
+            "status": "PASS",
+            "ms": 443
+        },
+        {
+            "id": "TC-39",
+            "module": "Reminders",
+            "scenario": "The reminder run can be triggered",
+            "steps": "POST /reminders/run with the admin token",
+            "expected": "The run completes",
+            "actual": "HTTP 200",
+            "status": "PASS",
+            "ms": 505
+        },
+        {
+            "id": "TC-40",
+            "module": "Reminders",
+            "scenario": "A patient can read their notifications",
+            "steps": "Call /my/notifications with the patient token",
+            "expected": "The notification list is returned",
+            "actual": "HTTP 200, 14 items",
+            "status": "PASS",
+            "ms": 469
+        },
+        {
+            "id": "TC-41",
+            "module": "Inventory and reports",
+            "scenario": "An inventory item is created",
+            "steps": "POST an item through /r/inventory",
+            "expected": "The item is saved",
+            "actual": "HTTP 201",
+            "status": "PASS",
+            "ms": 492
+        },
+        {
+            "id": "TC-42",
+            "module": "Inventory and reports",
+            "scenario": "The dashboard counters are returned",
+            "steps": "Call /stats with the receptionist token",
+            "expected": "The counters are returned",
+            "actual": "HTTP 200",
+            "status": "PASS",
+            "ms": 475
+        },
+        {
+            "id": "TC-43",
+            "module": "Inventory and reports",
+            "scenario": "The report endpoint returns totals",
+            "steps": "Call /reports with the admin token",
+            "expected": "The report data is returned",
+            "actual": "HTTP 200",
+            "status": "PASS",
+            "ms": 451
+        },
+        {
+            "id": "TC-44",
+            "module": "Inventory and reports",
+            "scenario": "The finance dashboard is returned to an administrator",
+            "steps": "Call /stats/finance with the admin token",
+            "expected": "The finance figures are returned",
+            "actual": "HTTP 200",
+            "status": "PASS",
+            "ms": 439
+        },
+        {
+            "id": "TC-45",
+            "module": "Clinic configuration",
+            "scenario": "Clinic information is readable",
+            "steps": "Call /clinic-info with an administrator token",
+            "expected": "The clinic details are returned",
+            "actual": "HTTP 200",
+            "status": "PASS",
+            "ms": 491
+        },
+        {
+            "id": "TC-46",
+            "module": "Clinic configuration",
+            "scenario": "An administrator updates the clinic secondary phone number",
+            "steps": "GET /clinic-info, change phone2, PUT it back with the same hours",
+            "expected": "The change is saved",
+            "actual": "HTTP 200",
+            "status": "PASS",
+            "ms": 530
+        },
+        {
+            "id": "TC-47",
+            "module": "Clinic configuration",
+            "scenario": "The landing page data is public",
+            "steps": "Call /public/landing without signing in",
+            "expected": "The landing content is returned",
+            "actual": "HTTP 200",
+            "status": "PASS",
+            "ms": 437
+        },
+        {
+            "id": "TC-48",
+            "module": "Clinic configuration",
+            "scenario": "A service can be added",
+            "steps": "POST a service through /r/services",
+            "expected": "The service is saved",
+            "actual": "HTTP 201",
+            "status": "PASS",
+            "ms": 460
+        },
+        {
+            "id": "TC-49",
+            "module": "Clinic configuration",
+            "scenario": "Dentist schedules are readable",
+            "steps": "Call /r/schedules with the admin token",
+            "expected": "The schedules are returned",
+            "actual": "HTTP 200, 14 rows",
+            "status": "PASS",
+            "ms": 435
+        },
+        {
+            "id": "TC-50",
+            "module": "Audit trail",
+            "scenario": "Changes are written to the audit log",
+            "steps": "Call /r/audit-logs after the earlier updates",
+            "expected": "New audit rows are present",
+            "actual": "HTTP 200, 50 rows",
+            "status": "PASS",
+            "ms": 472
+        },
+        {
+            "id": "TC-51",
+            "module": "Audit trail",
+            "scenario": "Sign-in sessions are logged",
+            "steps": "Call /r/session-logs with the admin token",
+            "expected": "Session rows are present",
+            "actual": "HTTP 200, 50 rows",
+            "status": "PASS",
+            "ms": 448
+        },
+        {
+            "id": "TC-52",
+            "module": "SuperAdmin",
+            "scenario": "The SuperAdmin can list every clinic",
+            "steps": "Call /r/clinics with the superadmin token",
+            "expected": "All clinics are returned",
+            "actual": "HTTP 200, 2 clinics",
+            "status": "PASS",
+            "ms": 437
+        },
+        {
+            "id": "TC-53",
+            "module": "SuperAdmin",
+            "scenario": "A clinic administrator cannot list every clinic",
+            "steps": "Call /r/clinics with the clinic administrator token",
+            "expected": "Access is denied or scoped to one clinic",
+            "actual": "HTTP 200, 1 clinics",
+            "status": "PASS",
+            "ms": 507
+        },
+        {
+            "id": "TC-54",
+            "module": "Authentication",
+            "scenario": "Signing out invalidates the token",
+            "steps": "Call /auth/logout, then call /auth/me with the same token",
+            "expected": "The second call is refused",
+            "actual": "logout HTTP 200, me HTTP 401",
+            "status": "PASS",
+            "ms": 876
+        }
+    ]
+}

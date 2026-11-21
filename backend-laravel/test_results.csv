@@ -1,0 +1,55 @@
+"Test Case ID",Module,"Test Scenario","Test Steps","Expected Result","Actual Result",Status,"Response (ms)"
+TC-01,Authentication,"Patient signs in with correct credentials","Send email and password to /auth/login","An access token is returned","Token received",PASS,0
+TC-02,Authentication,"Sign-in with a wrong password is refused","Send a valid email with a wrong password","The request is rejected (401)","HTTP 401",PASS,641
+TC-03,Authentication,"A request without a token is refused","Call /auth/me with no Authorization header","The request is rejected (401)","HTTP 401",PASS,410
+TC-04,Authentication,"The signed-in account is returned","Call /auth/me with the patient token","The response carries the same email","HTTP 200",PASS,428
+TC-05,Authentication,"A new token can be issued before expiry","Call /auth/refresh with a valid token","A new token is returned","HTTP 200",PASS,476
+TC-06,Authentication,"The clinic list is public","Call /auth/clinics without signing in","A list of clinics is returned","HTTP 200, 2 clinics",PASS,428
+TC-07,"Role and clinic scope","A patient cannot open the staff inbox","Call /chat/inbox with the patient token","Access is denied (403)","HTTP 403",PASS,432
+TC-08,"Role and clinic scope","A patient cannot list all patients","Call /patients with the patient token","Access is denied (403)","HTTP 403",PASS,466
+TC-09,"Role and clinic scope","A receptionist cannot open the finance dashboard","Call /stats/finance with the receptionist token","Access is denied (403)","HTTP 403",PASS,435
+TC-10,"Role and clinic scope","A dentist cannot create user accounts","POST /users with the dentist token","Access is denied (403)","HTTP 403 - 0: ",PASS,441
+TC-11,"Role and clinic scope","Staff see only their own clinic records","List patients as staff and compare clinic_id","Every row belongs to the same clinic","15 rows, all in clinic 1",PASS,450
+TC-12,"Role and clinic scope","Administrators can list staff accounts","Call /users with the admin token","The account list is returned","HTTP 200, 15 accounts",PASS,461
+TC-13,Assistant,"The assistant answers a patient message","POST /chat with a greeting","A reply is returned","HTTP 200",PASS,445
+TC-14,Assistant,"The assistant answers a question about services","POST /chat asking what services are offered","A reply mentioning services is returned","HTTP 200",PASS,2793
+TC-15,Assistant,"Chat history is kept for the patient","Call /chat/history after sending messages","Earlier messages are returned","HTTP 200, 10 messages",PASS,437
+TC-16,Assistant,"Staff can open the escalated chat inbox","Call /chat/inbox with the receptionist token","The inbox is returned","HTTP 200, 3 chats",PASS,451
+TC-17,Assistant,"A patient can read staff replies","Call /chat/replies with the patient token","The reply list is returned","HTTP 200",PASS,412
+TC-18,Scheduling,"Open slots are listed for booking","Call /slots with a dentist, a service, a branch and a future date","At least one open slot is returned","14 slots on 2026-11-23 for dentist 1",PASS,443
+TC-19,Scheduling,"Reference lists for booking are available","Call /lookups","Services, dentists and branches are returned","HTTP 200",PASS,461
+TC-20,Scheduling,"An appointment is created on an open slot","POST /appointments using an open slot","The appointment is saved","HTTP 201, id 379",PASS,550
+TC-21,Scheduling,"The same slot cannot be booked twice","POST the identical appointment a second time","The second request is refused","HTTP 422 - 0: ",PASS,472
+TC-22,Scheduling,"An appointment can be moved to another time","PATCH the appointment with a new start time","The new time is saved","HTTP 200",PASS,522
+TC-23,Scheduling,"An appointment can be cancelled","DELETE the appointment","The appointment is cancelled","HTTP 200",PASS,488
+TC-24,Scheduling,"An appointment in the past is refused","POST an appointment with yesterday as the start time","The request is refused","HTTP 422",PASS,443
+TC-25,"Waiting list","A patient joins the waiting list","POST /waitlist with serviceId, branchId and a preferred date","The entry is saved","HTTP 201",PASS,449
+TC-26,"Waiting list","Staff can see the waiting list","Call /waitlist with the receptionist token","The waiting list is returned","HTTP 200, 9 entries",PASS,451
+TC-27,"Clinic visit","The daily queue is returned","Call /queue with the receptionist token","The queue for today is returned","HTTP 200, 2 in queue",PASS,416
+TC-28,"Clinic visit","A walk-in patient is added to the queue","POST /queue/walkin","The walk-in appears in the queue","HTTP 201",PASS,470
+TC-29,"Clinic visit","A dentist records a treatment","POST a treatment through /r/treatments","The treatment is saved","HTTP 201",PASS,456
+TC-30,"Clinic visit","A dentist records a prescription","POST a prescription through /r/prescriptions","The prescription is saved","HTTP 201",PASS,456
+TC-31,"Clinic visit","A dental chart entry is saved","POST a chart entry through /r/dental-chart","The entry is saved","HTTP 201",PASS,500
+TC-32,"Clinic visit","A patient history summary is returned","Call /patient-summary/{id} with the dentist token","The summary is returned","HTTP 200",PASS,441
+TC-33,Billing,"An invoice is generated for a visit","POST /invoices/generate","The invoice is created with a total","No appointment on record",SKIP,0
+TC-34,Billing,"A payment is recorded","POST a payment through /r/payments","The payment is saved","HTTP 201",PASS,456
+TC-35,Billing,"A patient can see their own transactions","Call /my/transactions with the patient token","The transaction list is returned","HTTP 200",PASS,452
+TC-36,"Patient records","Staff can open a patient record","Call /patients/{id} with the receptionist token","The record is returned","HTTP 200",PASS,436
+TC-37,"Patient records","A new patient record is created","POST a patient through /r/patient-records","The record is saved","HTTP 201",PASS,487
+TC-38,"Scanned forms","The form reader endpoint responds","POST /ocr/read without an API key configured","Either text is returned or the feature reports it is off","HTTP 422 (reader is optional)",PASS,443
+TC-39,Reminders,"The reminder run can be triggered","POST /reminders/run with the admin token","The run completes","HTTP 200",PASS,505
+TC-40,Reminders,"A patient can read their notifications","Call /my/notifications with the patient token","The notification list is returned","HTTP 200, 14 items",PASS,469
+TC-41,"Inventory and reports","An inventory item is created","POST an item through /r/inventory","The item is saved","HTTP 201",PASS,492
+TC-42,"Inventory and reports","The dashboard counters are returned","Call /stats with the receptionist token","The counters are returned","HTTP 200",PASS,475
+TC-43,"Inventory and reports","The report endpoint returns totals","Call /reports with the admin token","The report data is returned","HTTP 200",PASS,451
+TC-44,"Inventory and reports","The finance dashboard is returned to an administrator","Call /stats/finance with the admin token","The finance figures are returned","HTTP 200",PASS,439
+TC-45,"Clinic configuration","Clinic information is readable","Call /clinic-info with an administrator token","The clinic details are returned","HTTP 200",PASS,491
+TC-46,"Clinic configuration","An administrator updates the clinic secondary phone number","GET /clinic-info, change phone2, PUT it back with the same hours","The change is saved","HTTP 200",PASS,530
+TC-47,"Clinic configuration","The landing page data is public","Call /public/landing without signing in","The landing content is returned","HTTP 200",PASS,437
+TC-48,"Clinic configuration","A service can be added","POST a service through /r/services","The service is saved","HTTP 201",PASS,460
+TC-49,"Clinic configuration","Dentist schedules are readable","Call /r/schedules with the admin token","The schedules are returned","HTTP 200, 14 rows",PASS,435
+TC-50,"Audit trail","Changes are written to the audit log","Call /r/audit-logs after the earlier updates","New audit rows are present","HTTP 200, 50 rows",PASS,472
+TC-51,"Audit trail","Sign-in sessions are logged","Call /r/session-logs with the admin token","Session rows are present","HTTP 200, 50 rows",PASS,448
+TC-52,SuperAdmin,"The SuperAdmin can list every clinic","Call /r/clinics with the superadmin token","All clinics are returned","HTTP 200, 2 clinics",PASS,437
+TC-53,SuperAdmin,"A clinic administrator cannot list every clinic","Call /r/clinics with the clinic administrator token","Access is denied or scoped to one clinic","HTTP 200, 1 clinics",PASS,507
+TC-54,Authentication,"Signing out invalidates the token","Call /auth/logout, then call /auth/me with the same token","The second call is refused","logout HTTP 200, me HTTP 401",PASS,876
