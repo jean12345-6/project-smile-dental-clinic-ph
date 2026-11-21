@@ -4,6 +4,16 @@ import { api } from '../api.js';
 import { Crud, Field, money } from '../components.jsx';
 import { Alert, Card } from '../ui.jsx';
 import { LogoButton, clinicColumns, clinicFields } from './Clinics.jsx';
+import { useAuth } from '../auth.jsx';
+
+/** 09:00:00 as stored, 9:00 AM as a person reads it. */
+const clock = (t) => {
+  if (!t) return '-';
+  const [h, m] = String(t).split(':');
+  const n = Number(h);
+  if (Number.isNaN(n)) return String(t);
+  return `${((n + 11) % 12) + 1}:${m ?? '00'} ${n < 12 ? 'AM' : 'PM'}`;
+};
 
 function Rules() {
   const [v, setV] = useState(null);
@@ -36,6 +46,7 @@ const days = [[1, 'Monday'], [2, 'Tuesday'], [3, 'Wednesday'], [4, 'Thursday'], 
 const P = (cols, pk) => Object.assign(cols, { pk });
 
 export default function Settings() {
+  const { name } = useAuth();
   const [tab, setTab] = useState('clinic');
   const tabs = {
     clinic: ['Clinic profile', <Crud key="c" res="clinics" title="Your clinic" hint="Name, contact details and logo." canAdd={false} canDelete={false} columns={clinicColumns()} fields={clinicFields}
@@ -45,7 +56,7 @@ export default function Settings() {
     branches: ['Branches', <Crud key="b" res="branches" title="Branches" columns={P([{ key: 'branch_name', label: 'Branch' }, { key: 'address', label: 'Address' }, { key: 'contact_no', label: 'Contact' }, { key: 'open_time', label: 'Opens' }, { key: 'close_time', label: 'Closes' }], 'branch_id')}
       fields={[{ key: 'branch_name', label: 'Branch name', required: true }, { key: 'address', label: 'Address' }, { key: 'contact_no', label: 'Contact no.' }, { key: 'open_time', label: 'Opening time', type: 'time' }, { key: 'close_time', label: 'Closing time', type: 'time' }, { key: 'clinic_id', label: 'Clinic ID', type: 'number' }]} />],
     schedules: ['Dentist schedules', <Crud key="d" res="schedules" title="Working days, breaks and leave" hint="Add a row per working day. For leave, leave the day empty and set only the leave date."
-      columns={P([{ key: 'dentist_id', label: 'Dentist ID' }, { key: 'branch_id', label: 'Branch' }, { key: 'day_of_week', label: 'Day', render: (r) => days.find((d) => d.value == r.day_of_week)?.label || 'LEAVE' }, { key: 'start_time', label: 'From' }, { key: 'end_time', label: 'To' }, { key: 'break_start', label: 'Break from' }, { key: 'break_end', label: 'Break to' }, { key: 'leave_date', label: 'Leave date' }], 'schedule_id')}
+      columns={P([{ key: 'dentist_id', label: 'Dentist', render: (r) => name.dentist(r.dentist_id) || `Dentist ${r.dentist_id}` }, { key: 'branch_id', label: 'Branch', render: (r) => name.branch(r.branch_id) || `Branch ${r.branch_id}` }, { key: 'day_of_week', label: 'Day', render: (r) => days.find((d) => d.value == r.day_of_week)?.label || 'LEAVE' }, { key: 'start_time', label: 'From', render: (r) => clock(r.start_time) }, { key: 'end_time', label: 'To', render: (r) => clock(r.end_time) }, { key: 'break_start', label: 'Break from', render: (r) => clock(r.break_start) }, { key: 'break_end', label: 'Break to', render: (r) => clock(r.break_end) }, { key: 'leave_date', label: 'Leave date' }], 'schedule_id')}
       fields={[{ key: 'dentist_id', label: 'Dentist', type: 'select', optionsFrom: 'dentist', required: true }, { key: 'branch_id', label: 'Branch', type: 'select', optionsFrom: 'branch', required: true }, { key: 'day_of_week', label: 'Day of week', type: 'select', options: days }, { key: 'start_time', label: 'Start', type: 'time' }, { key: 'end_time', label: 'End', type: 'time' }, { key: 'break_start', label: 'Break start', type: 'time' }, { key: 'break_end', label: 'Break end', type: 'time' }, { key: 'leave_date', label: 'Leave date', type: 'date' }]} />],
     dentists: ['Dentists', <Crud key="dn" res="dentists" title="Dentists" columns={P([{ key: 'full_name', label: 'Name' }, { key: 'specialization', label: 'Specialization' }, { key: 'license_no', label: 'License no.' }], 'dentist_id')}
       fields={[{ key: 'full_name', label: 'Full name', required: true }, { key: 'specialization', label: 'Specialization' }, { key: 'license_no', label: 'License no.' }, { key: 'user_id', label: 'User account ID', type: 'number' }]} />],

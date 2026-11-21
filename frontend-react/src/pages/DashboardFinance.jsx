@@ -12,7 +12,10 @@ function Bars({ rows, color = '#2563eb', color2 = '#16a34a', fmt = (v) => v, lab
   const max = Math.max(1, ...rows.map((r) => Math.max(r.value, r.value2 || 0)));
   if (!rows.length) return <Empty>No data yet.</Empty>;
   return rows.map((r) => (
-    <div className="bar-row" key={r.label} style={{ gridTemplateColumns: `${labelW}px 1fr ${valueW}px` }}>
+    // Set the two fixed columns as variables rather than a grid, so a phone can shrink
+    // them. As a hard-coded grid they came to 300px of the 390px screen and the amount
+    // was pushed against the edge of the card.
+    <div className="bar-row" key={r.label} style={{ '--label-w': `${labelW}px`, '--value-w': `${valueW}px` }}>
       <span className="bar-label">{r.label}</span>
       <div className="bar" style={{ height: 'auto', overflow: 'visible', display: 'flex', flexDirection: 'column', gap: 3, background: 'transparent', minWidth: 0 }}>
         <div style={{ height: 9, borderRadius: 4, background: color, width: `${Math.max(1, (r.value / max) * 100)}%` }} />

@@ -1,8 +1,10 @@
 import React from 'react';
 import { api } from '../api.js';
+import { useAuth } from '../auth.jsx';
 import { Crud } from '../components.jsx';
 
 export default function Feedback() {
+  const { name } = useAuth();
   return (
     <>
       <h1 className="page-title">Feedback</h1>
@@ -14,7 +16,7 @@ export default function Feedback() {
         canEdit={false}
         canDelete={true}
         columns={Object.assign([
-          { key: 'patient_id', label: 'Patient ID' },
+          { key: 'patient_id', label: 'Patient', render: (r) => name.patient(r.patient_id) || '-' },
           { key: 'rating', label: 'Rating', render: (r) => `${r.rating ?? '-'} / 5` },
           { key: 'comment', label: 'Comment' },
           { key: 'date_submitted', label: 'Date' },

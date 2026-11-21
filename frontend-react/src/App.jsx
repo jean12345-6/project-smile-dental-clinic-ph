@@ -109,8 +109,8 @@ function Shell({ children }) {
             <button
               className="btn btn-ghost btn-sm"
               style={{ flex: 1 }}
-              onClick={async () => {
-                await logout();
+              onClick={() => {
+                logout();
                 navigate('/login');
               }}
             >

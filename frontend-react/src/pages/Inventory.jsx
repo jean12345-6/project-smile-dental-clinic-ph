@@ -22,8 +22,12 @@ export default function Inventory() {
           { key: 'quantity', label: 'Quantity', type: 'number' }, { key: 'reorder_level', label: 'Reorder level', type: 'number' },
           { key: 'branch_id', label: 'Branch', type: 'select', optionsFrom: 'branch' },
         ]}
+        // One tap used to change stock with nothing to confirm and no way back.
         rowActions={(r, reload) => (
-          <button className="btn btn-ghost btn-sm" disabled={Number(r.quantity) <= 0} onClick={async () => { await api(`/r/inventory/${r.item_id}`, { method: 'PATCH', body: { quantity: Number(r.quantity) - 1 } }); reload(); }}>Use 1</button>
+          <button className="btn btn-ghost btn-sm" disabled={Number(r.quantity) <= 0} onClick={async () => {
+            if (!window.confirm(`Take 1 ${r.item_name} out of stock? ${Number(r.quantity) - 1} will be left.`)) return;
+            await api(`/r/inventory/${r.item_id}`, { method: 'PATCH', body: { quantity: Number(r.quantity) - 1 } }); reload();
+          }}>Use 1</button>
         )}
       />
     </>

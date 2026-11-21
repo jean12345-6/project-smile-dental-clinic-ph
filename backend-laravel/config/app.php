@@ -60,12 +60,19 @@ return [
     |--------------------------------------------------------------------------
     |
     | Here you may specify the default timezone for your application, which
-    | will be used by the PHP date and date-time functions. The timezone
-    | is set to "UTC" by default as it is suitable for most use cases.
+    | will be used by the PHP date and date-time functions.
+    |
+    | The clinic is in the Philippines and every appointment time in this system
+    | is a local wall-clock time: a 10:00 AM slot is stored as 10:00 AM. The
+    | framework default of UTC meant that now() ran eight hours behind those
+    | times, so the audit log, the chat logs and the staff inbox recorded and
+    | displayed 2:01 PM for something that happened at 10:01 PM. One database,
+    | two different time bases. This setting puts the whole application on the
+    | clinic's clock, which is the one its data was already written in.
     |
     */
 
-    'timezone' => 'UTC',
+    'timezone' => env('APP_TIMEZONE', 'Asia/Manila'),
 
     /*
     |--------------------------------------------------------------------------

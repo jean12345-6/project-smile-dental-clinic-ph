@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../api.js';
 import { useAuth } from '../auth.jsx';
-import { Alert, Badge, Card, Empty, fmt, rel } from '../ui.jsx';
+import { Alert, Badge, Card, Empty, when, rel } from '../ui.jsx';
 
 export default function MyAppointments() {
   const { lookups, name } = useAuth();
@@ -38,6 +38,8 @@ export default function MyAppointments() {
     }
   };
 
+  // Cancelling an appointment whose time has gone makes no sense, so the button is hidden.
+  const past = (a) => new Date(String(a.attributes.startTime).replace(' ', 'T')).getTime() < Date.now();
   const text = (a) => [name.service(rel(a, 'service')), name.dentist(rel(a, 'dentist')), name.branch(rel(a, 'branch')), a.attributes.status, a.attributes.startTime].join(' ').toLowerCase();
   const key = { when: (a) => a.attributes.startTime || '', service: (a) => name.service(rel(a, 'service')).toLowerCase(), dentist: (a) => name.dentist(rel(a, 'dentist')).toLowerCase() };
   const [by, dir] = sort.split('_');
@@ -78,13 +80,18 @@ export default function MyAppointments() {
               <tbody>
                 {list.map((a) => (
                   <tr key={a.id}>
-                    <td>{fmt(a.attributes.startTime)}</td>
+                    <td>{when(a.attributes.startTime)}</td>
                     <td>{name.service(rel(a, 'service'))}</td>
                     <td>{name.dentist(rel(a, 'dentist'))}</td>
                     <td>{name.branch(rel(a, 'branch'))}</td>
-                    <td><Badge status={a.attributes.status} /></td>
                     <td>
-                      {['pending', 'confirmed'].includes(a.attributes.status) && (
+                      <Badge status={a.attributes.status} />
+                      {/* A date that has already passed still read "Confirmed" with nothing
+                          to say the visit was over, which looked like a live booking. */}
+                      {past(a) && <span className="tag-mini">past</span>}
+                    </td>
+                    <td>
+                      {['pending', 'confirmed'].includes(a.attributes.status) && !past(a) && (
                         <button className="btn btn-danger btn-sm" disabled={busyId === a.id} onClick={() => cancel(a.id)}>
                           Cancel
                         </button>

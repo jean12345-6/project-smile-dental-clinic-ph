@@ -35,8 +35,8 @@ const API = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api/v1';
 export async function loadLanding() {
   try {
     const j = await fetch(API + '/public/landing', { headers: { Accept: 'application/json' } }).then((r) => r.json());
-    return { content: { ...DEFAULTS, ...(j.content || {}) }, testimonials: (j.testimonials || []).length ? j.testimonials : FALLBACK_TESTIMONIALS };
+    return { content: { ...DEFAULTS, ...(j.content || {}) }, testimonials: (j.testimonials || []).length ? j.testimonials : FALLBACK_TESTIMONIALS, openNow: j.openNow || null };
   } catch {
-    return { content: { ...DEFAULTS }, testimonials: FALLBACK_TESTIMONIALS };
+    return { content: { ...DEFAULTS }, testimonials: FALLBACK_TESTIMONIALS, openNow: null };
   }
 }

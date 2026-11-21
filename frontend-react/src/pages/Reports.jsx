@@ -45,7 +45,10 @@ export default function Reports() {
             <div className="stat"><div className="stat-value">{totals.done}</div><div className="stat-label">Completed</div></div>
             <div className="stat"><div className="stat-value">{totals.canc}</div><div className="stat-label">Cancelled</div></div>
             <div className="stat"><div className="stat-value">{totals.ns}</div><div className="stat-label">No-shows</div></div>
-            <div className="stat"><div className="stat-value">{money(d.revenue)}</div><div className="stat-label">Revenue</div></div>
+            {/* The server sends no revenue to a receptionist or a dentist, so do not show a tile. */}
+            {d.revenue !== null && d.revenue !== undefined && (
+              <div className="stat"><div className="stat-value">{money(d.revenue)}</div><div className="stat-label">Revenue</div></div>
+            )}
           </div>
           <Card title="By day" right={<button className="btn btn-ghost btn-sm no-print" onClick={() => csv('report-by-day.csv', d.byDay)}>Export CSV</button>}>
             <Table rows={d.byDay} cols={[['date', 'Date'], ['total', 'Total'], ['completed', 'Completed'], ['cancelled', 'Cancelled'], ['no_show', 'No-show']]} />

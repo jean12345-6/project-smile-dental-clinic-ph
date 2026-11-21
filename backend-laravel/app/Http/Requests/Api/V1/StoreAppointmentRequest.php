@@ -3,6 +3,8 @@
 namespace App\Http\Requests\Api\V1;
 
 use App\Permissions\V1\Abilities;
+use App\Support\ClinicHours;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use App\Services\V1\SlotService;
 use Illuminate\Validation\Validator;
@@ -156,6 +158,18 @@ class StoreAppointmentRequest extends BaseAppointmentRequest
                         'data.attributes.startTime',
                         'That time is already taken. Please pick another slot.'
                     );
+
+                    return;
+                }
+
+                // The clinic must be open. Only the dentist's own schedule was checked before,
+                // so a booking could land on a closed day or after closing time.
+                $clinicId = ClinicHours::clinicFor((int) $this->input('data.relationships.branch.data.id'), $this->user());
+                $date = Carbon::parse($start)->toDateString();
+                $hours = ClinicHours::on($clinicId, $date);
+
+                if ($hours === null || Carbon::parse($start)->lt($hours['open']) || Carbon::parse($end)->gt($hours['close'])) {
+                    $validator->errors()->add('data.attributes.startTime', ClinicHours::closedMessage($clinicId, $date));
                 }
             },
         ];

@@ -34,8 +34,15 @@ export function AuthProvider({ children }) {
   };
 
   const logout = async (reason = 'logout') => {
+    // Signing out must never wait for the network. It used to await the server call before
+    // clearing anything, so on a slow phone connection the button appeared to do nothing
+    // and people tapped it again and again. Clear the session here first; the server is
+    // told in the background, which is all it needs for the session log.
+    // Start the request first: api() reads the token synchronously when it builds the
+    // headers, so clearing it before this call would send an unauthenticated request and
+    // the session log would miss the sign-out.
     try {
-      await api('/auth/logout', { method: 'POST', body: { reason } });
+      api('/auth/logout', { method: 'POST', body: { reason } }).catch(() => {});
     } catch {
       /* ignore */
     }

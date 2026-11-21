@@ -39,7 +39,14 @@ export default function Dashboard() {
       }
     }).catch(() => {});
   }, [user?.role]);
-  const pickClinic = (v) => { setWc(v); try { localStorage.setItem('smilesync-clinic', v); } catch (e) { /* ignore */ } };
+  // Changing the clinic now changes the figures as well as where new records go, so the
+  // dashboard has to be reloaded. Before this, the numbers never moved.
+  const pickClinic = (v) => {
+    setWc(v);
+    try { localStorage.setItem('smilesync-clinic', v); } catch (e) { /* ignore */ }
+    setS(null);
+    api('/stats', { params: v && v !== 'all' ? { clinicId: v } : { clinicId: 'all' } }).then(setS).catch((e) => setError(e.messages));
+  };
 
   const runReminders = async () => {
     try {
@@ -58,9 +65,10 @@ export default function Dashboard() {
       <div className="top-actions">
         {user?.role === 'superadmin' && clinics.length > 0 && (
           <label className="muted small" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-            Adding records to
+            Showing, and adding records to
             <select value={wc || clinics[0].clinic_id} onChange={(e) => pickClinic(e.target.value)}>
               {clinics.map((c) => <option key={c.clinic_id} value={c.clinic_id}>{c.clinic_name}</option>)}
+              <option value="all">All clinics (new records go to {clinics[0].clinic_name})</option>
             </select>
           </label>
         )}
@@ -75,7 +83,10 @@ export default function Dashboard() {
   const by = s.appointments.byStatus || {};
   const max = Math.max(1, ...ORDER.map((k) => by[k] || 0));
   const todays = (s.today || []).filter((a) => filter === 'all' || (filter === 'waiting' ? ['pending', 'confirmed', 'checked_in'].includes(a.status) : a.status === 'completed'));
-  const stillWaiting = (s.today || []).filter((a) => ['pending', 'confirmed', 'checked_in'].includes(a.status)).length;
+  // This counted every unfinished appointment of the day, so at 9 PM it still reported
+  // people as waiting whose time had long passed. Only what is still ahead counts.
+  const nowMs = Date.now();
+  const stillWaiting = (s.today || []).filter((a) => ['pending', 'confirmed', 'checked_in'].includes(a.status) && new Date(String(a.start_time).replace(' ', 'T')).getTime() >= nowMs).length;
 
   const todayCard = (
     <Card title="Today’s appointments" right={
@@ -139,16 +150,32 @@ export default function Dashboard() {
       <Alert>{error.map((m, i) => <div key={i}>{m}</div>)}</Alert>
       <Alert kind="success">{note}</Alert>
 
+      {user?.role === 'superadmin' && !s.clinicScope && (
+        <div className="alert alert-warn">
+          These figures cover <strong>every clinic added together</strong>. Pick one clinic above to see its own numbers.
+        </div>
+      )}
+
       <div className="stats">
         <div className="stat"><div className="stat-label">Appointments today</div><div className="stat-value">{s.appointments.today}</div><div className="stat-sub">{stillWaiting} still waiting</div></div>
         <div className="stat"><div className="stat-label">Patients</div><div className="stat-value">{s.patients}</div><div className="stat-sub">{s.appointments.total} appointments on file</div></div>
-        <div className="stat"><div className="stat-label">Collected</div><div className="stat-value">{money(s.revenue)}</div><div className="stat-sub warn">{money(s.unpaid)} unpaid</div></div>
+        {admin && <div className="stat"><div className="stat-label">Collected</div><div className="stat-value">{money(s.revenue)}</div><div className="stat-sub warn">{money(s.unpaid)} unpaid</div></div>}
         <div className="stat"><div className="stat-label">Waiting list</div><div className="stat-value">{s.waitlist?.waiting || 0}</div><div className="stat-sub">{s.waitlist?.offered || 0} slots offered</div></div>
       </div>
 
       {s.lowStock?.length > 0 && (
         <div className="alert alert-warn">
-          <strong>Low stock:</strong> {s.lowStock.map((i) => `${i.item_name} (${i.quantity} left)`).join(', ')} · <Link to="/inventory">Open inventory</Link>
+          {/* The same item was listed once per stock row, so one item held at two branches read
+              as two separate warnings. Group by name and say how many places are low. */}
+          <strong>Low stock:</strong> {[...s.lowStock.reduce((m, i) => {
+            const k = i.item_name;
+            const p = m.get(k) || { name: k, qty: 0, places: [] };
+            m.set(k, { ...p, qty: p.qty + Number(i.quantity || 0), places: [...p.places, i.branch_id].filter((x) => x != null) });
+            return m;
+          }, new Map()).values()].map((i) => {
+            const where = [...new Set(i.places)].map((b) => name.branch(b)).filter(Boolean);
+            return `${i.name} (${i.qty} left${where.length > 1 ? ` across ${where.join(' and ')}` : where.length === 1 ? ` at ${where[0]}` : ''})`;
+          }).join(', ')} · <Link to="/inventory">Open inventory</Link>
         </div>
       )}
 

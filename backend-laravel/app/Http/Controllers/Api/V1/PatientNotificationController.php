@@ -28,12 +28,15 @@ class PatientNotificationController extends APIController
 
         $appts = DB::table('appointments')->join('services', 'services.service_id', '=', 'appointments.service_id')
             ->where('appointments.patient_id', $pid)->orderByDesc('appointments.start_time')->limit(25)
-            ->get(['appointments.appointment_id', 'appointments.start_time', 'appointments.status', 'services.service_name']);
+            ->get(['appointments.appointment_id', 'appointments.start_time', 'appointments.status', 'appointments.updated_at', 'appointments.created_at', 'services.service_name']);
         $ids = $appts->pluck('appointment_id')->all();
         foreach ($appts as $a) {
             $when = date('M j, Y g:i A', strtotime($a->start_time));
             if (in_array($a->status, ['confirmed', 'cancelled', 'completed', 'no_show'], true)) {
-                $items[] = ['key' => "appt-{$a->appointment_id}-{$a->status}", 'type' => 'appointment', 'title' => 'Appointment ' . str_replace('_', ' ', $a->status), 'body' => "{$a->service_name} on {$when}", 'at' => $a->start_time];
+                // "at" is when the patient was told, not when the visit is. Using start_time
+                // here dated a notice sent today as Nov 24, so it read like a notification
+                // from the future and sorted above everything that really was newer.
+                $items[] = ['key' => "appt-{$a->appointment_id}-{$a->status}", 'type' => 'appointment', 'title' => 'Appointment ' . str_replace('_', ' ', $a->status), 'body' => "{$a->service_name} on {$when}", 'at' => $a->updated_at ?: ($a->created_at ?: $a->start_time)];
             }
         }
         if ($ids) {

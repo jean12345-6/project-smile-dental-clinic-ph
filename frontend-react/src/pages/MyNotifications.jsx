@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../api.js';
-import { Alert, Card, Empty, fmt } from '../ui.jsx';
+import { Alert, Card, Empty, when } from '../ui.jsx';
 
 const ICON = { appointment: '\u{1F4C5}', reminder: '\u{23F0}', message: '\u{1F4AC}', invoice: '\u{1F9FE}', payment: '\u{1F4B3}' };
 
@@ -42,7 +42,7 @@ export default function MyNotifications() {
             <span>
               <strong>{ICON[n.type] || ''} {n.title}</strong>{!n.read && <span style={{ marginLeft: 8, background: '#dc2626', color: '#fff', borderRadius: 99, fontSize: 10, padding: '1px 6px' }}>new</span>}
               <div className="muted small">{n.body}</div>
-              <div className="muted small">{fmt(n.at)}</div>
+              <div className="muted small">{when(n.at)}</div>
             </span>
             {!n.read && <button className="btn btn-ghost btn-sm" onClick={() => mark({ keys: [n.key] })}>Mark read</button>}
           </div>

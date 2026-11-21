@@ -44,6 +44,8 @@ function IconCircle({ name, bg, color }) {
 export default function Landing() {
   const [data, setData] = useState({ content: DEFAULTS, testimonials: FALLBACK_TESTIMONIALS });
   useEffect(() => { loadLanding().then(setData); }, []);
+  const open_ = data?.openNow?.open ? data.openNow : null;
+  const [menu, setMenu] = useState(false);
   const c = data.content;
   const services = range(6).map((i) => ({ name: c[`svc.${i}.name`], desc: c[`svc.${i}.desc`], icon: ICONS.svc[i - 1] })).filter((x) => x.name);
   const whyUs = range(4).map((i) => ({ title: c[`why.${i}.title`], desc: c[`why.${i}.desc`], icon: ICONS.why[i - 1] })).filter((x) => x.title);
@@ -52,7 +54,10 @@ export default function Landing() {
   return (
     <div style={{ background: cream, minHeight: '100vh' }}>
       {/* HEADER */}
-      <header style={{ background: navy, padding: '18px 40px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 10 }}>
+      {/* The four section links used to wrap into three rows on a phone and the sticky
+          header then ate about a fifth of the screen. On a narrow screen they move into
+          a menu that opens on tap, leaving logo, menu and Login on one line. */}
+      <header className="lp-header" style={{ background: navy, position: 'sticky', top: 0, zIndex: 10 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <img src="/logo.png" alt="Project Smile" style={{ width: 36, height: 36, borderRadius: '50%' }} />
           <div>
@@ -60,13 +65,22 @@ export default function Landing() {
             <div style={{ color: '#b9c2d6', fontSize: 10 }}>Dental Clinic</div>
           </div>
         </div>
-        <nav style={{ display: 'flex', gap: 28 }}>
-          <a href="#services" style={{ color: '#fff', textDecoration: 'none', fontSize: 14 }}>Services</a>
-          <a href="#why-us" style={{ color: '#fff', textDecoration: 'none', fontSize: 14 }}>Why Us</a>
-          <a href="#team" style={{ color: '#fff', textDecoration: 'none', fontSize: 14 }}>Our Team</a>
-          <a href="#contact" style={{ color: '#fff', textDecoration: 'none', fontSize: 14 }}>Contact</a>
+        <button
+          type="button"
+          className="lp-burger"
+          aria-expanded={menu}
+          aria-label="Menu"
+          onClick={() => setMenu((v) => !v)}
+        >
+          {menu ? '\u2715' : '\u2630'}
+        </button>
+        <nav className={`lp-nav${menu ? ' lp-nav-open' : ''}`} onClick={() => setMenu(false)}>
+          <a href="#services">Services</a>
+          <a href="#why-us">Why Us</a>
+          <a href="#team">Our Team</a>
+          <a href="#contact">Contact</a>
         </nav>
-        <Link to="/login" style={{ background: gold, color: navy, fontWeight: 700, fontSize: 14, padding: '10px 22px', borderRadius: 20, textDecoration: 'none' }}>Login</Link>
+        <Link to="/login" className="lp-login" style={{ background: gold, color: navy }}>Login</Link>
       </header>
 
       {/* HERO */}
@@ -107,7 +121,17 @@ export default function Landing() {
         <div style={{ ...card, display: 'flex', gap: 48, flexWrap: 'wrap', justifyContent: 'space-between' }}>
           <div>
             <div style={{ fontSize: 15, fontWeight: 700, color: navy, marginBottom: 6 }}>Clinic hours</div>
-            <span style={{ background: '#dff3e4', color: '#1d7a3c', fontSize: 11, padding: '3px 10px', borderRadius: 10 }}>Open today</span>
+            {/* This pill used to be the words "Open today", written into the page and
+                checked against nothing. It now reflects the clinic's actual hours. */}
+            {open_ ? (
+              <span style={{ background: '#dff3e4', color: '#1d7a3c', fontSize: 11, padding: '3px 10px', borderRadius: 10 }}>
+                Open now · until {String(open_.today).split(' to ')[1] || 'closing'}
+              </span>
+            ) : (
+              <span style={{ background: '#fdeaea', color: '#9b1c1c', fontSize: 11, padding: '3px 10px', borderRadius: 10 }}>
+                Closed now{data?.openNow?.next ? ` · opens ${data.openNow.next}` : ''}
+              </span>
+            )}
             <div style={{ fontSize: 13, color: '#6b7280', marginTop: 8 }}>{c['hours.weekday']}</div>
             <div style={{ fontSize: 13, color: '#6b7280' }}>{c['hours.sat']}</div>
           </div>

@@ -2,6 +2,7 @@
 
 namespace App\Services\V1;
 
+use App\Support\ClinicHours;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -18,7 +19,7 @@ class SlotService
      *
      * @return array<int, array{startTime: string, endTime: string}>
      */
-    public function forDay(int $dentistId, string $date, int $durationMin, ?int $branchId = null): array
+    public function forDay(int $dentistId, string $date, int $durationMin, ?int $branchId = null, $user = null): array
     {
         $day = Carbon::parse($date)->startOfDay();
 
@@ -44,6 +45,14 @@ class SlotService
             return [];
         }
 
+        // 2b. The clinic's own opening hours. A dentist's schedule may run past closing time
+        //     or onto a day the clinic is shut, and those slots must not be offered.
+        $clinicId = ClinicHours::clinicFor($branchId, $user);
+        $hours = ClinicHours::on($clinicId, $date);
+        if ($hours === null) {
+            return [];
+        }
+
         // 3. Appointments that already take time on this day
         $booked = DB::table('appointments')
             ->where('dentist_id', $dentistId)
@@ -62,8 +71,9 @@ class SlotService
                 continue;
             }
 
-            $open = Carbon::parse($date . ' ' . $s->start_time);
-            $close = Carbon::parse($date . ' ' . $s->end_time);
+            // Whichever opens later and whichever closes earlier wins.
+            $open = Carbon::parse($date . ' ' . $s->start_time)->max($hours['open']);
+            $close = Carbon::parse($date . ' ' . $s->end_time)->min($hours['close']);
             $breakStart = $s->break_start ? Carbon::parse($date . ' ' . $s->break_start) : null;
             $breakEnd = $s->break_end ? Carbon::parse($date . ' ' . $s->break_end) : null;
 

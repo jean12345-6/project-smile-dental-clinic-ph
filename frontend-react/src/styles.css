@@ -216,7 +216,7 @@ tbody tr:hover { background: rgba(255,255,255,.025); }
 .chipset { display: flex; gap: 8px; }
 .chipset button { border: 1px solid var(--line); background: transparent; color: var(--muted); border-radius: 999px; padding: 5px 14px; font: inherit; font-size: 13px; cursor: pointer; }
 .chipset button.on { color: var(--ink); border-color: var(--gold); background: var(--gold-soft); }
-.bar-row { display: grid; grid-template-columns: 130px 1fr 40px; align-items: center; gap: 12px; margin: 10px 0; }
+.bar-row { display: grid; grid-template-columns: var(--label-w, 130px) 1fr var(--value-w, 40px); align-items: center; gap: 12px; margin: 10px 0; }
 .bar { background: var(--input); border-radius: 99px; height: 10px; overflow: hidden; }
 .bar-fill { height: 100%; background: var(--gold); border-radius: 99px; }
 .fill-cancelled, .fill-no_show { background: var(--red); }
@@ -303,9 +303,12 @@ tbody tr:hover { background: rgba(255,255,255,.025); }
   .brand { display: flex; align-items: center; gap: 12px; text-align: left; border: 0; padding: 0 0 10px; margin: 0; }
   .brand img { width: 46px; height: 46px; margin: 0; }
   .brand-name { font-size: 15px; }
-  .sidebar nav { flex-direction: row; overflow-x: auto; gap: 6px; padding-bottom: 6px; }
+  .sidebar nav { flex-direction: row; flex-wrap: wrap; overflow-x: visible; gap: 6px; padding-bottom: 6px; }
   .sidebar nav a { white-space: nowrap; padding: 9px 12px; }
-  .me, .credit { display: none; }
+  .credit { display: none; }
+  /* .me is also the class on the patient's own chat bubbles, so never hide it outright. */
+  .sidebar .me { border-top: 0; margin-top: 6px; padding: 8px 0 0; }
+  .sidebar .me-name, .sidebar .me-role { display: none; }
   .page-title { font-size: 27px; }
   .side { grid-template-columns: 1fr; }
   .chat { height: calc(100vh - 210px); }
@@ -430,7 +433,7 @@ td { font-size: 16px; padding: 16px 14px; }
 .tabs button { font-size: 15.5px; padding: 10px 20px; }
 .chipset button { font-size: 14.5px; padding: 6px 16px; }
 .slot { font-size: 16px; }
-.bar-row { grid-template-columns: 170px 1fr 48px; }
+.bar-row { grid-template-columns: var(--label-w, 170px) 1fr var(--value-w, 48px); }
 
 .modal { max-width: 600px; padding: 30px; }
 .modal-wide { max-width: 940px; }
@@ -444,7 +447,7 @@ td { font-size: 16px; padding: 16px 14px; }
 .chat-head strong { font-size: 19px; }
 .bubble { font-size: 16px; }
 .chip { font-size: 15.5px; }
-.dock { width: 440px; }
+@media (min-width: 1100px) { .dock { width: 440px; } }
 .dock-launch { font-size: 16px; }
 
 @media (min-width: 1100px) {
@@ -509,4 +512,132 @@ body {
   }
   /* The install button is pointless once the app is installed. */
   #pwa-install { display: none !important; }
+}
+
+/* Only shown where a table has had columns removed to fit the screen. */
+.only-narrow { display: none; }
+
+/* ---------- public landing header ---------- */
+.lp-header { padding: 18px 40px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.lp-nav { display: flex; gap: 28px; }
+.lp-nav a { color: #fff; text-decoration: none; font-size: 14px; }
+.lp-login { font-weight: 700; font-size: 14px; padding: 10px 22px; border-radius: 20px; text-decoration: none; white-space: nowrap; }
+.lp-burger { display: none; }
+
+@media (max-width: 860px) {
+  .lp-header { padding: 12px 16px; }
+  .lp-burger {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 40px; height: 40px; font-size: 20px; line-height: 1;
+    background: transparent; border: 1px solid rgba(255, 255, 255, .35);
+    border-radius: 10px; color: #fff; cursor: pointer; order: 3;
+  }
+  .lp-login { order: 2; padding: 9px 16px; }
+  /* Out of the header's flow entirely, so it cannot make the bar taller. */
+  .lp-nav {
+    order: 4; display: none; position: absolute; left: 0; right: 0; top: 100%;
+    flex-direction: column; gap: 0; background: #0b1a33;
+    border-top: 1px solid rgba(255, 255, 255, .12);
+  }
+  .lp-nav-open { display: flex; }
+  .lp-nav a { padding: 14px 16px; border-bottom: 1px solid rgba(255, 255, 255, .08); }
+}
+
+/* ---------- staff inbox ---------- */
+.inbox-split { display: grid; grid-template-columns: minmax(260px, 1fr) minmax(0, 2fr); gap: 18px; align-items: start; }
+
+/* ---------- doctor schedule calendar ---------- */
+/* min-width: 0 is the point of these two rules. A grid item defaults to a minimum of its
+   own content, and the appointment chips do not wrap, so each of the seven columns was as
+   wide as its longest chip and the month view came to 964px on a 390px screen. */
+.cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); }
+.cal-cell { border: 1px solid var(--line, #e5e7eb); padding: 4px; min-width: 0; overflow: hidden; }
+.cal-head { font-weight: 700; font-size: 12px; padding: 4px; min-width: 0; overflow: hidden; }
+.cal-chip {
+  color: #fff; border-radius: 4px; padding: 1px 5px; margin: 2px 0; font-size: 11px;
+  overflow: hidden; white-space: nowrap; text-overflow: ellipsis; min-width: 0;
+}
+
+/* ---------- dental chart ---------- */
+.tooth {
+  width: 46px; height: 58px; border-radius: 10px 10px 18px 18px;
+  border: 1px solid rgba(128, 128, 128, .45);
+  font-weight: 600; font-size: 14px; cursor: pointer;
+  display: flex; align-items: flex-end; justify-content: center; padding-bottom: 6px;
+}
+.tooth-on { border: 3px solid #d4a73a; }
+.tooth-row { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; margin: 8px 0; }
+.tooth-half { display: flex; gap: 6px; }
+.tooth-mid { width: 2px; background: rgba(128, 128, 128, .5); margin: 0 6px; }
+
+/* ---------- phone layout corrections ---------- */
+@media (max-width: 800px) {
+  /* The floating assistant button sat on top of the last card on every page. */
+  .main { padding-bottom: 96px; }
+
+  /* Tables scroll sideways on a narrow screen, so show that they can be swiped
+     rather than leaving Status, Cancel and Pay Now silently off the edge. */
+  .table-wrap {
+    -webkit-overflow-scrolling: touch;
+    mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent 100%);
+    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent 100%);
+  }
+  .table-wrap table { min-width: 560px; }
+
+  /* The page itself was wider than the screen, so every screen shifted sideways and the
+     right edge of each card was unreachable. These grids each carried a fixed minimum
+     column width, which a 390px phone cannot satisfy; on a phone they are one column. */
+  .two, .split, .grid, .stats { grid-template-columns: 1fr; }
+  .slots { grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); }
+  .main, .page-top, .card, .stat { max-width: 100%; min-width: 0; }
+  .card, .stat, .table-wrap { overflow-x: hidden; }
+  .table-wrap { overflow-x: auto; }
+  .table-wrap.queue-wrap { mask-image: none; -webkit-mask-image: none; }
+
+  /* The daily queue is the one table the receptionist works from all day, and Check in,
+     No-show and Confirm were in a column that had to be swiped into view. Drop the two
+     columns that are only reference (they are repeated under the patient's name) so the
+     buttons fit, and let the rows be shorter. */
+  .table-wrap table.queue-table { min-width: 0; width: 100%; }
+  .queue-table .col-no, .queue-table .col-service, .queue-table .col-dentist { display: none; }
+  .queue-table td, .queue-table th { padding: 8px 6px; }
+  .queue-table .actions { display: flex; flex-wrap: wrap; gap: 4px; }
+  .queue-table .actions .btn { padding: 6px 8px; font-size: 12px; }
+  .only-narrow { display: block; }
+
+  /* Eight 46px teeth plus their gaps come to 410px, so each half-jaw was wider than the
+     screen and the outermost teeth were cut off on both sides. Size them to the viewport. */
+  .tooth { width: clamp(26px, 10.2vw, 46px); height: 46px; font-size: 12px; padding-bottom: 4px; border-radius: 8px 8px 14px 14px; }
+  .tooth-on { border-width: 2px; }
+  .tooth-row, .tooth-half { gap: 3px; }
+  .tooth-mid { margin: 0 2px; }
+
+  /* The staff inbox put a conversation list and a conversation side by side, which left
+     "Pick a conversation" wrapping one word per line. One under the other on a phone. */
+  .inbox-split { grid-template-columns: 1fr; }
+
+  /* A filter box would not shrink below its default size, so two of them plus a button
+     made the page wider than the screen on the Logs page. */
+  .filters { width: 100%; }
+  .filters select, .filters input { flex: 1 1 140px; min-width: 0; width: auto; }
+  .clip { max-width: 160px; }
+
+  /* The month view stays readable rather than fitting at any cost. */
+  .cal-chip { font-size: 10px; padding: 1px 3px; }
+  .cal-head { font-size: 11px; padding: 2px; }
+  .cal-cell { padding: 2px; }
+
+  /* The amount in the money charts was touching the right edge of the card. */
+  .bar-row { --label-w: 86px; --value-w: 96px; gap: 8px; }
+  .bar-label, .bar-n { font-size: 12px; }
+
+  /* A safety net, not a fix: if any one card still measures wider than the screen, the
+     page must not slide sideways and take every other screen with it. "clip" rather than
+     "hidden" so it does not turn .main into a scroll container and break the sticky nav. */
+  .main { overflow-x: clip; }
+}
+
+/* The assistant panel must never be wider than the screen it sits on. */
+@media (max-width: 1099px) {
+  .dock { width: 100%; max-width: 100vw; left: 0; right: 0; }
 }

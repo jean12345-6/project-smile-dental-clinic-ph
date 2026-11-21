@@ -51,7 +51,7 @@ export function Field({ f, value, onChange, options }) {
 }
 
 /** A table with search, paging, add / edit / delete in a pop-up. Works for any /r/{res} resource. */
-export function Crud({ res, title, columns, fields, canAdd = true, canEdit = true, canDelete = true, rowActions, fixed = {}, hint, defaultSort }) {
+export function Crud({ res, title, columns, fields, canAdd = true, canEdit = true, canDelete = true, deleteLabel = 'Delete', deleteConfirm = 'Delete this record?', rowActions, fixed = {}, hint, defaultSort }) {
   const options = useOptions();
   const [rows, setRows] = useState(null);
   const [meta, setMeta] = useState({ total: 0, page: 1, perPage: 50 });
@@ -87,7 +87,7 @@ export function Crud({ res, title, columns, fields, canAdd = true, canEdit = tru
     setSaving(false);
   };
   const del = async (row) => {
-    if (!window.confirm('Delete this record?')) return;
+    if (!window.confirm(deleteConfirm)) return;
     try { await api(`/r/${res}/${row[pk]}`, { method: 'DELETE' }); load(); } catch (err) { setError(err.messages); }
   };
   const pages = Math.max(1, Math.ceil((meta.total || 0) / (meta.perPage || 50)));
@@ -124,7 +124,7 @@ export function Crud({ res, title, columns, fields, canAdd = true, canEdit = tru
                   <td className="actions">
                     {rowActions && rowActions(r, load)}
                     {canEdit && <button className="btn btn-ghost btn-sm" onClick={() => open(r)}>Edit</button>}
-                    {canDelete && <button className="btn btn-danger btn-sm" onClick={() => del(r)}>Delete</button>}
+                    {canDelete && <button className="btn btn-danger btn-sm" onClick={() => del(r)}>{deleteLabel}</button>}
                   </td>
                 </tr>
               ))}

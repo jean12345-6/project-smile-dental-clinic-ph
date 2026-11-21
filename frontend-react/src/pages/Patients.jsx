@@ -31,6 +31,9 @@ export default function Patients() {
         ]}
         rowActions={(r) => <button className="btn btn-ghost btn-sm" onClick={() => show(r)}>Summary</button>}
         canAdd={edit} canEdit={edit} canDelete={edit}
+        // The record is archived, never erased, so the button should not say Delete.
+        deleteLabel="Archive"
+        deleteConfirm="Archive this patient? The record is kept and can be restored by an administrator."
       />
       {sum && (
         <Modal title={`Summary · ${sum.p.full_name}`} onClose={() => setSum(null)}>

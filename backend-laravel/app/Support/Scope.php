@@ -13,6 +13,31 @@ class Scope
         return ($user && $user->role !== 'superadmin' && ! empty($user->clinic_id)) ? (int) $user->clinic_id : null;
     }
 
+    /** The dentist record of a logged-in dentist, or null for every other role. */
+    public static function dentistId($user): ?int
+    {
+        if (! $user || $user->role !== 'dentist') {
+            return null;
+        }
+        $id = \Illuminate\Support\Facades\DB::table('dentists')->where('user_id', $user->id)->value('dentist_id');
+
+        return $id ? (int) $id : null;
+    }
+
+    /**
+     * A dentist sees their own patients, not the whole clinic's. The daily queue has always
+     * worked this way; the dashboard and the appointment list did not, so the same dentist
+     * saw their own queue in one place and everybody's bookings in another.
+     */
+    public static function ownDentist($q, string $col, $user)
+    {
+        if ($did = self::dentistId($user)) {
+            $q->where($col, $did);
+        }
+
+        return $q;
+    }
+
     /** A staff account that belongs to no clinic. It must see nothing, never everything. */
     public static function blind($user): bool
     {

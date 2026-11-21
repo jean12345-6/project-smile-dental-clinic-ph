@@ -42,7 +42,8 @@ export default function StaffInbox() {
       <div className="tabs" style={{ marginBottom: 12 }}>
         {[['open', `Needs a reply (${openCount})`], ['answered', 'Answered'], ['all', 'All']].map(([k, l]) => <button key={k} className={filter === k ? 'on' : ''} onClick={() => setFilter(k)}>{l}</button>)}
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(260px, 1fr) minmax(0, 2fr)', gap: 18, alignItems: 'start' }}>
+      {/* Two fixed columns do not fit a phone; on a narrow screen they stack (see CSS). */}
+      <div className="inbox-split">
         <Card title="Conversations">
           {list === null && <p className="muted">Loading…</p>}
           {list && shown.length === 0 && <Empty>{filter === 'open' ? 'Nothing is waiting for a reply.' : 'No conversations.'}</Empty>}

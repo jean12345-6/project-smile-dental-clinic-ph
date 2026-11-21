@@ -45,6 +45,10 @@ class Boot
             if ($c = $clinic()) {
                 $b->where(fn ($w) => $w->whereNull('appointments.branch_id')->orWhereIn('appointments.branch_id', fn ($s) => $s->select('branch_id')->from('branches')->where(fn ($x) => $x->where('clinic_id', $c)->orWhereNull('clinic_id'))));
             }
+            // A dentist sees their own appointments only, the same rule the daily queue
+            // already applied. Without it the appointment list showed every dentist's
+            // bookings, with a Cancel button on each.
+            Scope::ownDentist($b, 'appointments.dentist_id', self::me());
         });
         User::addGlobalScope('clinic', function (Builder $b) use ($clinic, $lenient) {
             if ($c = $clinic()) {

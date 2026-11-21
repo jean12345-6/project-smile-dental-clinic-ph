@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Support\Scope;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -21,7 +22,11 @@ class WaitlistController extends APIController
     public function index(Request $request)
     {
         $user = $request->user();
-        $query = DB::table('waitlist')->orderBy('created_at');
+
+        // This list was the one staff screen with no clinic limit on it, so a receptionist
+        // at one clinic saw the people waiting at the other one. Their names could not be
+        // resolved from the local lookups, which is why the rows read "Patient #53".
+        $query = Scope::table(DB::table('waitlist'), 'waitlist', $user)->orderBy('created_at');
 
         if ($user->role === 'patient') {
             $query->where('patient_id', $user->patient?->patient_id ?? 0);

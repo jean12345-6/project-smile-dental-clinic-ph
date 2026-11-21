@@ -68,17 +68,22 @@ export default function Queue() {
       <Card>
         {rows && rows.length === 0 && <Empty>No patients in the queue for this day.</Empty>}
         {rows && rows.length > 0 && (
-          <div className="table-wrap">
-            <table>
-              <thead><tr><th>#</th><th>Time</th><th>Patient</th><th>Service</th><th>Dentist</th><th>Status</th><th /></tr></thead>
+          <div className="table-wrap queue-wrap">
+            <table className="queue-table">
+              <thead><tr><th className="col-no">#</th><th>Time</th><th>Patient</th><th className="col-service">Service</th><th className="col-dentist">Dentist</th><th>Status</th><th /></tr></thead>
               <tbody>
                 {rows.map((a, i) => (
                   <tr key={a.appointment_id}>
-                    <td>{i + 1}</td>
+                    <td className="col-no">{i + 1}</td>
                     <td>{fmt(a.start_time).slice(11)}{a.booked_via === 'walk-in' && <span className="tag-mini">walk-in</span>}</td>
-                    <td><strong>{a.patient}</strong>{a.risk_flag ? <span className="tag-mini risk">high risk</span> : null}</td>
-                    <td>{a.service}</td>
-                    <td>{name.dentist(a.dentist_id)}</td>
+                    <td>
+                      <strong>{a.patient}</strong>{a.risk_flag ? <span className="tag-mini risk">high risk</span> : null}
+                      {/* On a phone the service and dentist columns are hidden so that the
+                          action buttons fit on screen, so repeat them here. */}
+                      <div className="only-narrow muted small">{a.service} · {name.dentist(a.dentist_id)}</div>
+                    </td>
+                    <td className="col-service">{a.service}</td>
+                    <td className="col-dentist">{name.dentist(a.dentist_id)}</td>
                     <td><Badge status={a.status} /></td>
                     <td className="actions">{actions(a)}</td>
                   </tr>

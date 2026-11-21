@@ -81,18 +81,17 @@ export default function DentalChart() {
     const t = tone(latest[String(n)]?.condition);
     const on = sel === n;
     return (
-      <button key={n} type="button" title={latest[String(n)]?.condition || 'No record'} onClick={() => pick(n)}
-        style={{ width: 46, height: 58, borderRadius: '10px 10px 18px 18px', border: on ? '3px solid #d4a73a' : '1px solid rgba(128,128,128,.45)', background: t.bg, color: t.fg,
-          fontWeight: 600, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', paddingBottom: 6 }}>
+      <button key={n} type="button" className={`tooth${on ? ' tooth-on' : ''}`} title={latest[String(n)]?.condition || 'No record'} onClick={() => pick(n)}
+        style={{ background: t.bg, color: t.fg }}>
         {n}
       </button>
     );
   };
   const row = (list) => (
-    <div style={{ display: 'flex', gap: 6, justifyContent: 'center', flexWrap: 'wrap', margin: '8px 0' }}>
-      <div style={{ display: 'flex', gap: 6 }}>{list.slice(0, 8).map(tooth)}</div>
-      <div style={{ width: 2, background: 'rgba(128,128,128,.5)', margin: '0 6px' }} />
-      <div style={{ display: 'flex', gap: 6 }}>{list.slice(8).map(tooth)}</div>
+    <div className="tooth-row">
+      <div className="tooth-half">{list.slice(0, 8).map(tooth)}</div>
+      <div className="tooth-mid" />
+      <div className="tooth-half">{list.slice(8).map(tooth)}</div>
     </div>
   );
 
@@ -132,8 +131,14 @@ export default function DentalChart() {
       {sel && (
         <Card title={`Tooth ${sel}`}>
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
-            <input list="tooth-presets" value={cond} onChange={(e) => setCond(e.target.value)} placeholder="Condition, e.g. Cavity" style={{ minWidth: 260 }} disabled={!canEdit} />
-            <datalist id="tooth-presets">{PRESETS.map((p) => <option key={p} value={p} />)}</datalist>
+            {/* This was free text, so "healthy" and "Healthy" were stored as different
+                conditions and neither matched the legend. The legend is now the vocabulary.
+                A condition recorded before this change is kept and shown as it was. */}
+            <select value={cond} onChange={(e) => setCond(e.target.value)} style={{ minWidth: 260 }} disabled={!canEdit}>
+              <option value="">Choose the condition…</option>
+              {PRESETS.map((p) => <option key={p} value={p}>{p}</option>)}
+              {cond && !PRESETS.includes(cond) && <option value={cond}>{cond} (recorded earlier)</option>}
+            </select>
             {canEdit && <button className="btn btn-primary" onClick={save} disabled={busy}>Save</button>}
             {canEdit && latest[String(sel)] && <button className="btn btn-ghost" onClick={clear} disabled={busy}>Clear tooth</button>}
           </div>

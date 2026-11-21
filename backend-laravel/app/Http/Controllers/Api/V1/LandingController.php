@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Support\ClinicHours;
 use App\Support\Dbx;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -37,7 +38,43 @@ class LandingController extends APIController
                 return ['quote' => $f->comment, 'name' => $name, 'rating' => (int) $f->rating];
             });
 
-        return response()->json(['content' => (object) $this->content(), 'testimonials' => $tests]);
+        // The page showed a green "Open today" pill that was written into the markup and
+        // never checked against anything, so it said Open at 9:37 PM on a Saturday after
+        // the clinic had closed at 3. Work it out here, where the hours actually live.
+        return response()->json([
+            'content' => (object) $this->content(),
+            'testimonials' => $tests,
+            'openNow' => $this->openNow(),
+        ]);
+    }
+
+    /**
+     * Whether the clinic is open at this moment, and when it next opens if it is not.
+     *
+     * @return array{open: bool, today: string, next: ?string}
+     */
+    private function openNow(): array
+    {
+        $now = now();
+        $today = ClinicHours::on(null, $now->toDateString());
+        $open = $today !== null && $now->betweenIncluded($today['open'], $today['close']);
+
+        $next = null;
+        if (! $open) {
+            for ($i = ($today !== null && $now->lt($today['open'])) ? 0 : 1; $i <= 7; $i++) {
+                $d = $now->copy()->addDays($i);
+                if ($h = ClinicHours::on(null, $d->toDateString())) {
+                    $next = ($i === 0 ? 'today' : ($i === 1 ? 'tomorrow' : $d->format('l'))) . ' at ' . $h['open']->format('g:i A');
+                    break;
+                }
+            }
+        }
+
+        return [
+            'open' => $open,
+            'today' => $today === null ? 'Closed today' : $today['open']->format('g:i A') . ' to ' . $today['close']->format('g:i A'),
+            'next' => $next,
+        ];
     }
 
     /** PUT /api/v1/landing {content:{key:value,...}} — admins only. Keys are limited to simple names. */

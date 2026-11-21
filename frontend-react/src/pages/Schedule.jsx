@@ -58,7 +58,8 @@ export default function Schedule() {
 
   const chip = (a) => (
     <div key={a.id} title={`${name.patient(rel(a, 'patient'))} - ${name.service(rel(a, 'service'))} - ${a.attributes.status}`}
-      style={{ background: COLOR[a.attributes.status] || '#2563eb', color: '#fff', borderRadius: 4, padding: '1px 5px', margin: '2px 0', fontSize: 11, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
+      className="cal-chip"
+      style={{ background: COLOR[a.attributes.status] || '#2563eb' }}>
       {hhmm(a.attributes.startTime)} {name.patient(rel(a, 'patient'))}
     </div>
   );
@@ -67,7 +68,7 @@ export default function Schedule() {
     const list = byDay[iso(d)] || [];
     const today = iso(d) === iso(new Date());
     return (
-      <div key={iso(d)} style={{ border: '1px solid var(--line, #e5e7eb)', minHeight: full ? 120 : 84, padding: 4, background: today ? 'rgba(37,99,235,.07)' : undefined, opacity: view === 'month' && d.getMonth() !== cursor.getMonth() ? 0.45 : 1 }}>
+      <div key={iso(d)} className="cal-cell" style={{ minHeight: full ? 120 : 84, background: today ? 'rgba(37,99,235,.07)' : undefined, opacity: view === 'month' && d.getMonth() !== cursor.getMonth() ? 0.45 : 1 }}>
         <div style={{ fontSize: 12, fontWeight: 600, cursor: 'pointer' }} onClick={() => { setCursor(d); setView('day'); }}>{d.getDate()}{list.length ? ` · ${list.length}` : ''}</div>
         {(full ? list : list.slice(0, 3)).map(chip)}
         {!full && list.length > 3 && <div style={{ fontSize: 11 }}>+{list.length - 3} more</div>}
@@ -82,8 +83,8 @@ export default function Schedule() {
     const start = startOfWeek(first);
     label = cursor.toLocaleString('en', { month: 'long', year: 'numeric' });
     body = (
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)' }}>
-        {DOW.map((d) => <div key={d} style={{ fontWeight: 700, fontSize: 12, padding: 4 }}>{d}</div>)}
+      <div className="cal-grid">
+        {DOW.map((d) => <div key={d} className="cal-head">{d}</div>)}
         {Array.from({ length: 42 }, (_, i) => cell(addDays(start, i), false))}
       </div>
     );
@@ -91,8 +92,8 @@ export default function Schedule() {
     const start = startOfWeek(cursor);
     label = `${iso(start)} to ${iso(addDays(start, 6))}`;
     body = (
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)' }}>
-        {DOW.map((d, i) => <div key={d} style={{ fontWeight: 700, fontSize: 12, padding: 4 }}>{d} {addDays(start, i).getDate()}</div>)}
+      <div className="cal-grid">
+        {DOW.map((d, i) => <div key={d} className="cal-head">{d} {addDays(start, i).getDate()}</div>)}
         {Array.from({ length: 7 }, (_, i) => cell(addDays(start, i), true))}
       </div>
     );

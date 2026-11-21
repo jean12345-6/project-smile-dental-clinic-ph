@@ -6,7 +6,9 @@ use App\Models\Appointment;
 use App\Services\V1\AssistantAI;
 use App\Services\V1\SlotService;
 use App\Services\V1\WaitlistService;
+use App\Support\ClinicHours;
 use App\Support\Dbx;
+use App\Support\Scope;
 use App\Support\Settings;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -84,7 +86,7 @@ class ChatController extends APIController
             'hours' => $this->hours(),
             'confirm_offer' => $this->confirmOffer($d),
             'confirm_next' => $this->confirmNext(),
-            'staff' => $this->escalate('You asked to speak with the clinic staff.'),
+            'staff' => $this->escalate(['en' => 'You asked to speak with the clinic staff.', 'fil' => 'Hiniling n\'yo pong makausap ang staff ng clinic.']),
             default => $this->menu(),
         };
     }
@@ -103,7 +105,7 @@ class ChatController extends APIController
             return $this->confirmNext();
         }
         if ($has('/pain|sakit|masakit|dugo|bleed|swell|namamaga|lagnat|fever|antibiotic|gamot|medicine|infect|allerg|sensitiv|ngipin ko|toothache|nana|pus/')) {
-            return $this->escalate('Questions about symptoms or treatment need a dentist.');
+            return $this->escalate(['en' => 'Questions about symptoms or treatment need a dentist.', 'fil' => 'Ang mga tanong tungkol sa sakit o paggamot ay kailangang sagutin ng dentista.']);
         }
         // Booking, moving and cancelling are actions, so they stay with the deterministic flow and
         // are never handed to the model.
@@ -126,11 +128,8 @@ class ChatController extends APIController
         // clinic's own data, because it reads the whole sentence; the rules below answer only the
         // first subject they recognise, so they are kept as the fallback for when the model
         // cannot answer or is unreachable.
-        if ($reply = app(AssistantAI::class)->answer($this->in, $this->clinicId(), $this->patient)) {
-            return $this->out($reply, [
-                $this->opt('Book an appointment', 'book'),
-                $this->opt('Main menu', 'menu'),
-            ], 'ai_answer');
+        if ($r = $this->aiReply()) {
+            return $r;
         }
 
         if ($has('/next|susunod|kailan|when is my|my appointment|appointment ko|schedule ko/')) {
@@ -177,15 +176,11 @@ class ChatController extends APIController
         }
 
         // No rule matched. Let the language model answer from the clinic's own data.
-        if ($reply = app(AssistantAI::class)->answer($this->in, $this->clinicId(), $this->patient)) {
-            return $this->out($reply, [
-                $this->opt('Book an appointment', 'book'),
-                $this->opt('Talk to staff', 'staff'),
-                $this->opt('Main menu', 'menu'),
-            ], 'ai_answer');
+        if ($r = $this->aiReply()) {
+            return $r;
         }
 
-        return $this->escalate("I'm not sure how to answer that.");
+        return $this->escalate(['en' => "I'm not sure how to answer that.", 'fil' => 'Pasensya po, hindi ko po alam ang sagot diyan.']);
     }
 
     // ------------------------------------------------------------------ small talk and info
@@ -234,7 +229,7 @@ class ChatController extends APIController
 
     private function hours()
     {
-        $rows = DB::table('branches')->get();
+        $rows = Scope::table(DB::table('branches'), 'branches', $this->user)->get();
         $lines = $rows->map(function ($b) {
             $name = $b->branch_name ?? $b->name ?? 'Branch';
             $time = isset($b->open_time) ? substr($b->open_time, 0, 5) . '–' . substr($b->close_time ?? '', 0, 5) : '';
@@ -379,7 +374,9 @@ class ChatController extends APIController
     {
         $d = Arr::except($d, ['dentistId', 'date', 'start', 'end']);
         $opts = [];
-        foreach (DB::table('dentists')->get() as $x) {
+        // Unscoped, this listed every dentist on the server, so a patient at one clinic was
+        // offered the other clinic's dentists and could book with them.
+        foreach (Scope::table(DB::table('dentists'), 'dentists', $this->user)->get() as $x) {
             $opts[] = $this->opt($this->dentistName($x), 'book_dentist', $d + ['dentistId' => $x->dentist_id]);
         }
         $opts[] = $this->back('← Back to services', 'book');
@@ -399,7 +396,7 @@ class ChatController extends APIController
         $opts = [];
         for ($i = 0; $i <= 21 && count($opts) < 6; $i++) {
             $date = now()->addDays($i)->toDateString();
-            $n = count($this->slots->forDay((int) $d['dentistId'], $date, (int) $service->duration_min, $branch));
+            $n = count($this->slots->forDay((int) $d['dentistId'], $date, (int) $service->duration_min, $branch, $this->user));
             if ($n > 0) {
                 $opts[] = $this->opt(Carbon::parse($date)->format('D, M j') . " ({$n} slots)", 'book_date', $d + ['date' => $date]);
             }
@@ -416,14 +413,16 @@ class ChatController extends APIController
             : $this->back('← Back to my appointments', 'my_appts');
         $opts[] = $this->opt('Main menu', 'menu');
 
-        return $this->out('Pick a date:', $opts, 'book');
+        // Only open days reach this list, so say so — a patient who looked for Sunday and did
+        // not find it was left guessing whether the clinic was closed or the app was broken.
+        return $this->out('Pick a date. Only days the clinic is open and this dentist is free are listed:', $opts, 'book');
     }
 
     private function pickSlot(array $d)
     {
         $service = DB::table('services')->where('service_id', $d['serviceId'] ?? 0)->first();
         $branch = $this->branchOf((int) $d['dentistId']);
-        $list = $this->slots->forDay((int) $d['dentistId'], $d['date'], (int) $service->duration_min, $branch);
+        $list = $this->slots->forDay((int) $d['dentistId'], $d['date'], (int) $service->duration_min, $branch, $this->user);
         $opts = [];
         foreach (array_slice($list, 0, 14) as $s) {
             $opts[] = $this->opt(Carbon::parse($s['startTime'])->format('g:i A'), 'book_slot', $d + ['start' => $s['startTime'], 'end' => $s['endTime']]);
@@ -446,8 +445,13 @@ class ChatController extends APIController
             return $this->menu();
         }
         $moving = ! empty($d['reschedule']);
+
+        // The branch and the price were missing, so a patient confirmed a visit without
+        // being told where to go or what it costs.
+        $branchName = DB::table('branches')->where('branch_id', $this->branchOf((int) $d['dentistId']))->value('branch_name');
         $text = ($moving ? "Please confirm the new time:\n" : "Please confirm your booking:\n")
-            . "• {$service->service_name}\n• " . $this->dentistName($dentist) . "\n• " . $this->when($d['start']);
+            . "• {$service->service_name} — ₱" . number_format((float) $service->price, 2) . "\n• " . $this->dentistName($dentist) . "\n• " . $this->when($d['start'])
+            . ($branchName ? "\n• {$branchName}" : '');
 
         return $this->out($text, [
             $this->opt($moving ? 'Yes, move it' : 'Yes, book it', 'book_confirm', $d),
@@ -462,6 +466,22 @@ class ChatController extends APIController
             return $this->needPatient();
         }
         $service = DB::table('services')->where('service_id', $d['serviceId'])->first();
+
+        // The options we offer are already scoped, but the action payload comes from the
+        // client, so the dentist and the service are checked again here before anything is
+        // written. Otherwise a crafted request could book another clinic's dentist.
+        $okDentist = Scope::table(DB::table('dentists'), 'dentists', $this->user)->where('dentist_id', $d['dentistId'] ?? 0)->exists();
+        if (! $service || ! $okDentist) {
+            return $this->out('That service or dentist is not available at this clinic. Let us start again.', [$this->opt('Book an appointment', 'book'), $this->opt('Main menu', 'menu')], 'book');
+        }
+
+        // The clinic must actually be open at the time being booked (see ClinicHours).
+        $hours = ClinicHours::on($this->clinicId(), Carbon::parse($d['start'])->toDateString());
+        $start = Carbon::parse($d['start']);
+        if ($hours === null || $start->lt($hours['open']) || Carbon::parse($d['end'])->gt($hours['close'])) {
+            return $this->out(ClinicHours::closedMessage($this->clinicId(), $start->toDateString()), [$this->opt('Pick another date', 'book_dentist', $d), $this->opt('Main menu', 'menu')], 'book');
+        }
+
         if (! $this->slots->isFree((int) $d['dentistId'], $d['start'], $d['end'], $d['reschedule'] ?? null)) {
             return $this->out('Sorry, that time was just taken by someone else. Please pick another slot.', [$this->opt('Show other times', 'book_dentist', $d)], 'book');
         }
@@ -493,7 +513,10 @@ class ChatController extends APIController
             'booked_via' => 'chatbot',
         ]))->save();
 
-        return $this->out("You're booked!\n{$service->service_name} on " . $this->when($d['start']) . '.' . "\nWe will remind you before the visit.", [$this->opt('My appointments', 'my_appts'), $this->opt('Main menu', 'menu')], 'booked');
+        $branchName = DB::table('branches')->where('branch_id', $this->branchOf((int) $d['dentistId']))->value('branch_name');
+
+        return $this->out("You're booked!\n{$service->service_name} on " . $this->when($d['start']) . ($branchName ? " at {$branchName}" : '') . '.'
+            . "\nPlease prepare ₱" . number_format((float) $service->price, 2) . ". We will remind you before the visit.", [$this->opt('My appointments', 'my_appts'), $this->opt('Main menu', 'menu')], 'booked');
     }
 
     private function joinWaitlist(array $d)
@@ -536,6 +559,27 @@ class ChatController extends APIController
 
     // ------------------------------------------------------------------ escalation + output
 
+    /**
+     * Ask the language model. Returns a reply, or null to fall through to the rules.
+     * A question with nothing to do with the clinic is declined here and is NOT sent to staff.
+     */
+    private function aiReply()
+    {
+        $r = app(AssistantAI::class)->answer($this->in, $this->clinicId(), $this->patient);
+        if (! $r) {
+            return null;
+        }
+
+        if (($r['kind'] ?? '') === 'outofscope') {
+            return $this->out($r['text'], [$this->opt('Main menu', 'menu')], 'out_of_scope');
+        }
+
+        return $this->out($r['text'], [
+            $this->opt('Book an appointment', 'book'),
+            $this->opt('Main menu', 'menu'),
+        ], 'ai_answer');
+    }
+
     /** The clinic the conversation belongs to, so the assistant answers with that clinic's data. */
     private function clinicId(): ?int
     {
@@ -544,7 +588,7 @@ class ChatController extends APIController
         return $cid ? (int) $cid : null;
     }
 
-    private function escalate(string $why)
+    private function escalate(array $why)
     {
         // Let the clinic know by mail too, so an escalated question is not waiting unseen in the
         // inbox until someone happens to sign in.
@@ -555,7 +599,24 @@ class ChatController extends APIController
             "{$who} asked the assistant:\n\n\"{$this->in}\"\n\nThe assistant could not answer it, so it has been passed to staff. Open the staff inbox in SmileSync to reply."
         );
 
-        return $this->out($why . " I've passed your message to our clinic staff. Their reply will appear right here in this chat. For urgent pain or bleeding, please call the clinic.", [$this->opt('Main menu', 'menu')], 'escalated', true);
+        // Answer in the language the patient wrote in. A Filipino question answered in English
+        // reads as though the assistant stopped listening.
+        $text = $this->writtenInFilipino()
+            ? $why['fil'] . ' Naipasa ko na po ang mensahe n\'yo sa aming staff. Lalabas po ang sagot nila dito mismo sa chat. Kung may matinding sakit o pagdurugo, tawagan po ninyo agad ang clinic.'
+            : $why['en'] . " I've passed your message to our clinic staff. Their reply will appear right here in this chat. For urgent pain or bleeding, please call the clinic.";
+
+        return $this->out($text, [$this->opt('Main menu', 'menu')], 'escalated', true);
+    }
+
+    /**
+     * A rough guess at whether the patient wrote in Filipino, used only to choose the wording of
+     * the handful of fixed replies. Anything the model writes is already in the right language.
+     */
+    private function writtenInFilipino(): bool
+    {
+        $t = ' ' . mb_strtolower($this->in) . ' ';
+
+        return (bool) preg_match('/ (ang|ng|mga|po|ba|ako|ikaw|kayo|namin|natin|yung|iyong|meron|mayroon|wala|gusto|kailan|saan|bakit|paano|magkano|sakit|gamot|ngipin|bukas|opo|hindi|puwede|pwede|salamat) /', $t);
     }
 
     private function out(string $text, array $options = [], string $intent = 'other', bool $escalated = false)

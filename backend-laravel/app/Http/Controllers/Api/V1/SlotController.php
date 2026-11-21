@@ -48,7 +48,8 @@ class SlotController extends APIController
             (int) $data['dentistId'],
             $data['date'],
             (int) $duration,
-            isset($data['branchId']) ? (int) $data['branchId'] : null
+            isset($data['branchId']) ? (int) $data['branchId'] : null,
+            $request->user()
         );
 
         return response()->json([

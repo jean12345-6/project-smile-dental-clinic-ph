@@ -73,6 +73,12 @@ class WorkflowController extends APIController
         if (! $a) {
             return Dbx::err('Appointment not found.', 404);
         }
+        // Checking in means the patient is at the counter now, so it cannot be done on an
+        // earlier day. Nothing stopped a Nov 24 appointment being checked in on Nov 21.
+        if ($status === 'checked_in' && ! Carbon::parse($a->start_time)->isSameDay(now())) {
+            return Dbx::err('This appointment is on ' . Carbon::parse($a->start_time)->format('M j, Y') . '. A patient can only be checked in on the day of the appointment.');
+        }
+
         $old = $a->status;
         $a->status = $status;
         if ($status === 'checked_in' && Dbx::has('appointments', 'check_in_time')) {
@@ -99,7 +105,7 @@ class WorkflowController extends APIController
             return Dbx::err('Appointment not found.', 404);
         }
         $svc = DB::table('services')->where('service_id', $a->service_id)->first();
-        $list = $slots->forDay((int) $a->dentist_id, $r->date, (int) $svc->duration_min, $a->branch_id);
+        $list = $slots->forDay((int) $a->dentist_id, $r->date, (int) $svc->duration_min, $a->branch_id, $r->user());
         if (! $list) {
             return Dbx::err('No open slot on that date. Pick another follow-up date.');
         }
@@ -175,7 +181,14 @@ class WorkflowController extends APIController
         $tx = DB::table('treatments')->where('patient_id', $id)->orderByDesc('treatment_date')->limit(8)->get(['procedure_name', 'tooth_no', 'treatment_date']);
         $rx = DB::table('prescriptions')->where('patient_id', $id)->orderByDesc('prescription_id')->limit(8)->get(['medicine', 'dosage', 'frequency']);
         $lines = [];
-        $lines[] = "{$p->full_name} has {$visits} completed visit(s)" . ($last ? ', the last on ' . Carbon::parse($last)->format('M j, Y') . '.' : '.');
+        // These are two different counts and the old wording implied they should match: a
+        // treatment can be recorded while the appointment is still in progress, so the
+        // treatment list was longer than the number of completed visits.
+        $txTotal = DB::table('treatments')->where('patient_id', $id)->count();
+        $lines[] = "{$p->full_name} has {$visits} completed appointment(s)" . ($last ? ', the last on ' . Carbon::parse($last)->format('M j, Y') . '.' : '.');
+        if ($txTotal > 0) {
+            $lines[] = $txTotal . ' treatment(s) recorded in total' . ($txTotal > $visits ? ' (a treatment can be recorded before the appointment is marked completed)' : '') . '.';
+        }
         if ($tx->isNotEmpty()) {
             $lines[] = 'Recent treatments: ' . $tx->map(fn ($t) => $t->procedure_name . ($t->tooth_no ? " (tooth {$t->tooth_no})" : ''))->implode(', ') . '.';
         }
@@ -211,7 +224,10 @@ class WorkflowController extends APIController
             ->groupBy('branches.branch_id', 'branches.branch_name')->get();
         $byMonth = Scope::patients(DB::table('appointments'), 'appointments.patient_id', $user)->select(DB::raw("DATE_FORMAT(start_time,'%Y-%m') as month"), DB::raw('count(*) as total'), DB::raw("sum(status='completed') as completed"))
             ->groupBy(DB::raw("DATE_FORMAT(start_time,'%Y-%m')"))->orderByDesc('month')->limit(12)->get();
-        $revenue = (float) Scope::invoices(DB::table('payments')->whereBetween(DB::raw('DATE(paid_at)'), [$from, $to]), 'payments.invoice_id', $user)->sum('amount');
+        // The counts are for every staff role; the money is not. See StatsController.
+        $revenue = in_array($user->role, ['superadmin', 'clinic_admin'], true)
+            ? (float) Scope::invoices(DB::table('payments')->whereBetween(DB::raw('DATE(paid_at)'), [$from, $to]), 'payments.invoice_id', $user)->sum('amount')
+            : null;
 
         return response()->json(['from' => $from, 'to' => $to, 'revenue' => $revenue, 'byDay' => $byDay, 'byDentist' => $byDentist, 'byBranch' => $byBranch, 'byMonth' => $byMonth]);
     }

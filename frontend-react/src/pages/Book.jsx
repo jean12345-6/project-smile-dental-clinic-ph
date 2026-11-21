@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { api } from '../api.js';
 import { useAuth } from '../auth.jsx';
 import { Alert, Card, Empty, fmt } from '../ui.jsx';
@@ -8,7 +8,6 @@ const today = () => new Date().toISOString().slice(0, 10);
 
 export default function Book() {
   const { user, lookups, isPatient, name } = useAuth();
-  const navigate = useNavigate();
 
   // the choices are saved for this person, so they are still here after a refresh, a logout or a login
   const draftKey = `book-draft-${user?.id ?? 'x'}`;
@@ -30,6 +29,8 @@ export default function Book() {
     if (!isPatient) setPatientId('');
   };
   const [slots, setSlots] = useState(null);
+  const [done, setDone] = useState(null);
+  const [pq, setPq] = useState('');
   const [slot, setSlot] = useState(null);
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [error, setError] = useState([]);
@@ -77,7 +78,16 @@ export default function Book() {
         },
       });
       try { localStorage.removeItem(draftKey); } catch { /* ignore */ }
-      navigate(isPatient ? '/my-appointments' : '/appointments');
+      // It used to jump straight to the list with no confirmation, and the new booking was
+      // not visible there, so there was no way to tell whether it had saved. Confirm here.
+      setDone({
+        patient: isPatient ? null : (lookups?.patients || []).find((p) => String(p.patient_id) === String(patientId))?.name,
+        service: service?.service_name,
+        dentist: name.dentist(dentistId),
+        start: slot.startTime,
+      });
+      setSlot(null);
+      setSlots(null);
     } catch (e) {
       setError(e.messages);
       // the slot may have just been taken: reload the list
@@ -119,6 +129,20 @@ export default function Book() {
   return (
     <>
       <h1 className="page-title">{isPatient ? 'Book an appointment' : 'Book for a patient'}</h1>
+      {done && (
+        <Card title="Booked">
+          <div className="alert alert-success">
+            <strong>Saved.</strong> {done.patient ? `${done.patient} is` : 'You are'} booked for {done.service}
+            {' '}with {done.dentist} on {fmt(done.start)}. The status is <strong>Pending</strong> until the clinic confirms it.
+          </div>
+          <div className="quick">
+            <Link className="btn btn-primary" to={isPatient ? '/my-appointments' : '/queue'}>
+              {isPatient ? 'See my appointments' : 'Open the daily queue'}
+            </Link>
+            <button className="btn btn-ghost" onClick={() => { setDone(null); startOver(); }}>Book another</button>
+          </div>
+        </Card>
+      )}
       <Card title="1. Choose the details">
         {restored && !dismissed && (serviceId || dentistId || date) && (
           <div className="alert alert-warn" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
@@ -133,11 +157,22 @@ export default function Book() {
           {!isPatient && (
             <div>
               <label>Patient</label>
+              {/* A plain dropdown of every patient is unusable once the clinic has a few
+                  hundred, so type a few letters to narrow it. */}
+              <input
+                type="search"
+                placeholder="Type a name to search…"
+                value={pq}
+                onChange={(e) => setPq(e.target.value)}
+                style={{ marginBottom: 6 }}
+              />
               <select value={patientId} onChange={(e) => setPatientId(e.target.value)}>
                 <option value="">Select patient…</option>
-                {(lookups?.patients || []).map((p) => (
-                  <option key={p.patient_id} value={p.patient_id}>{p.name}</option>
-                ))}
+                {(lookups?.patients || [])
+                  .filter((p) => !pq.trim() || String(p.name).toLowerCase().includes(pq.trim().toLowerCase()))
+                  .map((p) => (
+                    <option key={p.patient_id} value={p.patient_id}>{p.name}</option>
+                  ))}
               </select>
             </div>
           )}
@@ -207,6 +242,7 @@ export default function Book() {
             {slot && (
               <div className="confirm">
                 <p>
+                  {!isPatient && <>For <strong>{(lookups?.patients || []).find((p) => String(p.patient_id) === String(patientId))?.name || '—'}</strong>: </>}
                   <strong>{service?.service_name}</strong> with <strong>{name.dentist(dentistId)}</strong> on{' '}
                   <strong>{fmt(slot.startTime)}</strong> to <strong>{slot.endTime.slice(11, 16)}</strong>
                 </p>
