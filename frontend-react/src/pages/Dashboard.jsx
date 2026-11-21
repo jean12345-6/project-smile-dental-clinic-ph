@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { api } from '../api.js';
 import { useAuth } from '../auth.jsx';
 import { money } from '../components.jsx';
-import { toggleTheme } from '../theme.js';
 import { Alert, Badge, Card, Empty, fmt } from '../ui.jsx';
 import DashboardFinance from './DashboardFinance.jsx';
 
@@ -72,7 +71,6 @@ export default function Dashboard() {
             </select>
           </label>
         )}
-        <button className="btn btn-ghost" onClick={toggleTheme}>Toggle theme</button>
         {admin && <button className="btn btn-ghost" onClick={runReminders}>Run reminders</button>}
         {front && <Link className="btn btn-primary" to="/book">New appointment</Link>}
       </div>

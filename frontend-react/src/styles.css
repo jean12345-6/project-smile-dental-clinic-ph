@@ -303,8 +303,21 @@ tbody tr:hover { background: rgba(255,255,255,.025); }
   .brand { display: flex; align-items: center; gap: 12px; text-align: left; border: 0; padding: 0 0 10px; margin: 0; }
   .brand img { width: 46px; height: 46px; margin: 0; }
   .brand-name { font-size: 15px; }
-  .sidebar nav { flex-direction: row; flex-wrap: wrap; overflow-x: visible; gap: 6px; padding-bottom: 6px; }
-  .sidebar nav a { white-space: nowrap; padding: 9px 12px; }
+  /* Wrapping these put a patient's eight links on four rows and an admin's twenty-two on
+     far more, so the menu alone took well over half the screen before any content began.
+     One row that scrolls instead, with a fade on the right to show there is more, and the
+     current page scrolled into view by App.jsx so it is never the one hidden off the edge.
+     The icons stay visible when the labels will not fit. */
+  .sidebar nav {
+    flex-direction: row; flex-wrap: nowrap; gap: 4px;
+    overflow-x: auto; overflow-y: hidden; padding-bottom: 6px;
+    -webkit-overflow-scrolling: touch; scrollbar-width: none;
+    mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent 100%);
+    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent 100%);
+  }
+  .sidebar nav::-webkit-scrollbar { display: none; }
+  .sidebar nav a { white-space: nowrap; padding: 8px 10px; flex: 0 0 auto; font-size: 14px; }
+  .sidebar nav a .ico { flex: 0 0 auto; }
   .credit { display: none; }
   /* .me is also the class on the patient's own chat bubbles, so never hide it outright. */
   .sidebar .me { border-top: 0; margin-top: 6px; padding: 8px 0 0; }
@@ -514,6 +527,10 @@ body {
   #pwa-install { display: none !important; }
 }
 
+/* The audit log's detail column is the column people actually read, so it wraps instead
+   of being cut off with an ellipsis the way the narrow columns are. */
+.wrap-cell { white-space: normal; word-break: break-word; min-width: 180px; }
+
 /* Only shown where a table has had columns removed to fit the screen. */
 .only-narrow { display: none; }
 
@@ -630,6 +647,30 @@ body {
   /* The amount in the money charts was touching the right edge of the card. */
   .bar-row { --label-w: 86px; --value-w: 96px; gap: 8px; }
   .bar-label, .bar-n { font-size: 12px; }
+
+  /* Reclaiming the width the padding was taking. The wide-screen rules set .content to
+     40px 48px and .card to 28px, and they apply down to 1099px, so a 390px phone was
+     spending about 150px of its width on padding before any content. That, not the
+     tables themselves, is why so many of them had to be swiped. */
+  .content { padding: 16px 12px 96px; }
+  .card { padding: 14px; border-radius: 14px; }
+  .card-head { margin-bottom: 10px; }
+
+  /* The daily queue is the screen a receptionist works from all day, so it stops being a
+     table on a phone and becomes one card per patient, with the buttons under the name.
+     Hiding columns was not enough: what was left still came to 344px in a 300px box. */
+  .table-wrap table.queue-table,
+  .queue-table tbody,
+  .queue-table tr,
+  .queue-table td { display: block; width: auto; }
+  .queue-table thead { display: none; }
+  .queue-table tr {
+    border: 1px solid var(--line); border-radius: 12px;
+    padding: 10px 12px; margin-bottom: 10px;
+  }
+  .queue-table td { border: 0; padding: 1px 0; }
+  .queue-table .actions { margin-top: 8px; }
+  .queue-table .actions .btn { padding: 8px 12px; font-size: 13px; }
 
   /* A safety net, not a fix: if any one card still measures wider than the screen, the
      page must not slide sideways and take every other screen with it. "clip" rather than

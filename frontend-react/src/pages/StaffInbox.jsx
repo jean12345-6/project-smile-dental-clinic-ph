@@ -60,7 +60,7 @@ export default function StaffInbox() {
           ))}
         </Card>
         <Card title={thread?.patient?.name ? `Chat with ${thread.patient.name}` : 'Conversation'}>
-          {!sel && <Empty>Pick a conversation on the left.</Empty>}
+          {!sel && <Empty>Pick a conversation to read it.</Empty>}
           {sel && !thread && <p className="muted">Loading…</p>}
           {thread && (
             <>

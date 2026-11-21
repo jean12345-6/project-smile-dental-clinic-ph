@@ -10,7 +10,23 @@ class Scope
 {
     public static function clinic($user): ?int
     {
-        return ($user && $user->role !== 'superadmin' && ! empty($user->clinic_id)) ? (int) $user->clinic_id : null;
+        if (! $user) {
+            return null;
+        }
+
+        // A superadmin belongs to no clinic, so they saw every clinic's rows added together
+        // on every screen while the header named one. The clinic they pick in the dashboard
+        // switcher travels on this header with every request, and it was only ever read when
+        // a record was created. Reading it here makes the choice apply to what they see as
+        // well, on every page, not just the dashboard. "all", or no header, keeps the
+        // combined view.
+        if ($user->role === 'superadmin') {
+            $picked = request()?->header('X-Clinic-Id');
+
+            return ($picked && strtolower((string) $picked) !== 'all') ? (int) $picked : null;
+        }
+
+        return ! empty($user->clinic_id) ? (int) $user->clinic_id : null;
     }
 
     /** The dentist record of a logged-in dentist, or null for every other role. */
@@ -77,6 +93,12 @@ class Scope
         }
         $c = self::clinic($user);
         if (! $c) {
+            return $q;
+        }
+
+        // The list of clinics is the one thing a superadmin must always see in full, or
+        // picking a clinic would hide every other clinic from the page used to manage them.
+        if ($table === 'clinics' && $user && $user->role === 'superadmin') {
             return $q;
         }
         if (Dbx::has($table, 'clinic_id')) {

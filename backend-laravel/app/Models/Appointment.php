@@ -7,9 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 use App\Http\Filters\V1\QueryFilter;
 use Illuminate\Database\Eloquent\Builder;
 use App\Services\V1\WaitlistService;
+use App\Support\LocalWallClockDates;
 
 class Appointment extends Model
 {
+    use LocalWallClockDates;
+
 
     protected static function booted(): void
     {

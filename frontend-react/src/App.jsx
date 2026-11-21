@@ -1,5 +1,5 @@
 import React from 'react';
-import { Navigate, NavLink, Route, Routes, useNavigate } from 'react-router-dom';
+import { Navigate, NavLink, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from './auth.jsx';
 import { toggleTheme } from './theme.js';
 import Icon from './Icon.jsx';
@@ -40,6 +40,18 @@ import Feedback from './pages/Feedback.jsx';
 function Shell({ children }) {
   const { user, logout, isPatient } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const navRef = React.useRef(null);
+
+  // On a phone the menu is one row that scrolls sideways. The page you are on could sit
+  // off the right-hand edge, which is how it came to be the one link nobody could see.
+  // Bring it into view whenever the route changes.
+  React.useEffect(() => {
+    const el = navRef.current?.querySelector('a.active');
+    if (el && navRef.current.scrollWidth > navRef.current.clientWidth) {
+      el.scrollIntoView({ inline: 'center', block: 'nearest' });
+    }
+  }, [location.pathname]);
 
   const role = user?.role;
   const admin = ['superadmin', 'clinic_admin'].includes(role);
@@ -90,7 +102,7 @@ function Shell({ children }) {
             <div className="brand-sub">Dental Clinic</div>
           </div>
         </div>
-        <nav>
+        <nav ref={navRef}>
           {links.map(([to, icon, label]) => to === '#chat' ? (
             <a key={to} href="#chat" onClick={(e) => { e.preventDefault(); window.dispatchEvent(new Event('open-chat')); }}>
               <span className="ico"><Icon name={icon} /></span> {label}

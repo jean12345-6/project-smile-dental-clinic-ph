@@ -15,7 +15,7 @@ const LABELS = {
   medicine: 'medicine', total_amount: 'total', balance: 'balance', cost: 'cost',
 };
 
-function readable(v) {
+function readable(v, resolve) {
   if (v === null || v === undefined || v === '') return '-';
   let o = v;
   if (typeof o === 'string') {
@@ -23,11 +23,11 @@ function readable(v) {
     if (!t.startsWith('{') && !t.startsWith('[')) return o;
     try { o = JSON.parse(t); } catch { return o; }
   }
-  if (Array.isArray(o)) return o.map(readable).join('; ');
+  if (Array.isArray(o)) return o.map((x) => readable(x, resolve)).join('; ');
   if (typeof o !== 'object') return String(o);
   return Object.entries(o)
     .filter(([k]) => !['created_at', 'updated_at', 'id'].includes(k))
-    .map(([k, val]) => `${LABELS[k] || k.replace(/_/g, ' ')}: ${val === null ? 'none' : val}`)
+    .map(([k, val]) => `${LABELS[k] || k.replace(/_/g, ' ')}: ${val === null ? 'none' : (resolve ? resolve(k, val) : val)}`)
     .join(' · ') || '-';
 }
 
@@ -49,16 +49,25 @@ export default function Logs() {
   // The audit and session logs store a user id; only this page needs the names.
   useEffect(() => {
     if (tab !== 'audit-logs' && tab !== 'session-logs') return;
-    api('/r/users', { params: { perPage: 200 } })
-      .then((r) => setUsers(Object.fromEntries((r.data || []).map((u) => [String(u.id), u.name]))))
+    // /r/users does not exist: the generic resource list has no users entry, so this
+    // 404'd silently and the column fell back to "User 5". The users endpoint is the
+    // JSON:API one, where the name is under attributes.
+    api('/users', { params: { perPage: 200 } })
+      .then((r) => setUsers(Object.fromEntries((r.data || []).map((u) => [String(u.id), u.attributes?.name || u.name]))))
       .catch(() => {});
   }, [tab]);
+
+  const idName = (key, val) => {
+    const by = { patient_id: name.patient, dentist_id: name.dentist, service_id: name.service, branch_id: name.branch };
+    return (by[key] && by[key](val)) || val;
+  };
 
   const cellOf = (k, r) => {
     if (/time|timestamp/.test(k)) return fmt(r[k]);
     if (k === 'user_id') return users[String(r[k])] || (r[k] ? `User ${r[k]}` : '-');
     if (k === 'patient_id') return name.patient(r[k]) || '-';
-    if (k === 'new_value' || k === 'old_value') return readable(r[k]);
+    // An id in the detail is as unreadable as an id in the User column was.
+    if (k === 'new_value' || k === 'old_value') return readable(r[k], idName);
     return String(r[k] ?? '-');
   };
   const load = () => { if (tab === 'inbox') return; setRows(null); api('/r/' + tab, { params: { q, perPage: 100, ...TABS[tab].fixed } }).then((r) => setRows(r.data)).catch((e) => setError(e.messages)); };
@@ -77,7 +86,9 @@ export default function Logs() {
         {rows && rows.length > 0 && (
           <div className="table-wrap"><table>
             <thead><tr>{T.cols.map(([, l]) => <th key={l}>{l}</th>)}</tr></thead>
-            <tbody>{rows.map((r, i) => <tr key={i}>{T.cols.map(([k]) => <td key={k} className="clip" title={String(r[k] ?? '')}>{cellOf(k, r)}</td>)}</tr>)}</tbody>
+            <tbody>{rows.map((r, i) => <tr key={i}>{T.cols.map(([k]) => (
+              <td key={k} className={k === 'new_value' || k === 'old_value' ? 'wrap-cell' : 'clip'} title={String(r[k] ?? '')}>{cellOf(k, r)}</td>
+            ))}</tr>)}</tbody>
           </table></div>
         )}
       </Card>}
