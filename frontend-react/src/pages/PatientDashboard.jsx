@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { api } from '../api.js';
 import { useAuth } from '../auth.jsx';
 import { money } from '../components.jsx';
-import { Alert, Badge, Card, Empty, fmt, rel } from '../ui.jsx';
+import { Alert, Badge, Card, Empty, fmt, rel, when } from '../ui.jsx';
 import { invoiceStatus } from './MyBilling.jsx';
 
 const hello = () => { const h = new Date().getHours(); return h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening'; };
@@ -45,7 +45,7 @@ export default function PatientDashboard() {
       {owed > 0 && <div className="alert alert-warn">You have an unpaid balance of <strong>{money(owed)}</strong>. <Link to="/my-invoices">View invoices</Link></div>}
       <Card title="Next appointment">
         {!next ? <Empty>No upcoming appointment. Tap "+ Book appointment" to set one.</Empty> : (
-          <div className="row"><span><strong>{name.service(rel(next, 'service'))}</strong><div className="muted small">{fmt(next.attributes.startTime)} · {name.dentist(rel(next, 'dentist'))} · {name.branch(rel(next, 'branch'))}</div></span><Badge status={next.attributes.status} /></div>
+          <div className="row"><span><strong>{name.service(rel(next, 'service'))}</strong><div className="muted small">{when(next.attributes.startTime)} · {name.dentist(rel(next, 'dentist'))} · {name.branch(rel(next, 'branch'))}</div></span><Badge status={next.attributes.status} /></div>
         )}
       </Card>
       <div className="stats">
@@ -58,7 +58,7 @@ export default function PatientDashboard() {
       <div className="split">
         <Card title="Recent appointments" right={<Link to="/my-appointments">See all</Link>}>
           {recent.length === 0 && <Empty>None yet.</Empty>}
-          {recent.map((a) => <div className="row" key={a.id}><span>{name.service(rel(a, 'service'))}<div className="muted small">{fmt(a.attributes.startTime)}</div></span><Badge status={a.attributes.status} /></div>)}
+          {recent.map((a) => <div className="row" key={a.id}><span>{name.service(rel(a, 'service'))}<div className="muted small">{when(a.attributes.startTime)}</div></span><Badge status={a.attributes.status} /></div>)}
         </Card>
         <Card title="Recent invoices" right={<Link to="/my-invoices">See all</Link>}>
           {d.inv.length === 0 && <Empty>None yet.</Empty>}

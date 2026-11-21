@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../api.js';
 import { useAuth } from '../auth.jsx';
-import { Alert, Badge, Card, Empty, day, fmt, rel } from '../ui.jsx';
+import { Alert, Badge, Card, Empty, day, fmt, rel, when } from '../ui.jsx';
 import { Modal } from '../components.jsx';
 
 // What staff can do next, per status
@@ -133,7 +133,7 @@ export default function Appointments() {
               <tbody>
                 {shown.map((a) => (
                   <tr key={a.id}>
-                    <td>{fmt(a.attributes.startTime)}</td>
+                    <td>{when(a.attributes.startTime)}</td>
                     <td>{name.patient(rel(a, 'patient'))}</td>
                     <td>{name.service(rel(a, 'service'))}</td>
                     <td>{name.dentist(rel(a, 'dentist'))}</td>
@@ -171,7 +171,7 @@ export default function Appointments() {
           <Modal title={'Appointment - ' + name.patient(rel(view.a, 'patient'))} onClose={() => setView(null)}>
             {[
               ['Status', <Badge key="s" status={view.a.attributes.status} />],
-              ['Starts', fmt(view.a.attributes.startTime)],
+              ['Starts', when(view.a.attributes.startTime)],
               ['Ends', view.a.attributes.endTime ? fmt(view.a.attributes.endTime) : '-'],
               ['Patient', name.patient(rel(view.a, 'patient'))],
               ['Contact', view.patient ? (view.patient.attributes.contactNo || '-') : '...'],
