@@ -209,7 +209,19 @@ class ChatController extends APIController
             }
         }
 
-        return $this->out("Hi {$name}! I'm the SmileSync assistant. I can book, move or cancel your appointment and answer questions about the clinic. Type in English or Filipino, or tap a button.", $opts, 'greeting');
+        // The full introduction is worth reading once. Coming back to the menu later in the same
+        // conversation should not repeat the whole paragraph.
+        $greeted = $this->patient && DB::table('chat_logs')
+            ->where('patient_id', $this->patient->patient_id)
+            ->where('timestamp', '>=', now()->subHours(6))
+            ->where('intent', '!=', 'greeting')
+            ->exists();
+
+        $text = $greeted
+            ? "What would you like to do, {$name}?"
+            : "Hi {$name}! I'm the SmileSync assistant. I can book, move or cancel your appointment and answer questions about the clinic. Type in English or Filipino, or tap a button.";
+
+        return $this->out($text, $opts, 'greeting');
     }
 
     private function services()

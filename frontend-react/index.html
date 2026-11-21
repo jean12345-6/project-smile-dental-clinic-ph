@@ -27,6 +27,27 @@
       (function () {
         var saved = null;
         var btn = document.getElementById("pwa-install");
+
+        // iPhone and iPad never fire beforeinstallprompt: Safari installs only through
+        // Share > Add to Home Screen. Without this the button simply never appears there,
+        // so show the instruction instead.
+        var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        var installed = window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+        if (isIOS && !installed) {
+          btn.textContent = "How to install";
+          btn.hidden = false;
+          btn.addEventListener("click", function () {
+            alert(
+              "To install SmileSync on your iPhone:\n\n" +
+              "1. Tap the Share button at the bottom of Safari\n" +
+              "2. Scroll down and tap “Add to Home Screen”\n" +
+              "3. Tap Add\n\n" +
+              "SmileSync will then open like an app, without the address bar."
+            );
+          });
+          return;
+        }
+
         window.addEventListener("beforeinstallprompt", function (e) {
           e.preventDefault();
           saved = e;
