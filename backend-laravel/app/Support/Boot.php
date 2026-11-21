@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Models\Appointment;
+use Carbon\Carbon;
 use App\Models\User;
 use App\Services\V1\SlotService;
 use Illuminate\Database\Eloquent\Builder;
@@ -36,6 +37,20 @@ class Boot
             return;
         }
         self::$done = true;
+
+        // Dates on the wire.
+        //
+        // Putting serializeDate() on the models was not enough, and this is why: the API
+        // resources read a cast attribute (for example $this->start_time) and drop the
+        // Carbon object straight into an array. serializeDate() is only consulted when a
+        // *model* is turned into an array, so a bare Carbon inside a resource never went
+        // near it — Carbon serialised itself, in UTC, and every appointment still read
+        // eight hours early.
+        //
+        // This covers every Carbon the application encodes, wherever it comes from. The
+        // format is the clinic's own wall-clock time, which is exactly what the database
+        // holds and what the React screens have always expected.
+        Carbon::serializeUsing(fn ($date) => $date->format("Y-m-d H:i:s"));
 
         // 1. clinic isolation
         $clinic = fn () => Scope::clinic(self::me());

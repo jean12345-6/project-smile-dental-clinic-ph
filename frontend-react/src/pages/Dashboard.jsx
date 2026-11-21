@@ -41,10 +41,13 @@ export default function Dashboard() {
   // Changing the clinic now changes the figures as well as where new records go, so the
   // dashboard has to be reloaded. Before this, the numbers never moved.
   const pickClinic = (v) => {
-    setWc(v);
     try { localStorage.setItem('smilesync-clinic', v); } catch (e) { /* ignore */ }
-    setS(null);
-    api('/stats', { params: v && v !== 'all' ? { clinicId: v } : { clinicId: 'all' } }).then(setS).catch((e) => setError(e.messages));
+    // The clinic decides not just the figures but the names behind every id on every
+    // page — the dentists, branches and services held in lookups, which are fetched once
+    // at sign-in. Refreshing only the dashboard left the other clinic's rows reading
+    // "Dentist #5 · Branch #3" and the dentist filter still listing the old three. A
+    // reload re-fetches everything at once, and it cannot leave a screen half switched.
+    window.location.reload();
   };
 
   const runReminders = async () => {
