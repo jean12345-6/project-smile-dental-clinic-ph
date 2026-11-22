@@ -17,7 +17,12 @@ export default function PatientDashboard() {
   useEffect(() => {
     if (!pid) return;
     Promise.all([api(`/patients/${pid}/appointments`), api('/r/invoices'), api('/r/treatments'), api('/r/prescriptions'), api('/my/notifications')])
-      .then(([ap, inv, tx, rx, nt]) => setD({ ap: ap.data || [], inv: inv.data || [], tx: tx.data || [], rx: rx.data || [], unread: nt.unread || 0 }))
+      .then(([ap, inv, tx, rx, nt]) => {
+        setD({ ap: ap.data || [], inv: inv.data || [], tx: tx.data || [], rx: rx.data || [], unread: nt.unread || 0 });
+        // The sidebar badge refreshes on its own timer, so it could show a different count from
+        // this card. Ask it to reload now so the two always agree.
+        window.dispatchEvent(new Event('notif-changed'));
+      })
       .catch((e) => setError(e.messages));
   }, [pid]);
 
@@ -58,7 +63,8 @@ export default function PatientDashboard() {
       <div className="split">
         <Card title="Recent appointments" right={<Link to="/my-appointments">See all</Link>}>
           {recent.length === 0 && <Empty>None yet.</Empty>}
-          {recent.map((a) => <div className="row" key={a.id}><span>{name.service(rel(a, 'service'))}<div className="muted small">{when(a.attributes.startTime)}</div></span><Badge status={a.attributes.status} /></div>)}
+          {/* A visit whose date has passed is marked, so a past "Confirmed" does not read as a live booking. */}
+          {recent.map((a) => <div className="row" key={a.id}><span>{name.service(rel(a, 'service'))}<div className="muted small">{when(a.attributes.startTime)}</div></span><span><Badge status={a.attributes.status} />{start(a) < now && ['pending', 'confirmed'].includes(a.attributes.status) && <span className="tag-mini">past</span>}</span></div>)}
         </Card>
         <Card title="Recent invoices" right={<Link to="/my-invoices">See all</Link>}>
           {d.inv.length === 0 && <Empty>None yet.</Empty>}
