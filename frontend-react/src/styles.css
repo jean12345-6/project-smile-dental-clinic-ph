@@ -129,7 +129,9 @@ a { color: var(--gold-d); }
 .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 18px; margin-bottom: 22px; }
 .stat { background: var(--card); border: 1px solid var(--line); border-left: 3px solid var(--gold); border-radius: 16px; padding: 20px 22px; box-shadow: var(--shadow); }
 .stat-label { color: var(--muted); font-size: 13.5px; }
-.stat-value { font-family: 'Poppins', 'Segoe UI', system-ui, sans-serif; font-size: 34px; font-weight: 700; margin: 6px 0 4px; }
+.stat { min-width: 0; }
+/* A long amount such as ₱192,100.00 ran past its card: the size now shrinks with the card. */
+.stat-value { font-family: 'Poppins', 'Segoe UI', system-ui, sans-serif; font-size: clamp(22px, 2.6vw, 34px); font-weight: 700; margin: 6px 0 4px; overflow-wrap: anywhere; }
 .stat-sub { color: var(--green); font-size: 13px; }
 .stat-sub.warn { color: var(--amber); }
 .two { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 22px; }

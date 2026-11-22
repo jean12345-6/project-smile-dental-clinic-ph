@@ -235,6 +235,10 @@ class ClinicController extends APIController
             }
         }
 
+        if ($bad = $this->blankRequired($res, $data, true)) {
+            return Dbx::err($bad);
+        }
+        try {
         $id = DB::transaction(function () use ($table, $data, $res) {
             $id = Dbx::insert($table, $data);
             if ($res === 'payments') {
@@ -243,6 +247,9 @@ class ClinicController extends APIController
 
             return $id;
         });
+        } catch (\Illuminate\Database\QueryException $e) {
+            return Dbx::err($this->plainDbError($e));
+        }
 
         Dbx::audit($user, 'create', $table, $id, null, $data);
 
@@ -274,10 +281,70 @@ class ClinicController extends APIController
         if (Dbx::has($table, 'updated_at')) {
             $data['updated_at'] = now()->toDateTimeString();
         }
-        DB::table($table)->where($pk, $id)->update($data);
+        if ($bad = $this->blankRequired($res, $data, false)) {
+            return Dbx::err($bad);
+        }
+        try {
+            DB::table($table)->where($pk, $id)->update($data);
+        } catch (\Illuminate\Database\QueryException $e) {
+            return Dbx::err($this->plainDbError($e));
+        }
         Dbx::audit($user, 'update', $table, $id, $old, $data);
 
         return response()->json(['data' => DB::table($table)->where($pk, $id)->first()]);
+    }
+
+    /**
+     * The fields a person must fill in, named in words. An empty one used to reach the database
+     * and come back to the screen as "Server error.", which told the user nothing.
+     */
+    private function blankRequired(string $res, array $data, bool $creating): ?string
+    {
+        $need = [
+            'services' => ['service_name' => 'the service name', 'price' => 'the price', 'duration_min' => 'the duration'],
+            'patient-records' => ['full_name' => 'the patient\'s name'],
+            'inventory' => ['item_name' => 'the item name'],
+            'branches' => ['branch_name' => 'the branch name'],
+            'prescriptions' => ['medicine' => 'the medicine'],
+            'dental-chart' => ['tooth_no' => 'the tooth number', 'condition' => 'the condition'],
+        ][$res] ?? [];
+        $miss = [];
+        foreach ($need as $col => $words) {
+            // On an edit only the fields that were sent are checked; on a new record all of them.
+            if (! $creating && ! array_key_exists($col, $data)) {
+                continue;
+            }
+            if (trim((string) ($data[$col] ?? '')) === '') {
+                $miss[] = $words;
+            }
+        }
+        foreach (['price', 'duration_min', 'quantity', 'reorder_level', 'total_amount'] as $num) {
+            if (isset($data[$num]) && $data[$num] !== '' && (! is_numeric($data[$num]) || (float) $data[$num] < 0)) {
+                return 'Please enter a number of zero or more for ' . str_replace('_', ' ', $num === 'duration_min' ? 'the duration' : 'the ' . $num) . '.';
+            }
+        }
+
+        if (count($miss) > 1) {
+            $last = array_pop($miss);
+
+            return 'Please enter ' . implode(', ', $miss) . ' and ' . $last . '.';
+        }
+
+        return $miss ? 'Please enter ' . $miss[0] . '.' : null;
+    }
+
+    /** A database refusal, told in words instead of as a server error. */
+    private function plainDbError(\Illuminate\Database\QueryException $e): string
+    {
+        $m = $e->getMessage();
+        if (str_contains($m, 'Duplicate') || str_contains($m, 'UNIQUE')) {
+            return 'A record with these details already exists.';
+        }
+        if (str_contains($m, 'foreign key') || str_contains($m, 'FOREIGN KEY')) {
+            return 'This record is linked to something that does not exist or is still in use.';
+        }
+
+        return 'Some required details are missing or not valid. Please check the form and try again.';
     }
 
     public function destroy(Request $r, string $res, $id)

@@ -25,6 +25,13 @@ export function AuthProvider({ children }) {
       .finally(() => setLoading(false));
   }, []);
 
+  // The name lists (patients, dentists, services) are loaded once at sign-in. A record added
+  // afterwards was missing from every drop-down until the page was reloaded, so screens that
+  // add or need fresh names call this.
+  const refreshLookups = async () => {
+    try { setLookups(await api('/lookups')); } catch { /* keep the lists already loaded */ }
+  };
+
   const login = async (email, password) => {
     const res = await api('/auth/login', { method: 'POST', body: { email, password } });
     const token = findKey(res, 'access_token') || findKey(res, 'token');
@@ -97,6 +104,6 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <Ctx.Provider value={{ user, lookups, loading, login, logout, isPatient, name }}>{children}</Ctx.Provider>
+    <Ctx.Provider value={{ user, lookups, loading, login, logout, isPatient, name, refreshLookups }}>{children}</Ctx.Provider>
   );
 }

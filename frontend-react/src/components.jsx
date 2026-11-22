@@ -53,6 +53,9 @@ export function Field({ f, value, onChange, options }) {
 /** A table with search, paging, add / edit / delete in a pop-up. Works for any /r/{res} resource. */
 export function Crud({ res, title, columns, fields, canAdd = true, canEdit = true, canDelete = true, deleteLabel = 'Delete', deleteConfirm = 'Delete this record?', rowActions, fixed = {}, hint, defaultSort }) {
   const options = useOptions();
+  const { refreshLookups } = useAuth();
+  const [done, setDone] = useState('');
+  const [formErr, setFormErr] = useState([]);
   const [rows, setRows] = useState(null);
   const [meta, setMeta] = useState({ total: 0, page: 1, perPage: 50 });
   const [q, setQ] = useState('');
@@ -74,21 +77,32 @@ export function Crud({ res, title, columns, fields, canAdd = true, canEdit = tru
   const clear = () => { setQ(''); setPage(1); load({ q: '', page: 1 }); };
   const sortBy = (key) => { setPage(1); setSort((s) => (s?.key === key ? { key, dir: s.dir === 'asc' ? 'desc' : 'asc' } : { key, dir: 'asc' })); };
 
-  const open = (row) => { setEdit(row || {}); setForm(row ? { ...row } : { ...fixed }); };
+  const open = (row) => { setEdit(row || {}); setForm(row ? { ...row } : { ...fixed }); setFormErr([]); setDone(''); };
   const save = async (e) => {
     e.preventDefault();
+    setFormErr([]); setDone(''); setError([]);
+    // Required fields are checked here first, so the person is told which one is empty
+    // instead of the save failing on the server.
+    const missing = fields.filter((f) => f.required && String(form[f.key] ?? '').trim() === '').map((f) => f.label);
+    if (missing.length) { setFormErr([`Please fill in: ${missing.join(', ')}.`]); return; }
     setSaving(true);
     try {
       const id = edit?.[pk];
       await api(id ? `/r/${res}/${id}` : '/r/' + res, { method: id ? 'PATCH' : 'POST', body: form });
       setEdit(null);
+      setDone(id ? 'Changes saved.' : 'Added.');
       load();
-    } catch (err) { setError(err.messages); setEdit(null); }
+      if (refreshLookups) refreshLookups();
+    } catch (err) {
+      // The form stays open with the reason inside it, so nothing typed is lost.
+      setFormErr(err.messages || ['Could not save.']);
+    }
     setSaving(false);
   };
   const del = async (row) => {
     if (!window.confirm(deleteConfirm)) return;
-    try { await api(`/r/${res}/${row[pk]}`, { method: 'DELETE' }); load(); } catch (err) { setError(err.messages); }
+    setDone(''); setError([]);
+    try { await api(`/r/${res}/${row[pk]}`, { method: 'DELETE' }); setDone('Done.'); load(); if (refreshLookups) refreshLookups(); } catch (err) { setError(err.messages); }
   };
   const pages = Math.max(1, Math.ceil((meta.total || 0) / (meta.perPage || 50)));
 
@@ -106,6 +120,7 @@ export function Crud({ res, title, columns, fields, canAdd = true, canEdit = tru
     >
       {hint && <p className="muted">{hint}</p>}
       <Alert>{error.map((m, i) => <div key={i}>{m}</div>)}</Alert>
+      <Alert kind="success">{done}</Alert>
       {rows && rows.length === 0 && <Empty>Nothing here yet.</Empty>}
       {rows && rows.length > 0 && (
         <div className="table-wrap">
@@ -141,7 +156,8 @@ export function Crud({ res, title, columns, fields, canAdd = true, canEdit = tru
       )}
       {edit && (
         <Modal title={edit[pk] ? 'Edit' : 'Add'} onClose={() => setEdit(null)}>
-          <form onSubmit={save}>
+          <form onSubmit={save} noValidate>
+            {formErr.length > 0 && <div className="alert alert-error">{formErr.map((m, i) => <div key={i}>{m}</div>)}</div>}
             <div className="grid">
               {fields.map((f) => <Field key={f.key} f={f} value={form[f.key]} options={options} onChange={(v) => setForm({ ...form, [f.key]: v })} />)}
             </div>

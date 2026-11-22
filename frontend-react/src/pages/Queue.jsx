@@ -103,6 +103,9 @@ export default function Queue() {
 
 function WalkIn({ options, onClose, onDone, setError }) {
   const [f, setF] = useState({});
+  const { refreshLookups } = useAuth();
+  // A patient added a moment ago on the Patients screen must be in this list without a reload.
+  useEffect(() => { if (refreshLookups) refreshLookups(); }, []); // eslint-disable-line
   const go = async (e) => {
     e.preventDefault();
     try { await api('/queue/walkin', { method: 'POST', body: { patientId: +f.patientId, dentistId: +f.dentistId, serviceId: +f.serviceId } }); onDone(); } catch (err) { setError(err.messages); onClose(); }
