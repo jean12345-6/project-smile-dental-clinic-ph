@@ -178,7 +178,21 @@ class ClinicController extends APIController
             }
         }
         if ($res === 'treatments') {
-            $data += ['treatment_date' => $now, 'cost' => 0];
+            // An empty cost reached the database as '' and failed there, so the dentist saw only
+            // "Server error." The fields are checked here and named in the message instead.
+            $miss = [];
+            if (trim((string) ($data['procedure_name'] ?? '')) === '') {
+                $miss[] = 'the procedure';
+            }
+            if (! isset($data['cost']) || $data['cost'] === '' || ! is_numeric($data['cost'])) {
+                $miss[] = 'the cost';
+            } elseif ((float) $data['cost'] < 0) {
+                return Dbx::err('The cost cannot be less than zero.');
+            }
+            if ($miss) {
+                return Dbx::err('Please enter ' . implode(' and ', $miss) . ' of the treatment.');
+            }
+            $data += ['treatment_date' => $now];
             $data['dentist_id'] = $data['dentist_id'] ?? DB::table('dentists')->where('user_id', $user->id)->value('dentist_id');
         }
         if ($res === 'prescriptions') {

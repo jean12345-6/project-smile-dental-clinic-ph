@@ -119,11 +119,15 @@ function WalkIn({ options, onClose, onDone, setError }) {
 
 function Treat({ a, onClose, onDone, setError }) {
   const [f, setF] = useState({ cost: a.price || 0, qty: 1 });
+  const [err, setErr] = useState([]);
   const [stock, setStock] = useState([]);
   useEffect(() => { api('/r/inventory', { params: { perPage: 100 } }).then((r) => setStock(r.data || [])).catch(() => {}); }, []);
   const set = (k) => (v) => setF({ ...f, [k]: v });
   const go = async (e) => {
     e.preventDefault();
+    setErr([]);
+    setError([]);
+    if (f.cost === '' || f.cost === undefined || f.cost === null) { setErr(['Please enter the cost of the treatment.']); return; }
     try {
       const t = await api('/r/treatments', { method: 'POST', body: { appointment_id: a.appointment_id, patient_id: a.patient_id, dentist_id: a.dentist_id, tooth_no: f.tooth_no, procedure_name: f.procedure_name || a.service, notes: f.notes, cost: f.cost } });
       if (f.medicine) await api('/r/prescriptions', { method: 'POST', body: { treatment_id: t.data.treatment_id, patient_id: a.patient_id, dentist_id: a.dentist_id, medicine: f.medicine, dosage: f.dosage, frequency: f.frequency, duration: f.duration } });
@@ -140,14 +144,18 @@ function Treat({ a, onClose, onDone, setError }) {
         try { await api(`/queue/${a.appointment_id}/followup`, { method: 'POST', body: { date: f.followup } }); msg += ' Follow-up booked.'; } catch (er) { msg += ' ' + er.messages.join(' '); }
       }
       onDone(msg);
-    } catch (err) { setError(err.messages); onClose(); }
+    } catch (x) {
+      // Kept open with the message inside, so what the dentist typed is not lost.
+      setErr(x.messages || ['Could not save the treatment.']);
+    }
   };
-  const T = (k, label, type = 'text') => <Field f={{ label, type }} value={f[k]} options={{}} onChange={set(k)} />;
+  const T = (k, label, type = 'text', required = false) => <Field f={{ label, type, required }} value={f[k]} options={{}} onChange={set(k)} />;
   return (
     <Modal title={`Treatment · ${a.patient}`} onClose={onClose} wide>
-      <form onSubmit={go}>
+      <form onSubmit={go} noValidate>
+        {err.length > 0 && <div className="alert alert-error">{err.map((m, i) => <div key={i}>{m}</div>)}</div>}
         <h3 className="sub">Treatment</h3>
-        <div className="grid">{T('procedure_name', `Procedure (default: ${a.service})`)}{T('tooth_no', 'Tooth no.')}{T('cost', 'Cost (₱)', 'number')}</div>
+        <div className="grid">{T('procedure_name', `Procedure (default: ${a.service})`)}{T('tooth_no', 'Tooth no.')}{T('cost', 'Cost (₱) *', 'number', true)}</div>
         {T('notes', 'Notes', 'textarea')}
         <h3 className="sub">Prescription (optional)</h3>
         <div className="grid">{T('medicine', 'Medicine')}{T('dosage', 'Dosage')}{T('frequency', 'Frequency')}{T('duration', 'Duration')}</div>

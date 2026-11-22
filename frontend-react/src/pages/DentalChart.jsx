@@ -142,6 +142,7 @@ export default function DentalChart() {
             {canEdit && <button className="btn btn-primary" onClick={save} disabled={busy}>Save</button>}
             {canEdit && latest[String(sel)] && <button className="btn btn-ghost" onClick={clear} disabled={busy}>Clear tooth</button>}
           </div>
+          {note && <div className="alert alert-success" style={{ marginTop: 10 }}>{note}</div>}
           {latest[String(sel)] && <p className="muted small" style={{ marginBottom: 0 }}>Last updated {String(latest[String(sel)].date_updated).slice(0, 10)}</p>}
           {!canEdit && <p className="muted small" style={{ marginBottom: 0 }}>Only the dentist or the admin can change the chart.</p>}
         </Card>
@@ -153,7 +154,7 @@ export default function DentalChart() {
             <thead><tr><th>Tooth</th><th>Condition</th><th>Updated</th></tr></thead>
             <tbody>{history.map((r) => (
               <tr key={r.chart_id} onClick={() => pick(Number(r.tooth_no))} style={{ cursor: 'pointer' }}>
-                <td>{r.tooth_no}</td><td>{r.condition}</td><td>{String(r.date_updated).slice(0, 10)}</td>
+                <td>{r.tooth_no}</td><td>{tone(r.condition).label === 'Other' || tone(r.condition).label.toLowerCase() === String(r.condition).toLowerCase() ? r.condition : `${tone(r.condition).label} (recorded as “${r.condition}”)`}</td><td>{String(r.date_updated).slice(0, 10)}</td>
               </tr>))}</tbody>
           </table></div>
         )}
