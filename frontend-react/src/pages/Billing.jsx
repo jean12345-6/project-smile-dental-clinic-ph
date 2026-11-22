@@ -32,6 +32,8 @@ export default function Billing() {
 
   const doPay = async (e) => {
     e.preventDefault();
+    // Clear the last result first, so an error never sits under an old "Payment recorded."
+    setOk(''); setError([]);
     try {
       await api('/r/payments', { method: 'POST', body: { invoice_id: pay.invoice_id, amount: +f.amount, method: f.method } });
       setOk('Payment recorded.'); setPay(null); load();

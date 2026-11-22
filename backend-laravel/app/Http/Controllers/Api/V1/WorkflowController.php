@@ -56,6 +56,8 @@ class WorkflowController extends APIController
             'appointments.appointment_id', 'appointments.patient_id', 'appointments.dentist_id', 'appointments.service_id', 'appointments.start_time',
             'appointments.status', 'appointments.risk_flag', 'appointments.check_in_time', 'appointments.booked_via',
             'patients.full_name as patient', 'services.service_name as service', 'services.price',
+            // the visit's invoice, so the queue shows it instead of offering to create another
+            DB::raw('(SELECT MIN(invoices.invoice_id) FROM invoices WHERE invoices.appointment_id = appointments.appointment_id) as invoice_id'),
         ])]);
     }
 

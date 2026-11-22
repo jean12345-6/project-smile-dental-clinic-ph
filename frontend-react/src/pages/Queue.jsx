@@ -28,8 +28,8 @@ export default function Queue() {
     try { await api(`/queue/${a.appointment_id}/status`, { method: 'POST', body: { status } }); load(); } catch (e) { setError(e.messages); }
   };
   const invoice = async (a) => {
-    setError([]);
-    try { const r = await api('/invoices/generate', { method: 'POST', body: { appointmentId: a.appointment_id } }); setOk(`Invoice #${r.data.invoice_id} created for ${money(r.data.total_amount)}. Open Billing to record payment.`); } catch (e) { setError(e.messages); }
+    setError([]); setOk('');
+    try { const r = await api('/invoices/generate', { method: 'POST', body: { appointmentId: a.appointment_id } }); setOk(`Invoice #${r.data.invoice_id} created for ${money(r.data.total_amount)}. Open Billing to record payment.`); load(); } catch (e) { setError(e.messages); }
   };
 
   const actions = (a) => {
@@ -44,7 +44,9 @@ export default function Queue() {
       b.push(<button key="tr" className="btn btn-primary btn-sm" onClick={() => setTreat(a)}>Record treatment</button>);
       b.push(<button key="cm" className="btn btn-ghost btn-sm" onClick={() => move(a, 'completed')}>Complete</button>);
     }
-    if (a.status === 'completed' && front) b.push(<button key="iv" className="btn btn-ghost btn-sm" onClick={() => invoice(a)}>Create invoice</button>);
+    // Once the visit has an invoice, show it instead of offering to create a second one.
+    if (a.status === 'completed' && front && a.invoice_id) b.push(<span key="iv" className="tag-mini">Invoice #{a.invoice_id}</span>);
+    if (a.status === 'completed' && front && !a.invoice_id) b.push(<button key="iv" className="btn btn-ghost btn-sm" onClick={() => invoice(a)}>Create invoice</button>);
     return b;
   };
 
