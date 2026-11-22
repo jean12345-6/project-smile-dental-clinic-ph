@@ -141,7 +141,21 @@ function Protected({ children, roles }) {
   const { user, loading } = useAuth();
   if (loading) return <div className="center">Loading…</div>;
   if (!user) return <Navigate to="/login" replace />;
-  if (roles && !roles.includes(user.role)) return <Navigate to="/" replace />;
+  // A page this role may not open used to send the user silently back to the dashboard, which
+  // looked as if the link had simply failed. Saying so plainly is the point of the check.
+  if (roles && !roles.includes(user.role)) {
+    const who = { patient: 'patient', receptionist: 'receptionist', dentist: 'dentist', clinic_admin: 'clinic administrator', superadmin: 'superadmin' }[user.role] || user.role;
+    const need = roles.includes('clinic_admin') && !roles.includes('receptionist') ? 'the clinic administrator' : 'other roles';
+    return (
+      <Shell>
+        <h1 className="page-title">Access denied</h1>
+        <div className="alert alert-error">
+          This page is only for {need}. Your account ({who}) cannot open it, so nothing on it was shown or changed.
+        </div>
+        <p><NavLink to="/" className="btn btn-primary">Back to my dashboard</NavLink></p>
+      </Shell>
+    );
+  }
   return <Shell>{children}</Shell>;
 }
 const PATIENT = ['patient'];
