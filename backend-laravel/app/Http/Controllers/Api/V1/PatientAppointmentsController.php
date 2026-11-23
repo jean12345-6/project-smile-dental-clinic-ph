@@ -26,6 +26,11 @@ class PatientAppointmentsController extends APIController
      */
     public function index(Patient $patient, AppointmentFilter $filters)
     {
+        // A patient may list only their own appointments, not another patient's by changing the id
+        $user = request()->user();
+        if ($user?->role === 'patient' && (int) $patient->user_id !== (int) $user->id) {
+            return $this->notAuthorized('You are not allowed to view this.');
+        }
         return AppointmentResource::collection(
             Appointment::where('patient_id', $patient->patient_id)
                 ->filter($filters)

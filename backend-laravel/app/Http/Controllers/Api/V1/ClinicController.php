@@ -17,6 +17,8 @@ class ClinicController extends APIController
 {
     private const STAFF = ['superadmin', 'clinic_admin', 'receptionist', 'dentist'];
     private const ADMIN = ['superadmin', 'clinic_admin'];
+    // the front desk: billing, payments and scanned forms are theirs, not the dentist's
+    private const FRONT = ['superadmin', 'clinic_admin', 'receptionist'];
 
     /** table, primary key, who can read, who can write, columns used by ?q= search, own = patient sees only own rows */
     private function map(): array
@@ -31,13 +33,13 @@ class ClinicController extends APIController
             'treatments' => ['treatments', 'treatment_id', [...self::STAFF, 'patient'], ['superadmin', 'clinic_admin', 'dentist'], ['procedure_name', 'notes']],
             'prescriptions' => ['prescriptions', 'prescription_id', [...self::STAFF, 'patient'], ['superadmin', 'clinic_admin', 'dentist'], ['medicine']],
             'dental-chart' => ['dental_chart', 'chart_id', [...self::STAFF, 'patient'], ['superadmin', 'clinic_admin', 'dentist'], ['condition']],
-            'invoices' => ['invoices', 'invoice_id', [...self::STAFF, 'patient'], ['superadmin', 'clinic_admin', 'receptionist'], []],
-            'payments' => ['payments', 'payment_id', self::STAFF, ['superadmin', 'clinic_admin', 'receptionist'], ['method']],
+            'invoices' => ['invoices', 'invoice_id', [...self::FRONT, 'patient'], ['superadmin', 'clinic_admin', 'receptionist'], []],
+            'payments' => ['payments', 'payment_id', self::FRONT, ['superadmin', 'clinic_admin', 'receptionist'], ['method']],
             'inventory' => ['inventory', 'item_id', self::STAFF, ['superadmin', 'clinic_admin', 'receptionist'], ['item_name']],
             'feedback' => ['feedback', 'feedback_id', [...self::STAFF, 'patient'], [...self::ADMIN, 'patient'], ['comment']],
             'reminders' => ['reminders', 'reminder_id', self::STAFF, ['superadmin'], ['type', 'channel', 'send_status']],
-            'chat-logs' => ['chat_logs', 'chat_id', self::STAFF, ['superadmin'], ['message_in', 'message_out']],
-            'ocr' => ['ocr_batches', 'batch_id', self::STAFF, ['superadmin', 'clinic_admin', 'receptionist'], ['extracted_text']],
+            'chat-logs' => ['chat_logs', 'chat_id', self::ADMIN, ['superadmin'], ['message_in', 'message_out']],
+            'ocr' => ['ocr_batches', 'batch_id', self::FRONT, ['superadmin', 'clinic_admin', 'receptionist'], ['extracted_text']],
             'audit-logs' => ['audit_logs', 'audit_id', self::ADMIN, [], ['action', 'table_name']],
             'session-logs' => ['session_logs', 'session_id', self::ADMIN, [], ['ip_address', 'device']],
             'clinics' => ['clinics', 'clinic_id', ['superadmin', 'clinic_admin'], ['superadmin', 'clinic_admin'], ['clinic_name']],

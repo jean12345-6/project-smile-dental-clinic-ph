@@ -60,6 +60,18 @@ class GatesAndReportCacheTest extends TestCase
         $this->assertSame(2, $runs, 'after a change the report is computed fresh');
     }
 
+    public function test_cached_report_is_stored_as_plain_arrays(): void
+    {
+        // A Collection stored in the cache came back as __PHP_Incomplete_Class on the live
+        // server and broke the Reports page on the second view.
+        config(['cache.default' => 'file', 'cache.serializable_classes' => false]);
+        ReportCache::remember('plain', ['x' => 1], fn () => ['byDay' => collect([['day' => '2026-11-23', 'n' => 3]])]);
+        $again = ReportCache::remember('plain', ['x' => 1], fn () => ['byDay' => []]);
+
+        $this->assertIsArray($again['byDay']);
+        $this->assertSame(3, $again['byDay'][0]['n']);
+    }
+
     public function test_a_successful_write_marks_reports_out_of_date(): void
     {
         $before = ReportCache::version();
