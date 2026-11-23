@@ -55,7 +55,7 @@ endpoints:
         headers:
           cache-control: 'no-cache, private'
           content-type: application/json
-          access-control-allow-origin: '*'
+          vary: Origin
         description: null
     responseFields: []
     auth:
@@ -176,7 +176,7 @@ endpoints:
         headers:
           cache-control: 'no-cache, private'
           content-type: application/json
-          access-control-allow-origin: '*'
+          vary: Origin
         description: null
     responseFields: []
     auth:
@@ -265,6 +265,70 @@ endpoints:
       subgroupDescription: ''
       title: ''
       description: ''
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      res:
+        custom: []
+        name: res
+        description: ''
+        required: true
+        example: architecto
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      id:
+        custom: []
+        name: id
+        description: 'The ID of the {res}.'
+        required: true
+        example: architecto
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      res: architecto
+      id: architecto
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - POST
+    uri: 'api/v1/r/{res}/{id}/restore'
+    metadata:
+      custom: []
+      groupName: 'Clinic records'
+      groupDescription: |-
+
+        One controller for the clinic modules (services, schedules, treatments, invoices, inventory, feedback ...).
+        Each resource lists who may read and who may write. Every create, update and delete is written to the audit log.
+      subgroup: ''
+      subgroupDescription: ''
+      title: |-
+        POST /api/v1/r/patient-records/{id}/restore
+        Brings an archived patient back into the lists (WST criterion 11: recovery).
+      description: 'Same roles that may archive; the audit log keeps the before and after.'
       authenticated: true
       deprecated: false
     headers:

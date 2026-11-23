@@ -39,7 +39,7 @@ endpoints:
         headers:
           cache-control: 'no-cache, private'
           content-type: application/json
-          access-control-allow-origin: '*'
+          vary: Origin
         description: null
     responseFields: []
     auth:
@@ -359,14 +359,14 @@ endpoints:
         name: appointment_id
         description: 'The ID of the appointment.'
         required: true
-        example: 1
+        example: 16
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         deprecated: false
     cleanUrlParameters:
-      appointment_id: 1
+      appointment_id: 16
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -380,7 +380,7 @@ endpoints:
         headers:
           cache-control: 'no-cache, private'
           content-type: application/json
-          access-control-allow-origin: '*'
+          vary: Origin
         description: null
     responseFields: []
     auth:
@@ -419,14 +419,14 @@ endpoints:
         name: appointment_id
         description: 'The ID of the appointment.'
         required: true
-        example: 1
+        example: 16
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         deprecated: false
     cleanUrlParameters:
-      appointment_id: 1
+      appointment_id: 16
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -470,14 +470,14 @@ endpoints:
         name: appointment_appointment_id
         description: 'The ID of the appointment appointment.'
         required: true
-        example: 1
+        example: 16
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         deprecated: false
     cleanUrlParameters:
-      appointment_appointment_id: 1
+      appointment_appointment_id: 16
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
@@ -508,7 +508,7 @@ endpoints:
         name: data.attributes.startTime
         description: 'Must be a valid date.'
         required: true
-        example: '2026-11-16T12:38:01'
+        example: '2026-11-23T16:47:32'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -519,7 +519,7 @@ endpoints:
         name: data.attributes.endTime
         description: 'Must be a valid date. Must be a date after <code>data.attributes.startTime</code>.'
         required: true
-        example: '2052-12-09'
+        example: '2052-12-16'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -530,7 +530,7 @@ endpoints:
         name: data.attributes.status
         description: ''
         required: true
-        example: cancelled
+        example: no_show
         type: string
         enumValues:
           - pending
@@ -547,7 +547,7 @@ endpoints:
         name: data.attributes.bookedVia
         description: ''
         required: true
-        example: walk_in
+        example: chatbot
         type: string
         enumValues:
           - chatbot
@@ -713,10 +713,10 @@ endpoints:
     cleanBodyParameters:
       data:
         attributes:
-          startTime: '2026-11-16T12:38:01'
-          endTime: '2052-12-09'
-          status: cancelled
-          bookedVia: walk_in
+          startTime: '2026-11-23T16:47:32'
+          endTime: '2052-12-16'
+          status: no_show
+          bookedVia: chatbot
           followUpOf: 16
         relationships:
           patient:
@@ -770,14 +770,14 @@ endpoints:
         name: appointment_appointment_id
         description: 'The ID of the appointment appointment.'
         required: true
-        example: 1
+        example: 16
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         deprecated: false
     cleanUrlParameters:
-      appointment_appointment_id: 1
+      appointment_appointment_id: 16
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:

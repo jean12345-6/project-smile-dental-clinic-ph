@@ -1,0 +1,2938 @@
+openapi: 3.0.3
+info:
+  title: 'SmileSync API Documentation'
+  description: ''
+  version: 1.0.0
+servers:
+  -
+    url: 'https://smilesync.projectsmiledentalclinic.com'
+tags:
+  -
+    name: Appointments
+    description: "\nBook, read, reschedule and cancel appointments."
+  -
+    name: Assistant
+    description: "\nThe SmileSync assistant. It understands English, Filipino or both, answers from the clinic's own data,\nand books, reschedules and cancels through the same slot engine as the rest of the API."
+  -
+    name: Authentication
+    description: "\nRegister, login, logout and refresh tokens."
+  -
+    name: 'Clinic info and hours'
+    description: ''
+  -
+    name: 'Clinic records'
+    description: "\nOne controller for the clinic modules (services, schedules, treatments, invoices, inventory, feedback ...).\nEach resource lists who may read and who may write. Every create, update and delete is written to the audit log."
+  -
+    name: 'Clinic workflow'
+    description: "\nDaily queue, check-in, walk-ins, invoices, reports, reminders, patient summary and OCR upload."
+  -
+    name: Dashboard
+    description: ''
+  -
+    name: 'Landing page'
+    description: ''
+  -
+    name: Lookups
+    description: "\nLists the services, dentists and branches used by the booking forms."
+  -
+    name: 'Patient Appointments'
+    description: "\nThe appointments of one patient. The patient id comes from the URL."
+  -
+    name: 'Patient portal'
+    description: ''
+  -
+    name: Patients
+    description: "\nRead patients (list and show)."
+  -
+    name: 'Scanned forms'
+    description: "\nReads a HANDWRITTEN patient form with an AI vision model and returns the patient fields.\nWorks with Google Gemini or Anthropic; set the matching key in .env. Settings are read\nthrough config/ocr.php so they survive config caching in production.\nWithout a key the screen falls back to the basic in-browser reader."
+  -
+    name: Slots
+    description: "\nFind the free time slots of a dentist."
+  -
+    name: 'Staff inbox'
+    description: "\nChats the assistant passed to staff. Staff read the conversation and reply, and the reply\nshows up inside the patient's assistant panel."
+  -
+    name: Users
+    description: "\nManage clinic staff and patient login accounts."
+  -
+    name: Waitlist
+    description: "\nJoin the waiting list when a slot is full. A freed slot is offered to the first person waiting."
+components:
+  securitySchemes:
+    default:
+      type: http
+      scheme: bearer
+      description: 'Log in with POST /api/v1/auth/login and paste the access_token here.'
+security:
+  -
+    default: []
+paths:
+  /api/v1/appointments:
+    get:
+      summary: 'GET /api/v1/appointments'
+      operationId: gETapiv1appointments
+      description: ''
+      parameters: []
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  errors:
+                    -
+                      status: 401
+                      message: Unauthenticated
+                      source: ''
+                properties:
+                  errors:
+                    type: array
+                    example:
+                      -
+                        status: 401
+                        message: Unauthenticated
+                        source: ''
+                    items:
+                      type: object
+                      properties:
+                        status:
+                          type: integer
+                          example: 401
+                        message:
+                          type: string
+                          example: Unauthenticated
+                        source:
+                          type: string
+                          example: ''
+      tags:
+        - Appointments
+    post:
+      summary: "POST /api/v1/appointments\nCreates an appointment, but only if the policy allows this user to do so."
+      operationId: pOSTapiv1appointmentsCreatesAnAppointmentButOnlyIfThePolicyAllowsThisUserToDoSo
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Appointments
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  description: ''
+                  example: []
+                  properties:
+                    attributes:
+                      type: object
+                      description: ''
+                      example: []
+                      properties:
+                        startTime:
+                          type: string
+                          description: 'Start of the appointment. Must be in the future. Must be a valid date. Must be a date after <code>now</code>.'
+                          example: '2026-12-10 10:00:00'
+                        endTime:
+                          type: string
+                          description: 'End of the appointment. Must be after the start time. Must be a valid date. Must be a date after <code>data.attributes.startTime</code>.'
+                          example: '2026-12-10 11:00:00'
+                        status:
+                          type: string
+                          description: 'pending or confirmed.'
+                          example: pending
+                          enum:
+                            - pending
+                            - confirmed
+                        bookedVia:
+                          type: string
+                          description: 'How it was booked: chatbot, portal or walk_in.'
+                          example: portal
+                          enum:
+                            - chatbot
+                            - portal
+                            - walk_in
+                        followUpOf:
+                          type: integer
+                          description: 'Id of the earlier appointment this one follows up (optional). Must match an existing stored value.'
+                          example: null
+                          nullable: true
+                      required:
+                        - startTime
+                        - endTime
+                    relationships:
+                      type: object
+                      description: ''
+                      example: []
+                      properties:
+                        patient:
+                          type: object
+                          description: ''
+                          example: []
+                          properties:
+                            data:
+                              type: object
+                              description: ''
+                              example: []
+                              properties:
+                                id:
+                                  type: integer
+                                  description: 'The patient id. Patients may only use their own id. On /patients/{patient}/appointments it is taken from the URL. Must match an existing stored value.'
+                                  example: 14
+                              required:
+                                - id
+                        dentist:
+                          type: object
+                          description: ''
+                          example: []
+                          properties:
+                            data:
+                              type: object
+                              description: ''
+                              example: []
+                              properties:
+                                id:
+                                  type: integer
+                                  description: 'The dentist id. Must match an existing stored value.'
+                                  example: 1
+                              required:
+                                - id
+                        branch:
+                          type: object
+                          description: ''
+                          example: []
+                          properties:
+                            data:
+                              type: object
+                              description: ''
+                              example: []
+                              properties:
+                                id:
+                                  type: integer
+                                  description: 'The branch id. Must match an existing stored value.'
+                                  example: 1
+                              required:
+                                - id
+                        service:
+                          type: object
+                          description: ''
+                          example: []
+                          properties:
+                            data:
+                              type: object
+                              description: ''
+                              example: []
+                              properties:
+                                id:
+                                  type: integer
+                                  description: 'The service id. Must match an existing stored value.'
+                                  example: 1
+                              required:
+                                - id
+                  required:
+                    - attributes
+              required:
+                - data
+  '/api/v1/appointments/{appointment_id}':
+    get:
+      summary: 'GET /api/v1/appointments/{appointment}'
+      operationId: gETapiv1appointmentsappointment
+      description: ''
+      parameters: []
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  errors:
+                    -
+                      status: 401
+                      message: Unauthenticated
+                      source: ''
+                properties:
+                  errors:
+                    type: array
+                    example:
+                      -
+                        status: 401
+                        message: Unauthenticated
+                        source: ''
+                    items:
+                      type: object
+                      properties:
+                        status:
+                          type: integer
+                          example: 401
+                        message:
+                          type: string
+                          example: Unauthenticated
+                        source:
+                          type: string
+                          example: ''
+      tags:
+        - Appointments
+    delete:
+      summary: "DELETE /api/v1/appointments/{appointment}\nDeletes the appointment, but only if the policy allows it."
+      operationId: dELETEapiv1appointmentsappointmentDeletesTheAppointmentButOnlyIfThePolicyAllowsIt
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Appointments
+    parameters:
+      -
+        in: path
+        name: appointment_id
+        description: 'The ID of the appointment.'
+        example: 16
+        required: true
+        schema:
+          type: integer
+  '/api/v1/appointments/{appointment_appointment_id}':
+    put:
+      summary: "PUT /api/v1/appointments/{appointment}\nReplaces the whole appointment, but only if the policy allows it."
+      operationId: pUTapiv1appointmentsappointmentReplacesTheWholeAppointmentButOnlyIfThePolicyAllowsIt
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Appointments
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  description: ''
+                  example: []
+                  properties:
+                    attributes:
+                      type: object
+                      description: ''
+                      example: []
+                      properties:
+                        startTime:
+                          type: string
+                          description: 'Must be a valid date.'
+                          example: '2026-11-23T16:47:32'
+                        endTime:
+                          type: string
+                          description: 'Must be a valid date. Must be a date after <code>data.attributes.startTime</code>.'
+                          example: '2052-12-16'
+                        status:
+                          type: string
+                          description: ''
+                          example: no_show
+                          enum:
+                            - pending
+                            - confirmed
+                            - checked_in
+                            - completed
+                            - cancelled
+                            - no_show
+                        bookedVia:
+                          type: string
+                          description: ''
+                          example: chatbot
+                          enum:
+                            - chatbot
+                            - portal
+                            - walk_in
+                        followUpOf:
+                          type: integer
+                          description: 'Must match an existing stored value.'
+                          example: 16
+                          nullable: true
+                      required:
+                        - startTime
+                        - endTime
+                        - status
+                        - bookedVia
+                    relationships:
+                      type: object
+                      description: ''
+                      example: []
+                      properties:
+                        patient:
+                          type: object
+                          description: ''
+                          example: []
+                          properties:
+                            data:
+                              type: object
+                              description: ''
+                              example: []
+                              properties:
+                                id:
+                                  type: integer
+                                  description: 'Must match an existing stored value.'
+                                  example: 16
+                              required:
+                                - id
+                        dentist:
+                          type: object
+                          description: ''
+                          example: []
+                          properties:
+                            data:
+                              type: object
+                              description: ''
+                              example: []
+                              properties:
+                                id:
+                                  type: integer
+                                  description: 'Must match an existing stored value.'
+                                  example: 16
+                              required:
+                                - id
+                        branch:
+                          type: object
+                          description: ''
+                          example: []
+                          properties:
+                            data:
+                              type: object
+                              description: ''
+                              example: []
+                              properties:
+                                id:
+                                  type: integer
+                                  description: 'Must match an existing stored value.'
+                                  example: 16
+                              required:
+                                - id
+                        service:
+                          type: object
+                          description: ''
+                          example: []
+                          properties:
+                            data:
+                              type: object
+                              description: ''
+                              example: []
+                              properties:
+                                id:
+                                  type: integer
+                                  description: 'Must match an existing stored value.'
+                                  example: 16
+                              required:
+                                - id
+                  required:
+                    - attributes
+                    - relationships
+              required:
+                - data
+    patch:
+      summary: "PATCH /api/v1/appointments/{appointment}\nUpdates only the fields that were sent, but only if the policy allows it."
+      operationId: pATCHapiv1appointmentsappointmentUpdatesOnlyTheFieldsThatWereSentButOnlyIfThePolicyAllowsIt
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Appointments
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  description: ''
+                  example: []
+                  properties:
+                    attributes:
+                      type: object
+                      description: ''
+                      example: []
+                      properties:
+                        startTime:
+                          type: string
+                          description: 'New start time. Must be a valid date.'
+                          example: '2026-12-12 10:00:00'
+                        endTime:
+                          type: string
+                          description: 'New end time. Must be after the start time. Must be a valid date.'
+                          example: '2026-12-12 11:00:00'
+                        status:
+                          type: string
+                          description: 'pending, confirmed, checked_in, completed, cancelled or no_show.'
+                          example: confirmed
+                          enum:
+                            - pending
+                            - confirmed
+                            - checked_in
+                            - completed
+                            - cancelled
+                            - no_show
+                        bookedVia:
+                          type: string
+                          description: 'chatbot, portal or walk_in.'
+                          example: portal
+                          enum:
+                            - chatbot
+                            - portal
+                            - walk_in
+                        checkInTime:
+                          type: string
+                          description: 'When the patient checked in (optional). Must be a valid date.'
+                          example: null
+                          nullable: true
+                        followUpOf:
+                          type: integer
+                          description: 'Id of the earlier appointment this one follows up (optional). Must match an existing stored value.'
+                          example: null
+                          nullable: true
+                    relationships:
+                      type: object
+                      description: ''
+                      example: []
+                      properties:
+                        dentist:
+                          type: object
+                          description: ''
+                          example: []
+                          properties:
+                            data:
+                              type: object
+                              description: ''
+                              example: []
+                              properties:
+                                id:
+                                  type: integer
+                                  description: 'The dentist id. Must match an existing stored value.'
+                                  example: 1
+                        branch:
+                          type: object
+                          description: ''
+                          example: []
+                          properties:
+                            data:
+                              type: object
+                              description: ''
+                              example: []
+                              properties:
+                                id:
+                                  type: integer
+                                  description: 'The branch id. Must match an existing stored value.'
+                                  example: 1
+                        service:
+                          type: object
+                          description: ''
+                          example: []
+                          properties:
+                            data:
+                              type: object
+                              description: ''
+                              example: []
+                              properties:
+                                id:
+                                  type: integer
+                                  description: 'The service id. Must match an existing stored value.'
+                                  example: 1
+                        patient:
+                          type: object
+                          description: ''
+                          example: []
+                          properties:
+                            data:
+                              type: object
+                              description: ''
+                              example: []
+                              properties:
+                                id:
+                                  type: string
+                                  description: 'Staff only. Patients may not change the patient of an appointment.'
+                                  example: null
+    parameters:
+      -
+        in: path
+        name: appointment_appointment_id
+        description: 'The ID of the appointment appointment.'
+        example: 16
+        required: true
+        schema:
+          type: integer
+  /api/v1/chat:
+    post:
+      summary: "POST /api/v1/chat\nBody: {\"message\": \"gusto ko magpa-appointment\"}  or  {\"action\": \"book_service\", \"data\": {."
+      operationId: pOSTapiv1chatBodymessagegustoKoMagpaAppointmentOractionbookServicedata
+      description: '..}}'
+      parameters: []
+      responses: {  }
+      tags:
+        - Assistant
+  /api/v1/chat/history:
+    get:
+      summary: "GET /api/v1/chat/history — the logged-in patient's last messages."
+      operationId: gETapiv1chathistoryTheLoggedInPatientsLastMessages
+      description: ''
+      parameters: []
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  errors:
+                    -
+                      status: 401
+                      message: Unauthenticated
+                      source: ''
+                properties:
+                  errors:
+                    type: array
+                    example:
+                      -
+                        status: 401
+                        message: Unauthenticated
+                        source: ''
+                    items:
+                      type: object
+                      properties:
+                        status:
+                          type: integer
+                          example: 401
+                        message:
+                          type: string
+                          example: Unauthenticated
+                        source:
+                          type: string
+                          example: ''
+      tags:
+        - Assistant
+  /api/v1/auth/register:
+    post:
+      summary: Register
+      operationId: register
+      description: 'Creates the account and logs the user in immediately.'
+      parameters: []
+      responses: {  }
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                clinic_id:
+                  type: integer
+                  description: 'Must match an existing stored value.'
+                  example: 16
+                name:
+                  type: string
+                  description: 'Must not be greater than 255 characters.'
+                  example: 'n'
+                email:
+                  type: string
+                  description: 'Must be a valid email address. Must not be greater than 255 characters.'
+                  example: ashly64@example.com
+                password:
+                  type: string
+                  description: 'Must be at least 8 characters.'
+                  example: pBNvYg
+              required:
+                - clinic_id
+                - name
+                - email
+                - password
+      security: []
+  /api/v1/auth/google/config:
+    get:
+      summary: 'Google sign-in settings'
+      operationId: googleSignInSettings
+      description: 'The login page calls this to know whether to show the Google button.'
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  data:
+                    enabled: false
+                    clientId: null
+                  message: 'Google sign-in settings'
+                  status: 200
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      enabled:
+                        type: boolean
+                        example: false
+                      clientId:
+                        type: string
+                        example: null
+                        nullable: true
+                  message:
+                    type: string
+                    example: 'Google sign-in settings'
+                  status:
+                    type: integer
+                    example: 200
+      tags:
+        - Authentication
+      security: []
+  /api/v1/auth/google:
+    post:
+      summary: 'Sign in with Google'
+      operationId: signInWithGoogle
+      description: 'Send the ID token ("credential") that Google''s button returned.'
+      parameters: []
+      responses: {  }
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                credential:
+                  type: string
+                  description: 'The Google ID token.'
+                  example: architecto
+              required:
+                - credential
+      security: []
+  /api/v1/auth/login:
+    post:
+      summary: 'Log in'
+      operationId: logIn
+      description: 'Returns an access token. Send it as a Bearer token on every other request.'
+      parameters: []
+      responses: {  }
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: 'Must be a valid email address.'
+                  example: gbailey@example.net
+                password:
+                  type: string
+                  description: ''
+                  example: '|]|{+-'
+              required:
+                - email
+                - password
+      security: []
+  /api/v1/auth/register-patient:
+    post:
+      summary: "POST /api/v1/auth/register-patient\nA patient creates an account. A patient record is created with it, so they can use the assistant right away (FR-30)."
+      operationId: pOSTapiv1authregisterPatientAPatientCreatesAnAccountAPatientRecordIsCreatedWithItSoTheyCanUseTheAssistantRightAwayFR30
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Authentication
+  /api/v1/auth/clinics:
+    get:
+      summary: 'GET /api/v1/auth/clinics — clinic names for the register screen.'
+      operationId: gETapiv1authclinicsClinicNamesForTheRegisterScreen
+      description: ''
+      parameters: []
+      responses:
+        500:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  errors:
+                    -
+                      status: 500
+                      message: 'Server error.'
+                      source: ''
+                properties:
+                  errors:
+                    type: array
+                    example:
+                      -
+                        status: 500
+                        message: 'Server error.'
+                        source: ''
+                    items:
+                      type: object
+                      properties:
+                        status:
+                          type: integer
+                          example: 500
+                        message:
+                          type: string
+                          example: 'Server error.'
+                        source:
+                          type: string
+                          example: ''
+      tags:
+        - Authentication
+  /api/v1/auth/logout:
+    post:
+      summary: ''
+      operationId: postApiV1AuthLogout
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Authentication
+  /api/v1/auth/me:
+    get:
+      summary: ''
+      operationId: getApiV1AuthMe
+      description: ''
+      parameters: []
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  errors:
+                    -
+                      status: 401
+                      message: Unauthenticated
+                      source: ''
+                properties:
+                  errors:
+                    type: array
+                    example:
+                      -
+                        status: 401
+                        message: Unauthenticated
+                        source: ''
+                    items:
+                      type: object
+                      properties:
+                        status:
+                          type: integer
+                          example: 401
+                        message:
+                          type: string
+                          example: Unauthenticated
+                        source:
+                          type: string
+                          example: ''
+      tags:
+        - Authentication
+  /api/v1/auth/refresh:
+    post:
+      summary: ''
+      operationId: postApiV1AuthRefresh
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Authentication
+  /api/v1/clinic-info:
+    get:
+      summary: 'GET /api/v1/clinic-info — {info:{director,address,phone2}, hours:{mon:{closed,open,close},.'
+      operationId: gETapiv1clinicInfoinfodirectoraddressphone2Hoursmonclosedopenclose
+      description: '..}}'
+      parameters: []
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  errors:
+                    -
+                      status: 401
+                      message: Unauthenticated
+                      source: ''
+                properties:
+                  errors:
+                    type: array
+                    example:
+                      -
+                        status: 401
+                        message: Unauthenticated
+                        source: ''
+                    items:
+                      type: object
+                      properties:
+                        status:
+                          type: integer
+                          example: 401
+                        message:
+                          type: string
+                          example: Unauthenticated
+                        source:
+                          type: string
+                          example: ''
+      tags:
+        - 'Clinic info and hours'
+    put:
+      summary: 'PUT /api/v1/clinic-info {info:{.'
+      operationId: pUTapiv1clinicInfoinfo
+      description: '..}, hours:{mon:{closed,open,close},...}, sync_landing:bool}'
+      parameters: []
+      responses: {  }
+      tags:
+        - 'Clinic info and hours'
+  '/api/v1/r/{res}':
+    get:
+      summary: ''
+      operationId: getApiV1RRes
+      description: ''
+      parameters: []
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  errors:
+                    -
+                      status: 401
+                      message: Unauthenticated
+                      source: ''
+                properties:
+                  errors:
+                    type: array
+                    example:
+                      -
+                        status: 401
+                        message: Unauthenticated
+                        source: ''
+                    items:
+                      type: object
+                      properties:
+                        status:
+                          type: integer
+                          example: 401
+                        message:
+                          type: string
+                          example: Unauthenticated
+                        source:
+                          type: string
+                          example: ''
+      tags:
+        - 'Clinic records'
+    post:
+      summary: ''
+      operationId: postApiV1RRes
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - 'Clinic records'
+    parameters:
+      -
+        in: path
+        name: res
+        description: ''
+        example: architecto
+        required: true
+        schema:
+          type: string
+  '/api/v1/r/{res}/{id}':
+    get:
+      summary: ''
+      operationId: getApiV1RResId
+      description: ''
+      parameters: []
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  errors:
+                    -
+                      status: 401
+                      message: Unauthenticated
+                      source: ''
+                properties:
+                  errors:
+                    type: array
+                    example:
+                      -
+                        status: 401
+                        message: Unauthenticated
+                        source: ''
+                    items:
+                      type: object
+                      properties:
+                        status:
+                          type: integer
+                          example: 401
+                        message:
+                          type: string
+                          example: Unauthenticated
+                        source:
+                          type: string
+                          example: ''
+      tags:
+        - 'Clinic records'
+    put:
+      summary: ''
+      operationId: putApiV1RResId
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - 'Clinic records'
+    delete:
+      summary: ''
+      operationId: deleteApiV1RResId
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - 'Clinic records'
+    parameters:
+      -
+        in: path
+        name: res
+        description: ''
+        example: architecto
+        required: true
+        schema:
+          type: string
+      -
+        in: path
+        name: id
+        description: 'The ID of the {res}.'
+        example: architecto
+        required: true
+        schema:
+          type: string
+  '/api/v1/r/{res}/{id}/restore':
+    post:
+      summary: "POST /api/v1/r/patient-records/{id}/restore\nBrings an archived patient back into the lists (WST criterion 11: recovery)."
+      operationId: pOSTapiv1rpatientRecordsidrestoreBringsAnArchivedPatientBackIntoTheListsWSTCriterion11Recovery
+      description: 'Same roles that may archive; the audit log keeps the before and after.'
+      parameters: []
+      responses: {  }
+      tags:
+        - 'Clinic records'
+    parameters:
+      -
+        in: path
+        name: res
+        description: ''
+        example: architecto
+        required: true
+        schema:
+          type: string
+      -
+        in: path
+        name: id
+        description: 'The ID of the {res}.'
+        example: architecto
+        required: true
+        schema:
+          type: string
+  /api/v1/queue:
+    get:
+      summary: "GET /queue?date=&dentistId= — today's patients in order of arrival or appointment time."
+      operationId: gETqueuedatedentistIdTodaysPatientsInOrderOfArrivalOrAppointmentTime
+      description: ''
+      parameters: []
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  errors:
+                    -
+                      status: 401
+                      message: Unauthenticated
+                      source: ''
+                properties:
+                  errors:
+                    type: array
+                    example:
+                      -
+                        status: 401
+                        message: Unauthenticated
+                        source: ''
+                    items:
+                      type: object
+                      properties:
+                        status:
+                          type: integer
+                          example: 401
+                        message:
+                          type: string
+                          example: Unauthenticated
+                        source:
+                          type: string
+                          example: ''
+      tags:
+        - 'Clinic workflow'
+  /api/v1/queue/walkin:
+    post:
+      summary: 'POST /queue/walkin {patientId, dentistId, serviceId}'
+      operationId: pOSTqueuewalkinpatientIdDentistIdServiceId
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - 'Clinic workflow'
+  '/api/v1/queue/{id}/status':
+    post:
+      summary: 'POST /queue/{id}/status {status} — move an appointment through its statuses.'
+      operationId: pOSTqueueidstatusstatusMoveAnAppointmentThroughItsStatuses
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - 'Clinic workflow'
+    parameters:
+      -
+        in: path
+        name: id
+        description: 'The ID of the queue.'
+        example: architecto
+        required: true
+        schema:
+          type: string
+  '/api/v1/queue/{id}/followup':
+    post:
+      summary: 'POST /queue/{id}/followup {date} — books a follow-up at the first open slot of that day.'
+      operationId: pOSTqueueidfollowupdateBooksAFollowUpAtTheFirstOpenSlotOfThatDay
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - 'Clinic workflow'
+    parameters:
+      -
+        in: path
+        name: id
+        description: 'The ID of the queue.'
+        example: architecto
+        required: true
+        schema:
+          type: string
+  /api/v1/invoices/generate:
+    post:
+      summary: 'POST /invoices/generate {appointmentId} — builds an invoice from the treatments done (or the service price).'
+      operationId: pOSTinvoicesgenerateappointmentIdBuildsAnInvoiceFromTheTreatmentsDoneorTheServicePrice
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - 'Clinic workflow'
+  '/api/v1/patient-summary/{id}':
+    get:
+      summary: 'GET /patient-summary/{id} — automatic summary, clearly labelled.'
+      operationId: gETpatientSummaryidAutomaticSummaryClearlyLabelled
+      description: ''
+      parameters: []
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  errors:
+                    -
+                      status: 401
+                      message: Unauthenticated
+                      source: ''
+                properties:
+                  errors:
+                    type: array
+                    example:
+                      -
+                        status: 401
+                        message: Unauthenticated
+                        source: ''
+                    items:
+                      type: object
+                      properties:
+                        status:
+                          type: integer
+                          example: 401
+                        message:
+                          type: string
+                          example: Unauthenticated
+                        source:
+                          type: string
+                          example: ''
+      tags:
+        - 'Clinic workflow'
+    parameters:
+      -
+        in: path
+        name: id
+        description: 'The ID of the patient summary.'
+        example: architecto
+        required: true
+        schema:
+          type: string
+  /api/v1/reports:
+    get:
+      summary: 'GET /reports?from=&to='
+      operationId: gETreportsfromto
+      description: ''
+      parameters: []
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  errors:
+                    -
+                      status: 401
+                      message: Unauthenticated
+                      source: ''
+                properties:
+                  errors:
+                    type: array
+                    example:
+                      -
+                        status: 401
+                        message: Unauthenticated
+                        source: ''
+                    items:
+                      type: object
+                      properties:
+                        status:
+                          type: integer
+                          example: 401
+                        message:
+                          type: string
+                          example: Unauthenticated
+                        source:
+                          type: string
+                          example: ''
+      tags:
+        - 'Clinic workflow'
+  /api/v1/reminders/run:
+    post:
+      summary: 'POST /reminders/run — the same job the schedule runs (php artisan smilesync:reminders).'
+      operationId: pOSTremindersrunTheSameJobTheScheduleRunsphpArtisanSmilesyncreminders
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - 'Clinic workflow'
+  '/api/v1/waitlist/{id}/confirm':
+    post:
+      summary: 'POST /waitlist/{id}/confirm — the patient takes the offered slot and the appointment is created.'
+      operationId: pOSTwaitlistidconfirmThePatientTakesTheOfferedSlotAndTheAppointmentIsCreated
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - 'Clinic workflow'
+    parameters:
+      -
+        in: path
+        name: id
+        description: 'The ID of the waitlist.'
+        example: architecto
+        required: true
+        schema:
+          type: string
+  /api/v1/app-settings:
+    get:
+      summary: 'GET /app-settings — reminder timing, no-show threshold, offer expiry.'
+      operationId: gETappSettingsReminderTimingNoShowThresholdOfferExpiry
+      description: ''
+      parameters: []
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  errors:
+                    -
+                      status: 401
+                      message: Unauthenticated
+                      source: ''
+                properties:
+                  errors:
+                    type: array
+                    example:
+                      -
+                        status: 401
+                        message: Unauthenticated
+                        source: ''
+                    items:
+                      type: object
+                      properties:
+                        status:
+                          type: integer
+                          example: 401
+                        message:
+                          type: string
+                          example: Unauthenticated
+                        source:
+                          type: string
+                          example: ''
+      tags:
+        - 'Clinic workflow'
+    put:
+      summary: 'PUT /app-settings'
+      operationId: pUTappSettings
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - 'Clinic workflow'
+  /api/v1/clinic/logo:
+    post:
+      summary: 'POST /clinic/logo (multipart: image) — the clinic logo (FR-07).'
+      operationId: pOSTcliniclogomultipartImageTheClinicLogoFR07
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - 'Clinic workflow'
+  '/api/v1/clinics/{id}/admin':
+    post:
+      summary: 'POST /clinics/{id}/admin {name,email,password} — SuperAdmin creates the Clinic Administrator account (FR-06).'
+      operationId: pOSTclinicsidadminnameemailpasswordSuperAdminCreatesTheClinicAdministratorAccountFR06
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - 'Clinic workflow'
+    parameters:
+      -
+        in: path
+        name: id
+        description: 'The ID of the clinic.'
+        example: architecto
+        required: true
+        schema:
+          type: string
+  /api/v1/ocr/upload:
+    post:
+      summary: 'POST /ocr/upload (multipart: image, patientId, text?)'
+      operationId: pOSTocruploadmultipartImagePatientIdText
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - 'Clinic workflow'
+  /api/v1/stats:
+    get:
+      summary: "GET /api/v1/stats — real counts for the staff dashboard, limited to the user's clinic."
+      operationId: gETapiv1statsRealCountsForTheStaffDashboardLimitedToTheUsersClinic
+      description: ''
+      parameters: []
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  errors:
+                    -
+                      status: 401
+                      message: Unauthenticated
+                      source: ''
+                properties:
+                  errors:
+                    type: array
+                    example:
+                      -
+                        status: 401
+                        message: Unauthenticated
+                        source: ''
+                    items:
+                      type: object
+                      properties:
+                        status:
+                          type: integer
+                          example: 401
+                        message:
+                          type: string
+                          example: Unauthenticated
+                        source:
+                          type: string
+                          example: ''
+      tags:
+        - Dashboard
+  /api/v1/stats/finance:
+    get:
+      summary: 'GET /api/v1/stats/finance?branch_id= — sales, paid, pending and charts for the admin dashboard.'
+      operationId: gETapiv1statsfinancebranchIdSalesPaidPendingAndChartsForTheAdminDashboard
+      description: ''
+      parameters: []
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  errors:
+                    -
+                      status: 401
+                      message: Unauthenticated
+                      source: ''
+                properties:
+                  errors:
+                    type: array
+                    example:
+                      -
+                        status: 401
+                        message: Unauthenticated
+                        source: ''
+                    items:
+                      type: object
+                      properties:
+                        status:
+                          type: integer
+                          example: 401
+                        message:
+                          type: string
+                          example: Unauthenticated
+                        source:
+                          type: string
+                          example: ''
+      tags:
+        - Dashboard
+  /api/v1/public/landing:
+    get:
+      summary: 'GET /api/v1/public/landing — what visitors see (no login). Published feedback becomes testimonials.'
+      operationId: gETapiv1publiclandingWhatVisitorsSeenoLoginPublishedFeedbackBecomesTestimonials
+      description: ''
+      parameters: []
+      responses:
+        500:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  errors:
+                    -
+                      status: 500
+                      message: 'Server error.'
+                      source: ''
+                properties:
+                  errors:
+                    type: array
+                    example:
+                      -
+                        status: 500
+                        message: 'Server error.'
+                        source: ''
+                    items:
+                      type: object
+                      properties:
+                        status:
+                          type: integer
+                          example: 500
+                        message:
+                          type: string
+                          example: 'Server error.'
+                        source:
+                          type: string
+                          example: ''
+      tags:
+        - 'Landing page'
+  /api/v1/landing:
+    put:
+      summary: 'PUT /api/v1/landing {content:{key:value,.'
+      operationId: pUTapiv1landingcontentkeyvalue
+      description: '..}} — admins only. Keys are limited to simple names.'
+      parameters: []
+      responses: {  }
+      tags:
+        - 'Landing page'
+  /api/v1/lookups:
+    get:
+      summary: "GET /api/v1/lookups\nEverything the front end needs to fill its dropdowns. Staff also get the patient names."
+      operationId: gETapiv1lookupsEverythingTheFrontEndNeedsToFillItsDropdownsStaffAlsoGetThePatientNames
+      description: ''
+      parameters: []
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  errors:
+                    -
+                      status: 401
+                      message: Unauthenticated
+                      source: ''
+                properties:
+                  errors:
+                    type: array
+                    example:
+                      -
+                        status: 401
+                        message: Unauthenticated
+                        source: ''
+                    items:
+                      type: object
+                      properties:
+                        status:
+                          type: integer
+                          example: 401
+                        message:
+                          type: string
+                          example: Unauthenticated
+                        source:
+                          type: string
+                          example: ''
+      tags:
+        - Lookups
+  '/api/v1/patients/{patient_patient_id}/appointments':
+    get:
+      summary: "GET /api/v1/patients/{patient}/appointments\nLists only this patient's appointments. All AppointmentFilter parameters work here too."
+      operationId: gETapiv1patientspatientappointmentsListsOnlyThisPatientsAppointmentsAllAppointmentFilterParametersWorkHereToo
+      description: ''
+      parameters: []
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  errors:
+                    -
+                      status: 401
+                      message: Unauthenticated
+                      source: ''
+                properties:
+                  errors:
+                    type: array
+                    example:
+                      -
+                        status: 401
+                        message: Unauthenticated
+                        source: ''
+                    items:
+                      type: object
+                      properties:
+                        status:
+                          type: integer
+                          example: 401
+                        message:
+                          type: string
+                          example: Unauthenticated
+                        source:
+                          type: string
+                          example: ''
+      tags:
+        - 'Patient Appointments'
+    post:
+      summary: "POST /api/v1/patients/{patient}/appointments\nCreates an appointment for the patient named in the URL."
+      operationId: pOSTapiv1patientspatientappointmentsCreatesAnAppointmentForThePatientNamedInTheURL
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - 'Patient Appointments'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  description: ''
+                  example: []
+                  properties:
+                    attributes:
+                      type: object
+                      description: ''
+                      example: []
+                      properties:
+                        startTime:
+                          type: string
+                          description: 'Start of the appointment. Must be in the future. Must be a valid date. Must be a date after <code>now</code>.'
+                          example: '2026-12-10 10:00:00'
+                        endTime:
+                          type: string
+                          description: 'End of the appointment. Must be after the start time. Must be a valid date. Must be a date after <code>data.attributes.startTime</code>.'
+                          example: '2026-12-10 11:00:00'
+                        status:
+                          type: string
+                          description: 'pending or confirmed.'
+                          example: pending
+                          enum:
+                            - pending
+                            - confirmed
+                        bookedVia:
+                          type: string
+                          description: 'How it was booked: chatbot, portal or walk_in.'
+                          example: portal
+                          enum:
+                            - chatbot
+                            - portal
+                            - walk_in
+                        followUpOf:
+                          type: integer
+                          description: 'Id of the earlier appointment this one follows up (optional). Must match an existing stored value.'
+                          example: null
+                          nullable: true
+                      required:
+                        - startTime
+                        - endTime
+                    relationships:
+                      type: object
+                      description: ''
+                      example: []
+                      properties:
+                        patient:
+                          type: object
+                          description: ''
+                          example: []
+                          properties:
+                            data:
+                              type: object
+                              description: ''
+                              example: []
+                              properties:
+                                id:
+                                  type: integer
+                                  description: 'The patient id. Patients may only use their own id. On /patients/{patient}/appointments it is taken from the URL. Must match an existing stored value.'
+                                  example: 14
+                              required:
+                                - id
+                        dentist:
+                          type: object
+                          description: ''
+                          example: []
+                          properties:
+                            data:
+                              type: object
+                              description: ''
+                              example: []
+                              properties:
+                                id:
+                                  type: integer
+                                  description: 'The dentist id. Must match an existing stored value.'
+                                  example: 1
+                              required:
+                                - id
+                        branch:
+                          type: object
+                          description: ''
+                          example: []
+                          properties:
+                            data:
+                              type: object
+                              description: ''
+                              example: []
+                              properties:
+                                id:
+                                  type: integer
+                                  description: 'The branch id. Must match an existing stored value.'
+                                  example: 1
+                              required:
+                                - id
+                        service:
+                          type: object
+                          description: ''
+                          example: []
+                          properties:
+                            data:
+                              type: object
+                              description: ''
+                              example: []
+                              properties:
+                                id:
+                                  type: integer
+                                  description: 'The service id. Must match an existing stored value.'
+                                  example: 1
+                              required:
+                                - id
+                  required:
+                    - attributes
+              required:
+                - data
+    parameters:
+      -
+        in: path
+        name: patient_patient_id
+        description: 'The ID of the patient patient.'
+        example: 16
+        required: true
+        schema:
+          type: integer
+  '/api/v1/patients/{patient_patient_id}/appointments/{appointment_id}':
+    delete:
+      summary: "DELETE /api/v1/patients/{patient}/appointments/{appointment}\nDeletes the appointment. The scoped binding returns 404 if it is not this patient's appointment."
+      operationId: dELETEapiv1patientspatientappointmentsappointmentDeletesTheAppointmentTheScopedBindingReturns404IfItIsNotThisPatientsAppointment
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - 'Patient Appointments'
+    parameters:
+      -
+        in: path
+        name: patient_patient_id
+        description: 'The ID of the patient patient.'
+        example: 16
+        required: true
+        schema:
+          type: integer
+      -
+        in: path
+        name: appointment_id
+        description: 'The ID of the appointment.'
+        example: 16
+        required: true
+        schema:
+          type: integer
+  '/api/v1/patients/{patient_patient_id}/appointments/{appointment_appointment_id}':
+    put:
+      summary: "PUT /api/v1/patients/{patient}/appointments/{appointment}\nReplaces the whole appointment (staff only)."
+      operationId: pUTapiv1patientspatientappointmentsappointmentReplacesTheWholeAppointmentstaffOnly
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - 'Patient Appointments'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  description: ''
+                  example: []
+                  properties:
+                    attributes:
+                      type: object
+                      description: ''
+                      example: []
+                      properties:
+                        startTime:
+                          type: string
+                          description: 'Must be a valid date.'
+                          example: '2026-11-23T16:47:32'
+                        endTime:
+                          type: string
+                          description: 'Must be a valid date. Must be a date after <code>data.attributes.startTime</code>.'
+                          example: '2052-12-16'
+                        status:
+                          type: string
+                          description: ''
+                          example: checked_in
+                          enum:
+                            - pending
+                            - confirmed
+                            - checked_in
+                            - completed
+                            - cancelled
+                            - no_show
+                        bookedVia:
+                          type: string
+                          description: ''
+                          example: portal
+                          enum:
+                            - chatbot
+                            - portal
+                            - walk_in
+                        followUpOf:
+                          type: integer
+                          description: 'Must match an existing stored value.'
+                          example: 16
+                          nullable: true
+                      required:
+                        - startTime
+                        - endTime
+                        - status
+                        - bookedVia
+                    relationships:
+                      type: object
+                      description: ''
+                      example: []
+                      properties:
+                        patient:
+                          type: object
+                          description: ''
+                          example: []
+                          properties:
+                            data:
+                              type: object
+                              description: ''
+                              example: []
+                              properties:
+                                id:
+                                  type: integer
+                                  description: 'Must match an existing stored value.'
+                                  example: 16
+                              required:
+                                - id
+                        dentist:
+                          type: object
+                          description: ''
+                          example: []
+                          properties:
+                            data:
+                              type: object
+                              description: ''
+                              example: []
+                              properties:
+                                id:
+                                  type: integer
+                                  description: 'Must match an existing stored value.'
+                                  example: 16
+                              required:
+                                - id
+                        branch:
+                          type: object
+                          description: ''
+                          example: []
+                          properties:
+                            data:
+                              type: object
+                              description: ''
+                              example: []
+                              properties:
+                                id:
+                                  type: integer
+                                  description: 'Must match an existing stored value.'
+                                  example: 16
+                              required:
+                                - id
+                        service:
+                          type: object
+                          description: ''
+                          example: []
+                          properties:
+                            data:
+                              type: object
+                              description: ''
+                              example: []
+                              properties:
+                                id:
+                                  type: integer
+                                  description: 'Must match an existing stored value.'
+                                  example: 16
+                              required:
+                                - id
+                  required:
+                    - attributes
+                    - relationships
+              required:
+                - data
+    patch:
+      summary: "PATCH /api/v1/patients/{patient}/appointments/{appointment}\nUpdates only the fields that were sent."
+      operationId: pATCHapiv1patientspatientappointmentsappointmentUpdatesOnlyTheFieldsThatWereSent
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - 'Patient Appointments'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  description: ''
+                  example: []
+                  properties:
+                    attributes:
+                      type: object
+                      description: ''
+                      example: []
+                      properties:
+                        startTime:
+                          type: string
+                          description: 'New start time. Must be a valid date.'
+                          example: '2026-12-12 10:00:00'
+                        endTime:
+                          type: string
+                          description: 'New end time. Must be after the start time. Must be a valid date.'
+                          example: '2026-12-12 11:00:00'
+                        status:
+                          type: string
+                          description: 'pending, confirmed, checked_in, completed, cancelled or no_show.'
+                          example: confirmed
+                          enum:
+                            - pending
+                            - confirmed
+                            - checked_in
+                            - completed
+                            - cancelled
+                            - no_show
+                        bookedVia:
+                          type: string
+                          description: 'chatbot, portal or walk_in.'
+                          example: portal
+                          enum:
+                            - chatbot
+                            - portal
+                            - walk_in
+                        checkInTime:
+                          type: string
+                          description: 'When the patient checked in (optional). Must be a valid date.'
+                          example: null
+                          nullable: true
+                        followUpOf:
+                          type: integer
+                          description: 'Id of the earlier appointment this one follows up (optional). Must match an existing stored value.'
+                          example: null
+                          nullable: true
+                    relationships:
+                      type: object
+                      description: ''
+                      example: []
+                      properties:
+                        dentist:
+                          type: object
+                          description: ''
+                          example: []
+                          properties:
+                            data:
+                              type: object
+                              description: ''
+                              example: []
+                              properties:
+                                id:
+                                  type: integer
+                                  description: 'The dentist id. Must match an existing stored value.'
+                                  example: 1
+                        branch:
+                          type: object
+                          description: ''
+                          example: []
+                          properties:
+                            data:
+                              type: object
+                              description: ''
+                              example: []
+                              properties:
+                                id:
+                                  type: integer
+                                  description: 'The branch id. Must match an existing stored value.'
+                                  example: 1
+                        service:
+                          type: object
+                          description: ''
+                          example: []
+                          properties:
+                            data:
+                              type: object
+                              description: ''
+                              example: []
+                              properties:
+                                id:
+                                  type: integer
+                                  description: 'The service id. Must match an existing stored value.'
+                                  example: 1
+                        patient:
+                          type: object
+                          description: ''
+                          example: []
+                          properties:
+                            data:
+                              type: object
+                              description: ''
+                              example: []
+                              properties:
+                                id:
+                                  type: string
+                                  description: 'Staff only. Patients may not change the patient of an appointment.'
+                                  example: null
+    parameters:
+      -
+        in: path
+        name: patient_patient_id
+        description: 'The ID of the patient patient.'
+        example: 16
+        required: true
+        schema:
+          type: integer
+      -
+        in: path
+        name: appointment_appointment_id
+        description: 'The ID of the appointment appointment.'
+        example: 16
+        required: true
+        schema:
+          type: integer
+  /api/v1/my/transactions:
+    get:
+      summary: "GET /api/v1/my/transactions — every payment made on the patient's own invoices."
+      operationId: gETapiv1mytransactionsEveryPaymentMadeOnThePatientsOwnInvoices
+      description: ''
+      parameters: []
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  errors:
+                    -
+                      status: 401
+                      message: Unauthenticated
+                      source: ''
+                properties:
+                  errors:
+                    type: array
+                    example:
+                      -
+                        status: 401
+                        message: Unauthenticated
+                        source: ''
+                    items:
+                      type: object
+                      properties:
+                        status:
+                          type: integer
+                          example: 401
+                        message:
+                          type: string
+                          example: Unauthenticated
+                        source:
+                          type: string
+                          example: ''
+      tags:
+        - 'Patient portal'
+  /api/v1/my/notifications:
+    get:
+      summary: 'GET /api/v1/my/notifications — built from reminders, staff replies, invoices, payments and appointment updates.'
+      operationId: gETapiv1mynotificationsBuiltFromRemindersStaffRepliesInvoicesPaymentsAndAppointmentUpdates
+      description: ''
+      parameters: []
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  errors:
+                    -
+                      status: 401
+                      message: Unauthenticated
+                      source: ''
+                properties:
+                  errors:
+                    type: array
+                    example:
+                      -
+                        status: 401
+                        message: Unauthenticated
+                        source: ''
+                    items:
+                      type: object
+                      properties:
+                        status:
+                          type: integer
+                          example: 401
+                        message:
+                          type: string
+                          example: Unauthenticated
+                        source:
+                          type: string
+                          example: ''
+      tags:
+        - 'Patient portal'
+  /api/v1/my/notifications/read:
+    post:
+      summary: 'POST /api/v1/my/notifications/read  {keys:[.'
+      operationId: pOSTapiv1mynotificationsreadkeys
+      description: '..]} or {all:true}'
+      parameters: []
+      responses: {  }
+      tags:
+        - 'Patient portal'
+  /api/v1/patients:
+    get:
+      summary: "GET /api/v1/patients\nFilters and sorting come from the URL (?fullName=*maria*, ?sort=-createdAt ."
+      operationId: gETapiv1patientsFiltersAndSortingComeFromTheURLfullNamemariasortCreatedAt
+      description: "..).\nAdd ?include=appointments to load each patient's appointments in one extra query.\n\nStaff only. A patient must never be able to list other patients: the clinic\nscope limits rows to the clinic, not to the person, so without this check a\nsigned-in patient could read every other patient's name, email and contact\nnumber. Patients use the /my/* endpoints for their own record instead."
+      parameters: []
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  errors:
+                    -
+                      status: 401
+                      message: Unauthenticated
+                      source: ''
+                properties:
+                  errors:
+                    type: array
+                    example:
+                      -
+                        status: 401
+                        message: Unauthenticated
+                        source: ''
+                    items:
+                      type: object
+                      properties:
+                        status:
+                          type: integer
+                          example: 401
+                        message:
+                          type: string
+                          example: Unauthenticated
+                        source:
+                          type: string
+                          example: ''
+      tags:
+        - Patients
+  '/api/v1/patients/{patient_id}':
+    get:
+      summary: "GET /api/v1/patients/{patient}\nAdd ?include=appointments to load this patient's appointments."
+      operationId: gETapiv1patientspatientAddincludeappointmentsToLoadThisPatientsAppointments
+      description: 'A patient may read only their own record.'
+      parameters: []
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  errors:
+                    -
+                      status: 401
+                      message: Unauthenticated
+                      source: ''
+                properties:
+                  errors:
+                    type: array
+                    example:
+                      -
+                        status: 401
+                        message: Unauthenticated
+                        source: ''
+                    items:
+                      type: object
+                      properties:
+                        status:
+                          type: integer
+                          example: 401
+                        message:
+                          type: string
+                          example: Unauthenticated
+                        source:
+                          type: string
+                          example: ''
+      tags:
+        - Patients
+    parameters:
+      -
+        in: path
+        name: patient_id
+        description: 'The ID of the patient.'
+        example: 16
+        required: true
+        schema:
+          type: integer
+  /api/v1/ocr/read:
+    post:
+      summary: 'POST /api/v1/ocr/read (multipart: image)'
+      operationId: pOSTapiv1ocrreadmultipartImage
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - 'Scanned forms'
+  /api/v1/slots:
+    get:
+      summary: "GET /api/v1/slots\nLists the free slots of one dentist on one date. The slot length comes from the service."
+      operationId: gETapiv1slotsListsTheFreeSlotsOfOneDentistOnOneDateTheSlotLengthComesFromTheService
+      description: ''
+      parameters:
+        -
+          in: query
+          name: dentistId
+          description: 'The dentist.'
+          example: 1
+          required: true
+          schema:
+            type: integer
+            description: 'The dentist.'
+            example: 1
+        -
+          in: query
+          name: serviceId
+          description: 'The service (sets the duration).'
+          example: 1
+          required: true
+          schema:
+            type: integer
+            description: 'The service (sets the duration).'
+            example: 1
+        -
+          in: query
+          name: date
+          description: 'YYYY-MM-DD, today or later.'
+          example: '2026-11-09'
+          required: true
+          schema:
+            type: string
+            description: 'YYYY-MM-DD, today or later.'
+            example: '2026-11-09'
+        -
+          in: query
+          name: branchId
+          description: 'The branch (optional).'
+          example: 1
+          required: false
+          schema:
+            type: integer
+            description: 'The branch (optional).'
+            example: 1
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  errors:
+                    -
+                      status: 401
+                      message: Unauthenticated
+                      source: ''
+                properties:
+                  errors:
+                    type: array
+                    example:
+                      -
+                        status: 401
+                        message: Unauthenticated
+                        source: ''
+                    items:
+                      type: object
+                      properties:
+                        status:
+                          type: integer
+                          example: 401
+                        message:
+                          type: string
+                          example: Unauthenticated
+                        source:
+                          type: string
+                          example: ''
+      tags:
+        - Slots
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                dentistId:
+                  type: integer
+                  description: 'Must match an existing stored value.'
+                  example: 16
+                serviceId:
+                  type: integer
+                  description: 'Must match an existing stored value.'
+                  example: 16
+                date:
+                  type: string
+                  description: 'Must be a valid date in the format <code>Y-m-d</code>. Must be a date after or equal to <code>today</code>.'
+                  example: '2052-12-16'
+                branchId:
+                  type: integer
+                  description: 'Must match an existing stored value.'
+                  example: 16
+              required:
+                - dentistId
+                - serviceId
+                - date
+  /api/v1/chat/replies:
+    get:
+      summary: "GET /api/v1/chat/replies?after=ID — the logged-in patient's staff replies."
+      operationId: gETapiv1chatrepliesafterIDTheLoggedInPatientsStaffReplies
+      description: ''
+      parameters: []
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  errors:
+                    -
+                      status: 401
+                      message: Unauthenticated
+                      source: ''
+                properties:
+                  errors:
+                    type: array
+                    example:
+                      -
+                        status: 401
+                        message: Unauthenticated
+                        source: ''
+                    items:
+                      type: object
+                      properties:
+                        status:
+                          type: integer
+                          example: 401
+                        message:
+                          type: string
+                          example: Unauthenticated
+                        source:
+                          type: string
+                          example: ''
+      tags:
+        - 'Staff inbox'
+  /api/v1/chat/inbox:
+    get:
+      summary: 'GET /api/v1/chat/inbox'
+      operationId: gETapiv1chatinbox
+      description: ''
+      parameters: []
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  errors:
+                    -
+                      status: 401
+                      message: Unauthenticated
+                      source: ''
+                properties:
+                  errors:
+                    type: array
+                    example:
+                      -
+                        status: 401
+                        message: Unauthenticated
+                        source: ''
+                    items:
+                      type: object
+                      properties:
+                        status:
+                          type: integer
+                          example: 401
+                        message:
+                          type: string
+                          example: Unauthenticated
+                        source:
+                          type: string
+                          example: ''
+      tags:
+        - 'Staff inbox'
+  '/api/v1/chat/inbox/{patientId}':
+    get:
+      summary: 'GET /api/v1/chat/inbox/{patientId} — the whole conversation.'
+      operationId: gETapiv1chatinboxpatientIdTheWholeConversation
+      description: ''
+      parameters: []
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  errors:
+                    -
+                      status: 401
+                      message: Unauthenticated
+                      source: ''
+                properties:
+                  errors:
+                    type: array
+                    example:
+                      -
+                        status: 401
+                        message: Unauthenticated
+                        source: ''
+                    items:
+                      type: object
+                      properties:
+                        status:
+                          type: integer
+                          example: 401
+                        message:
+                          type: string
+                          example: Unauthenticated
+                        source:
+                          type: string
+                          example: ''
+      tags:
+        - 'Staff inbox'
+    parameters:
+      -
+        in: path
+        name: patientId
+        description: ''
+        example: architecto
+        required: true
+        schema:
+          type: string
+  '/api/v1/chat/inbox/{patientId}/reply':
+    post:
+      summary: 'POST /api/v1/chat/inbox/{patientId}/reply  body: {"message": ".'
+      operationId: pOSTapiv1chatinboxpatientIdreplyBodymessage
+      description: '.."}'
+      parameters: []
+      responses: {  }
+      tags:
+        - 'Staff inbox'
+    parameters:
+      -
+        in: path
+        name: patientId
+        description: ''
+        example: architecto
+        required: true
+        schema:
+          type: string
+  /api/v1/users:
+    get:
+      summary: "GET /api/v1/users\nLists every user with the filters and sorting from the URL."
+      operationId: gETapiv1usersListsEveryUserWithTheFiltersAndSortingFromTheURL
+      description: ''
+      parameters: []
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  errors:
+                    -
+                      status: 401
+                      message: Unauthenticated
+                      source: ''
+                properties:
+                  errors:
+                    type: array
+                    example:
+                      -
+                        status: 401
+                        message: Unauthenticated
+                        source: ''
+                    items:
+                      type: object
+                      properties:
+                        status:
+                          type: integer
+                          example: 401
+                        message:
+                          type: string
+                          example: Unauthenticated
+                        source:
+                          type: string
+                          example: ''
+      tags:
+        - Users
+    post:
+      summary: "POST /api/v1/users\nCreates a user (needs the user:create ability)."
+      operationId: pOSTapiv1usersCreatesAUserneedsTheUsercreateAbility
+      description: "A clinic admin can only add users to their own clinic. Only the SuperAdmin can pick a clinic\nor create another SuperAdmin. Every user except a SuperAdmin must belong to a clinic."
+      parameters: []
+      responses: {  }
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  description: ''
+                  example: []
+                  properties:
+                    attributes:
+                      type: object
+                      description: ''
+                      example: []
+                      properties:
+                        name:
+                          type: string
+                          description: ''
+                          example: architecto
+                        email:
+                          type: string
+                          description: 'Must be a valid email address.'
+                          example: zbailey@example.net
+                        role:
+                          type: string
+                          description: ''
+                          example: receptionist
+                          enum:
+                            - superadmin
+                            - clinic_admin
+                            - receptionist
+                            - dentist
+                            - patient
+                        status:
+                          type: string
+                          description: ''
+                          example: architecto
+                        password:
+                          type: string
+                          description: 'Must be at least 8 characters.'
+                          example: ']|{+-0pBNvYg'
+                      required:
+                        - name
+                        - email
+                        - role
+                        - password
+                    relationships:
+                      type: object
+                      description: ''
+                      example: []
+                      properties:
+                        clinic:
+                          type: object
+                          description: ''
+                          example: []
+                          properties:
+                            data:
+                              type: object
+                              description: ''
+                              example: []
+                              properties:
+                                id:
+                                  type: integer
+                                  description: 'Must match an existing stored value.'
+                                  example: 16
+                        branch:
+                          type: object
+                          description: ''
+                          example: []
+                          properties:
+                            data:
+                              type: object
+                              description: ''
+                              example: []
+                              properties:
+                                id:
+                                  type: integer
+                                  description: 'Must match an existing stored value.'
+                                  example: 16
+                  required:
+                    - attributes
+              required:
+                - data
+  '/api/v1/users/{id}':
+    get:
+      summary: 'GET /api/v1/users/{user}'
+      operationId: gETapiv1usersuser
+      description: ''
+      parameters: []
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  errors:
+                    -
+                      status: 401
+                      message: Unauthenticated
+                      source: ''
+                properties:
+                  errors:
+                    type: array
+                    example:
+                      -
+                        status: 401
+                        message: Unauthenticated
+                        source: ''
+                    items:
+                      type: object
+                      properties:
+                        status:
+                          type: integer
+                          example: 401
+                        message:
+                          type: string
+                          example: Unauthenticated
+                        source:
+                          type: string
+                          example: ''
+      tags:
+        - Users
+    delete:
+      summary: "DELETE /api/v1/users/{user}\nDeletes the user (needs user:delete)."
+      operationId: dELETEapiv1usersuserDeletesTheUserneedsUserdelete
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Users
+    parameters:
+      -
+        in: path
+        name: id
+        description: 'The ID of the user.'
+        example: 16
+        required: true
+        schema:
+          type: integer
+  '/api/v1/users/{user_id}':
+    put:
+      summary: "PUT /api/v1/users/{user}\nReplaces the whole user: every field is required (needs user:replace)."
+      operationId: pUTapiv1usersuserReplacesTheWholeUserEveryFieldIsRequiredneedsUserreplace
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  description: ''
+                  example: []
+                  properties:
+                    attributes:
+                      type: object
+                      description: ''
+                      example: []
+                      properties:
+                        name:
+                          type: string
+                          description: ''
+                          example: architecto
+                        email:
+                          type: string
+                          description: 'Must be a valid email address.'
+                          example: zbailey@example.net
+                        role:
+                          type: string
+                          description: ''
+                          example: dentist
+                          enum:
+                            - superadmin
+                            - clinic_admin
+                            - receptionist
+                            - dentist
+                            - patient
+                        status:
+                          type: string
+                          description: ''
+                          example: architecto
+                        password:
+                          type: string
+                          description: 'Must be at least 8 characters.'
+                          example: ']|{+-0pBNvYg'
+                      required:
+                        - name
+                        - email
+                        - role
+                        - status
+                        - password
+                    relationships:
+                      type: object
+                      description: ''
+                      example: []
+                      properties:
+                        clinic:
+                          type: object
+                          description: ''
+                          example: []
+                          properties:
+                            data:
+                              type: object
+                              description: ''
+                              example: []
+                              properties:
+                                id:
+                                  type: integer
+                                  description: 'Must match an existing stored value.'
+                                  example: 16
+                              required:
+                                - id
+                        branch:
+                          type: object
+                          description: ''
+                          example: []
+                          properties:
+                            data:
+                              type: object
+                              description: ''
+                              example: []
+                              properties:
+                                id:
+                                  type: integer
+                                  description: 'Must match an existing stored value.'
+                                  example: 16
+                              required:
+                                - id
+                  required:
+                    - attributes
+              required:
+                - data
+    patch:
+      summary: "PATCH /api/v1/users/{user}\nUpdates only the fields that were sent (needs user:update)."
+      operationId: pATCHapiv1usersuserUpdatesOnlyTheFieldsThatWereSentneedsUserupdate
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Users
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  description: ''
+                  example: []
+                  properties:
+                    attributes:
+                      type: object
+                      description: ''
+                      example: []
+                      properties:
+                        name:
+                          type: string
+                          description: ''
+                          example: architecto
+                        email:
+                          type: string
+                          description: 'Must be a valid email address.'
+                          example: zbailey@example.net
+                        role:
+                          type: string
+                          description: ''
+                          example: patient
+                          enum:
+                            - superadmin
+                            - clinic_admin
+                            - receptionist
+                            - dentist
+                            - patient
+                        status:
+                          type: string
+                          description: ''
+                          example: architecto
+                        password:
+                          type: string
+                          description: 'Must be at least 8 characters.'
+                          example: ']|{+-0pBNvYg'
+                    relationships:
+                      type: object
+                      description: ''
+                      example: []
+                      properties:
+                        clinic:
+                          type: object
+                          description: ''
+                          example: []
+                          properties:
+                            data:
+                              type: object
+                              description: ''
+                              example: []
+                              properties:
+                                id:
+                                  type: integer
+                                  description: 'Must match an existing stored value.'
+                                  example: 16
+                        branch:
+                          type: object
+                          description: ''
+                          example: []
+                          properties:
+                            data:
+                              type: object
+                              description: ''
+                              example: []
+                              properties:
+                                id:
+                                  type: integer
+                                  description: 'Must match an existing stored value.'
+                                  example: 16
+    parameters:
+      -
+        in: path
+        name: user_id
+        description: 'The ID of the user.'
+        example: 16
+        required: true
+        schema:
+          type: integer
+  /api/v1/waitlist:
+    get:
+      summary: "GET /api/v1/waitlist\nStaff see everyone. A patient sees only their own entries."
+      operationId: gETapiv1waitlistStaffSeeEveryoneAPatientSeesOnlyTheirOwnEntries
+      description: ''
+      parameters:
+        -
+          in: query
+          name: status
+          description: 'Filter: waiting, offered.'
+          example: waiting
+          required: false
+          schema:
+            type: string
+            description: 'Filter: waiting, offered.'
+            example: waiting
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  errors:
+                    -
+                      status: 401
+                      message: Unauthenticated
+                      source: ''
+                properties:
+                  errors:
+                    type: array
+                    example:
+                      -
+                        status: 401
+                        message: Unauthenticated
+                        source: ''
+                    items:
+                      type: object
+                      properties:
+                        status:
+                          type: integer
+                          example: 401
+                        message:
+                          type: string
+                          example: Unauthenticated
+                        source:
+                          type: string
+                          example: ''
+      tags:
+        - Waitlist
+    post:
+      summary: "POST /api/v1/waitlist\nJoin the waiting list. A patient joins for themselves. Staff must send patientId."
+      operationId: pOSTapiv1waitlistJoinTheWaitingListAPatientJoinsForThemselvesStaffMustSendPatientId
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Waitlist
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                patientId:
+                  type: integer
+                  description: 'Required for staff only.'
+                  example: 14
+                serviceId:
+                  type: integer
+                  description: ''
+                  example: 1
+                branchId:
+                  type: integer
+                  description: ''
+                  example: 1
+                dentistId:
+                  type: integer
+                  description: 'Any dentist if empty.'
+                  example: 1
+                  nullable: true
+                preferredDate:
+                  type: string
+                  description: 'Any date if empty. YYYY-MM-DD.'
+                  example: '2026-11-09'
+                  nullable: true
+              required:
+                - serviceId
+                - branchId
