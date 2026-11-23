@@ -689,3 +689,19 @@ body {
 .login-or { align-items: center; gap: 12px; color: var(--muted, #6b7280); font-size: 0.9rem; margin: 4px 0; }
 .login-or::before, .login-or::after { content: ''; flex: 1; height: 1px; background: currentColor; opacity: 0.3; }
 .login-google { display: flex; justify-content: center; min-height: 0; }
+
+/* ---- dashboard charts (charts.jsx) ---- */
+.chart svg { width: 100%; height: auto; display: block; overflow: visible; }
+.chart-legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 13px; color: var(--muted); }
+.chart-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.chart-legend i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+.chart-legend b { color: var(--ink); margin-left: 4px; }
+.chart-hover { font-size: 13px; color: var(--ink); font-weight: 600; min-height: 20px; margin: 6px 0 2px; }
+.donut-wrap { display: flex; align-items: center; gap: 22px; flex-wrap: wrap; }
+.donut-wrap svg { flex: none; }
+.donut-legend { flex: 1; min-width: 180px; display: grid; gap: 6px; }
+.donut-legend > div { display: grid; grid-template-columns: 12px 1fr auto 44px; align-items: center; gap: 10px; font-size: 14px; padding: 3px 6px; border-radius: 8px; cursor: default; }
+.donut-legend > div.on { background: var(--gold-soft); }
+.donut-legend i { width: 12px; height: 12px; border-radius: 3px; }
+.donut-legend b { font-weight: 700; color: var(--ink); text-align: right; }
+.donut-legend em { font-style: normal; color: var(--muted); text-align: right; font-size: 13px; }

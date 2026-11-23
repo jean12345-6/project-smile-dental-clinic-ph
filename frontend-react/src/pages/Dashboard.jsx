@@ -5,6 +5,11 @@ import { useAuth } from '../auth.jsx';
 import { money } from '../components.jsx';
 import { Alert, Badge, Card, Empty, fmt } from '../ui.jsx';
 import DashboardFinance from './DashboardFinance.jsx';
+import { Donut } from '../charts.jsx';
+
+// One colour per status, distinct enough to tell apart in the donut.
+const STATUS_COLORS = { pending: '#d97706', confirmed: '#2563eb', checked_in: '#d9ac4f', in_treatment: '#7c3aed', completed: '#16a34a', cancelled: '#dc2626', no_show: '#64748b' };
+const STATUS_LABELS = { pending: 'Pending', confirmed: 'Confirmed', checked_in: 'Checked in', in_treatment: 'In treatment', completed: 'Completed', cancelled: 'Cancelled', no_show: 'No show' };
 
 const ORDER = ['pending', 'confirmed', 'checked_in', 'in_treatment', 'completed', 'cancelled', 'no_show'];
 const initials = (n = '') => n.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join('').toUpperCase();
@@ -82,7 +87,6 @@ export default function Dashboard() {
   if (!s) return <>{head}<Alert>{error.join(' ')}</Alert></>;
 
   const by = s.appointments.byStatus || {};
-  const max = Math.max(1, ...ORDER.map((k) => by[k] || 0));
   const todays = (s.today || []).filter((a) => filter === 'all' || (filter === 'waiting' ? ['pending', 'confirmed', 'checked_in'].includes(a.status) : a.status === 'completed'));
   // This counted every unfinished appointment of the day, so at 9 PM it still reported
   // people as waiting whose time had long passed. Only what is still ahead counts.
@@ -135,13 +139,8 @@ export default function Dashboard() {
 
   const statusCard = (
     <Card title="Appointments by status">
-      {ORDER.map((k) => (
-        <div className="bar-row" key={k}>
-          <span className="bar-label"><Badge status={k} /></span>
-          <div className="bar"><div className={`bar-fill fill-${k}`} style={{ width: `${((by[k] || 0) / max) * 100}%` }} /></div>
-          <span className="bar-n">{by[k] || 0}</span>
-        </div>
-      ))}
+      <Donut center={ORDER.reduce((a, k) => a + (by[k] || 0), 0)} sub="appointments"
+        parts={ORDER.map((k) => ({ label: STATUS_LABELS[k], value: by[k] || 0, color: STATUS_COLORS[k] }))} />
     </Card>
   );
 

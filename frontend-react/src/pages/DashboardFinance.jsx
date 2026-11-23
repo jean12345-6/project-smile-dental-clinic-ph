@@ -3,6 +3,11 @@ import { api } from '../api.js';
 import { useAuth } from '../auth.jsx';
 import { money } from '../components.jsx';
 import { Alert, Card, Empty } from '../ui.jsx';
+import { ColumnChart, Donut, LineChart } from '../charts.jsx';
+
+const SALES = '#2563eb';
+const PAID = '#16a34a';
+const PENDING = '#d97706';
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const mlabel = (m) => `${MONTHS[Number(String(m).slice(5, 7)) - 1] || ''} ${String(m).slice(2, 4)}`;
@@ -67,9 +72,22 @@ export default function DashboardFinance({ leftBottom = null, rightTop = null, r
         <div style={{ minWidth: 0 }}>
           {d && (
             <>
-              <Card title="Revenue by month (last 12)" right={<span className="muted small">blue = sales, green = paid</span>}>
-                <Bars rows={d.byMonth.map((m) => ({ label: mlabel(m.month), value: Number(m.sales), value2: Number(m.paid) }))} fmt={money} />
+              <Card title="Revenue by month (last 12)">
+                {d.byMonth.length === 0 ? <Empty>No invoices yet.</Empty> : (
+                  <ColumnChart fmt={money}
+                    series={[{ key: 'sales', label: 'Sales', color: SALES }, { key: 'paid', label: 'Paid', color: PAID }]}
+                    rows={d.byMonth.map((m) => ({ label: mlabel(m.month), sales: Number(m.sales), paid: Number(m.paid) }))} />
+                )}
               </Card>
+              {t && Number(t.sales) > 0 && (
+                <Card title="Collection">
+                  <Donut center={`${t.pct}%`} sub="collected"
+                    parts={[
+                      { label: 'Paid', value: Number(t.paid), display: money(t.paid), short: `${Math.round((Number(t.paid) / Number(t.sales)) * 100)}%`, color: PAID },
+                      { label: 'Pending', value: Number(t.pending), display: money(t.pending), short: `${Math.round((Number(t.pending) / Number(t.sales)) * 100)}%`, color: PENDING },
+                    ]} />
+                </Card>
+              )}
               <Card title="Dentist performance (sales)">
                 <Bars color="#d97706" labelW={150} rows={d.byDentist.map((x) => ({ label: x.name, value: Number(x.sales) }))} fmt={money} />
               </Card>
@@ -92,8 +110,12 @@ export default function DashboardFinance({ leftBottom = null, rightTop = null, r
               <Card title="Most common procedures">
                 <Bars color="#7c3aed" labelW={170} valueW={50} rows={d.procedures.map((p) => ({ label: p.name, value: Number(p.n) }))} />
               </Card>
-              <Card title="Appointment trend (last 12)" right={<span className="muted small">blue = all, green = completed</span>}>
-                <Bars labelW={80} valueW={50} rows={d.trend.map((m) => ({ label: mlabel(m.month), value: Number(m.total), value2: Number(m.completed) }))} />
+              <Card title="Appointment trend (last 12)">
+                {d.trend.length === 0 ? <Empty>No appointments yet.</Empty> : (
+                  <LineChart
+                    series={[{ key: 'total', label: 'All appointments', color: SALES }, { key: 'completed', label: 'Completed', color: PAID }]}
+                    rows={d.trend.map((m) => ({ label: mlabel(m.month), total: Number(m.total), completed: Number(m.completed) }))} />
+                )}
               </Card>
             </>
           )}
