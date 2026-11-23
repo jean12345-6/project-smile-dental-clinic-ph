@@ -42,10 +42,15 @@ class ReportCache
     {
         $key = 'report:' . $name . ':v' . self::version() . ':' . md5(json_encode($params));
 
+        // Store plain arrays, never objects. The cache does not unserialize PHP classes
+        // (config/cache.php, serializable_classes = false), so a stored Collection came back
+        // as __PHP_Incomplete_Class and the second view of a report broke the page.
+        $plain = fn () => json_decode(json_encode($compute()), true);
+
         try {
-            return Cache::remember($key, self::TTL_SECONDS, $compute);
+            return Cache::remember($key, self::TTL_SECONDS, $plain);
         } catch (\Throwable $e) {
-            return $compute(); // the cache is an optimisation, never a requirement
+            return $plain(); // the cache is an optimisation, never a requirement
         }
     }
 }

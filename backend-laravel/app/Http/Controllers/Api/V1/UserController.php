@@ -25,9 +25,15 @@ class UserController extends APIController
      */
     public function index(UserFilter $filters)
     {
-        return UserResource::collection(
-            User::filter($filters)->paginate()->withQueryString()
-        );
+        // Only administrators manage accounts. Everyone else gets just their own account,
+        // so a patient cannot list the clinic's staff and other patients (WST criterion 3).
+        $q = User::filter($filters);
+        $me = request()->user();
+        if (! in_array($me?->role, ['superadmin', 'clinic_admin'], true)) {
+            $q->where('id', $me?->id);
+        }
+
+        return UserResource::collection($q->paginate()->withQueryString());
     }
 
     /**
@@ -75,6 +81,11 @@ class UserController extends APIController
      */
     public function show(User $user)
     {
+        $me = request()->user();
+        if (! in_array($me?->role, ['superadmin', 'clinic_admin'], true) && (int) $me?->id !== (int) $user->id) {
+            return $this->notAuthorized('You are not allowed to view this account.');
+        }
+
         return new UserResource($user);
     }
 

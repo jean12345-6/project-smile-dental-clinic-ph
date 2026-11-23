@@ -8,6 +8,7 @@ use App\Http\Requests\Api\V1\StoreAppointmentRequest;
 use App\Http\Requests\Api\V1\UpdateAppointmentRequest;
 use App\Http\Resources\V1\AppointmentResource;
 use App\Models\Appointment;
+use App\Support\Scope;
 
 /**
  * @group Appointments
@@ -22,8 +23,36 @@ class AppointmentController extends APIController
     public function index(AppointmentFilter $filters)
     {
         return AppointmentResource::collection(
-            Appointment::filter($filters)->paginate()->withQueryString()
+            self::ownRows(Appointment::filter($filters), request()->user())->paginate()->withQueryString()
         );
+    }
+
+    /**
+     * Least privilege on the appointment list (WST criterion 3).
+     * The clinic scope already keeps each clinic apart; on top of that a patient sees only
+     * their own appointments and a dentist only their own patients' appointments.
+     * Staff who run the front desk (receptionist, admins) still see the whole clinic.
+     */
+    public static function ownRows($q, $user)
+    {
+        if ($user?->role === 'patient') {
+            $q->whereIn('patient_id', fn ($s) => $s->select('patient_id')->from('patients')->where('user_id', $user->id));
+        }
+
+        return Scope::ownDentist($q, 'dentist_id', $user);
+    }
+
+    /** May this user read this one appointment? Same rule as the list. */
+    public static function canSee(Appointment $appointment, $user): bool
+    {
+        if ($user?->role === 'patient') {
+            return (int) $appointment->patient?->user_id === (int) $user->id;
+        }
+        if ($did = Scope::dentistId($user)) {
+            return (int) $appointment->dentist_id === $did;
+        }
+
+        return true;
     }
 
     /**
@@ -47,6 +76,9 @@ class AppointmentController extends APIController
      */
     public function show(Appointment $appointment)
     {
+        if (! self::canSee($appointment, request()->user())) {
+            return $this->notAuthorized('You are not allowed to view this appointment.');
+        }
         if ($this->include('patient')) {
             return new AppointmentResource($appointment->load('patient'));
         }
