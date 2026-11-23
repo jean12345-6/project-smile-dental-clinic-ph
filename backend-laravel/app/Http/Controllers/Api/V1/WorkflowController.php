@@ -10,7 +10,9 @@ use App\Support\Scope;
 use App\Support\Settings;
 use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
+use App\Support\ReportCache;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -207,12 +209,15 @@ class WorkflowController extends APIController
     /** GET /reports?from=&to= */
     public function reports(Request $r)
     {
-        if (! in_array($r->user()->role, ['superadmin', 'clinic_admin', 'receptionist', 'dentist'], true)) {
+        if (Gate::denies('view-reports')) {
             return Dbx::err('Not allowed.', 403);
         }
         $from = $r->query('from', now()->startOfMonth()->toDateString());
         $to = $r->query('to', now()->toDateString());
         $user = $r->user();
+        $cacheKey = ['clinic' => $user->clinic_id, 'user' => $user->id, 'role' => $user->role, 'pick' => $r->header('X-Clinic-Id'), 'from' => $from, 'to' => $to];
+
+        return response()->json(ReportCache::remember('reports', $cacheKey, function () use ($from, $to, $user) {
         $base = fn () => Scope::patients(DB::table('appointments')->whereBetween(DB::raw('DATE(appointments.start_time)'), [$from, $to]), 'appointments.patient_id', $user);
 
         $byDay = $base()->select(DB::raw('DATE(start_time) as date'), DB::raw('count(*) as total'),
@@ -227,17 +232,18 @@ class WorkflowController extends APIController
         $byMonth = Scope::patients(DB::table('appointments'), 'appointments.patient_id', $user)->select(DB::raw("DATE_FORMAT(start_time,'%Y-%m') as month"), DB::raw('count(*) as total'), DB::raw("sum(status='completed') as completed"))
             ->groupBy(DB::raw("DATE_FORMAT(start_time,'%Y-%m')"))->orderByDesc('month')->limit(12)->get();
         // The counts are for every staff role; the money is not. See StatsController.
-        $revenue = in_array($user->role, ['superadmin', 'clinic_admin'], true)
+        $revenue = Gate::forUser($user)->allows('view-revenue')
             ? (float) Scope::invoices(DB::table('payments')->whereBetween(DB::raw('DATE(paid_at)'), [$from, $to]), 'payments.invoice_id', $user)->sum('amount')
             : null;
 
-        return response()->json(['from' => $from, 'to' => $to, 'revenue' => $revenue, 'byDay' => $byDay, 'byDentist' => $byDentist, 'byBranch' => $byBranch, 'byMonth' => $byMonth]);
+        return ['from' => $from, 'to' => $to, 'revenue' => $revenue, 'byDay' => $byDay, 'byDentist' => $byDentist, 'byBranch' => $byBranch, 'byMonth' => $byMonth];
+        }));
     }
 
     /** POST /reminders/run — the same job the schedule runs (php artisan smilesync:reminders). */
     public function runReminders(Request $r, ReminderService $svc)
     {
-        if (! in_array($r->user()->role, ['superadmin', 'clinic_admin'], true)) {
+        if (Gate::denies('run-reminders')) {
             return Dbx::err('Not allowed.', 403);
         }
 
@@ -259,7 +265,7 @@ class WorkflowController extends APIController
     /** GET /app-settings — reminder timing, no-show threshold, offer expiry. */
     public function settings(Request $r)
     {
-        if (! in_array($r->user()->role, ['superadmin', 'clinic_admin'], true)) {
+        if (Gate::denies('manage-settings')) {
             return Dbx::err('Not allowed.', 403);
         }
 
@@ -269,7 +275,7 @@ class WorkflowController extends APIController
     /** PUT /app-settings */
     public function saveSettings(Request $r)
     {
-        if (! in_array($r->user()->role, ['superadmin', 'clinic_admin'], true)) {
+        if (Gate::denies('manage-settings')) {
             return Dbx::err('Not allowed.', 403);
         }
         $r->validate(['reminder_hours' => 'integer|min:1|max:168', 'no_show_threshold' => 'integer|min:1|max:20', 'offer_expiry_hours' => 'integer|min:1|max:72']);

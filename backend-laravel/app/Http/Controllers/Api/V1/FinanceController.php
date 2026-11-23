@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Support\Dbx;
 use App\Support\Scope;
+use App\Support\ReportCache;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -16,7 +18,7 @@ class FinanceController extends APIController
     public function index(Request $r)
     {
         $u = $r->user();
-        if (! in_array($u->role, ['superadmin', 'clinic_admin'], true)) {
+        if (Gate::denies('view-finance')) {
             return Dbx::err('Not allowed.', 403);
         }
         $branch = (int) $r->query('branch_id', 0);
@@ -31,6 +33,9 @@ class FinanceController extends APIController
 
             return $q;
         };
+        $cacheKey = ['clinic' => $u->clinic_id, 'user' => $u->id, 'role' => $u->role, 'pick' => $r->header('X-Clinic-Id'), 'branch' => $branch, 'month' => now()->format('Y-m')];
+
+        return response()->json(ReportCache::remember('finance', $cacheKey, function () use ($inv, $u, $branch) {
         $paidSql = 'SUM(invoices.total_amount - invoices.balance)';
 
         $t = $inv()->selectRaw('COUNT(*) as n, COALESCE(SUM(invoices.total_amount),0) as sales, COALESCE(' . $paidSql . ',0) as paid')->first();
@@ -59,9 +64,10 @@ class FinanceController extends APIController
             ->selectRaw("DATE_FORMAT(start_time,'%Y-%m') as month, COUNT(*) as total, SUM(status='completed') as completed, SUM(status IN ('cancelled','no_show')) as lost")
             ->groupBy('month')->orderBy('month')->get();
 
-        return response()->json([
+        return [
             'totals' => ['invoices' => (int) $t->n, 'sales' => $sales, 'paid' => $paid, 'pending' => round($sales - $paid, 2), 'pct' => $sales > 0 ? round($paid / $sales * 100, 1) : 0],
             'byMonth' => $month, 'byBranch' => $byBranch, 'byDentist' => $byDentist, 'procedures' => $procedures, 'trend' => $trend,
-        ]);
+        ];
+        }));
     }
 }

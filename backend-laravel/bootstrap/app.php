@@ -29,6 +29,8 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         // API only: never redirect unauthenticated requests to a web login page
         $middleware->redirectGuestsTo(fn () => null);
+        // Cached reports are marked out of date after every successful change (see ReportCache)
+        $middleware->appendToGroup('api', \App\Http\Middleware\BumpReportCache::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
