@@ -61,8 +61,15 @@ class ClinicController extends APIController
         if ($user->role === 'patient' && Dbx::has($table, 'patient_id')) {
             $q->where($table . '.patient_id', $user->patient?->patient_id ?? -1);
         }
-        if ($table === 'clinics' && ($c = Scope::clinic($user))) {
-            return $q->where('clinics.clinic_id', $c);
+        if ($table === 'clinics') {
+            // the superadmin manages every clinic, so the dashboard's clinic switcher
+            // must not hide the other clinics from the Clinics page
+            if ($user->role === 'superadmin') {
+                return $q;
+            }
+            if ($c = Scope::clinic($user)) {
+                return $q->where('clinics.clinic_id', $c);
+            }
         }
 
         return Scope::table($q, $table, $user); // own clinic only
