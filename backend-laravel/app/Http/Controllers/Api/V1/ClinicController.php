@@ -364,11 +364,45 @@ class ClinicController extends APIController
         // patient records are archived, never erased
         if ($res === 'patient-records' && Dbx::has($table, 'status')) {
             DB::table($table)->where($pk, $id)->update(['status' => 'archived']);
-        } else {
-            DB::table($table)->where($pk, $id)->delete();
+            Dbx::audit($user, 'archive', $table, $id, $old, ['status' => 'archived']);
+
+            return response()->json(['message' => 'Archived. The record is kept and can be restored.']);
         }
+        DB::table($table)->where($pk, $id)->delete();
         Dbx::audit($user, 'delete', $table, $id, $old, null);
 
         return response()->json(['message' => 'Deleted.']);
+    }
+
+    /**
+     * POST /api/v1/r/patient-records/{id}/restore
+     * Brings an archived patient back into the lists (WST criterion 11: recovery).
+     * Same roles that may archive; the audit log keeps the before and after.
+     */
+    public function restore(Request $r, string $res, $id)
+    {
+        if ($res !== 'patient-records') {
+            return Dbx::err('Only archived patient records can be restored.', 422);
+        }
+        $c = $this->cfg($res);
+        if (! $c) {
+            return Dbx::err('Unknown resource.', 404);
+        }
+        [$table, $pk, , $write] = $c;
+        $user = $r->user();
+        if (! $this->can($write, $user->role)) {
+            return Dbx::err('You are not allowed to restore records.', 403);
+        }
+        $old = $this->ownerScope(DB::table($table), $table, $user)->where($pk, $id)->first();
+        if (! $old) {
+            return Dbx::err('Not found.', 404);
+        }
+        if (($old->status ?? null) !== 'archived') {
+            return Dbx::err('This record is not archived.', 422);
+        }
+        DB::table($table)->where($pk, $id)->update(['status' => 'active']);
+        Dbx::audit($user, 'restore', $table, $id, ['status' => 'archived'], ['status' => 'active']);
+
+        return response()->json(['message' => 'Restored. The patient is back in the list.']);
     }
 }

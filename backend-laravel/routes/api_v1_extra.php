@@ -42,6 +42,7 @@ Route::post('r/{res}', [ClinicController::class, 'store']);
 Route::get('r/{res}/{id}', [ClinicController::class, 'show']);
 Route::match(['put', 'patch'], 'r/{res}/{id}', [ClinicController::class, 'update']);
 Route::delete('r/{res}/{id}', [ClinicController::class, 'destroy']);
+Route::post('r/{res}/{id}/restore', [ClinicController::class, 'restore']);
 Route::get('stats/finance', [\App\Http\Controllers\Api\V1\FinanceController::class, 'index']);
 Route::get('my/transactions', [\App\Http\Controllers\Api\V1\PatientBillingController::class, 'transactions']);
 Route::get('my/notifications', [\App\Http\Controllers\Api\V1\PatientNotificationController::class, 'index']);
