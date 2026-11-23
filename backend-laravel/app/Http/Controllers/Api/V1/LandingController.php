@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Support\ClinicHours;
 use App\Support\Dbx;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -80,7 +81,7 @@ class LandingController extends APIController
     /** PUT /api/v1/landing {content:{key:value,...}} — admins only. Keys are limited to simple names. */
     public function save(Request $r)
     {
-        if (! in_array($r->user()->role, ['superadmin', 'clinic_admin'], true)) {
+        if (Gate::denies('edit-landing-page')) {
             return Dbx::err('Not allowed.', 403);
         }
         $r->validate(['content' => 'required|array']);
