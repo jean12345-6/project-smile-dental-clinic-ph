@@ -30,12 +30,12 @@ endpoints:
     responses:
       -
         custom: []
-        status: 200
-        content: '{"content":{"hero.title":"Trusted dental care in the Philippines","hero.tagline":"Your smile is our priority","hero.desc":"Experience compassionate, world-class dental care from our team of expert dentists. We combine cutting-edge technology with a gentle touch \u2014 because your comfort matters.","svc.1.name":"Cleaning & Prophylaxis","svc.1.desc":"Professional cleaning and preventive care to remove tartar and protect enamel.","svc.2.name":"Fillings & Restorations","svc.2.desc":"Composite fillings that match your natural tooth colour \u2014 durable and virtually invisible.","svc.3.name":"Root Canal Therapy","svc.3.desc":"Pain-free endodontic treatment to save infected teeth and eliminate discomfort.","svc.4.name":"Crowns & Bridges","svc.4.desc":"High-quality porcelain crowns and bridges for a natural, beautiful smile.","svc.5.name":"Orthodontics","svc.5.desc":"Traditional braces and modern clear aligners for children, teens, and adults.","svc.6.name":"Teeth Whitening","svc.6.desc":"Professional-grade whitening for noticeably brighter teeth \u2014 safe and effective.","why.1.title":"Safe & sterile environment","why.1.desc":"Every instrument is sterilized to international standards. Your health and safety are non-negotiable.","why.2.title":"Minimal wait times","why.2.desc":"We respect your schedule. Our streamlined booking system ensures you''re seen on time, every time.","why.3.title":"Gentle, compassionate care","why.3.desc":"Anxious about the dentist? Our team is trained to keep you calm, informed, and comfortable.","why.4.title":"Advanced technology","why.4.desc":"Digital X-rays, intraoral cameras, and modern equipment for accurate diagnosis.","team.1.name":"Dr. Maria Santos","team.1.role":"General Dentistry & Orthodontics","team.1.years":"10+ years of experience","team.2.name":"Dr. Juan Reyes","team.2.role":"Pediatric & Prosthodontics","team.2.years":"15+ years of experience","team.3.name":"Our clinical team","team.3.role":"Dental assistants & staff","team.3.years":"Dedicated to your comfort","contact.address":"Labasan, Bongabong, Oriental Mindoro","contact.phone1":"(02) 8123-4567","contact.phone2":"0917-123-4567","contact.emergency":"0917-123-4567","contact.email":"info@projectsmile.com","hours.weekday":"Monday \u2013 Friday: 8:00 AM \u2013 7:00 PM","hours.sat":"Saturday: 8:00 AM \u2013 3:00 PM","hours.sun":"Sunday: Closed","footer.text":"Your trusted partner for comprehensive dental care and beautiful smiles in the Philippines."},"testimonials":[{"quote":"Very accommodating staff.","name":"Divina R.","rating":4}]}'
+        status: 500
+        content: '{"errors":[{"status":500,"message":"Server error.","source":""}]}'
         headers:
           cache-control: 'no-cache, private'
           content-type: application/json
-          access-control-allow-origin: '*'
+          vary: Origin
         description: null
     responseFields: []
     auth:

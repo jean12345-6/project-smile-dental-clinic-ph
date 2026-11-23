@@ -89,6 +89,111 @@ endpoints:
   -
     custom: []
     httpMethods:
+      - GET
+    uri: api/v1/auth/google/config
+    metadata:
+      custom: []
+      groupName: Authentication
+      groupDescription: |-
+
+        Sign in with Google (WST criterion 2: authentication with Google OAuth).
+
+        Flow:
+         1. The login page shows Google's own "Sign in with Google" button (Google Identity Services).
+         2. Google returns a signed ID token (a JWT) to the browser.
+         3. The browser sends it here. We ask Google to verify it, then check that it was issued
+            for OUR client ID and that Google has verified the email address.
+         4. Existing account with that email -> logged in. No account -> a new patient account is
+            created (staff accounts are only ever made by the clinic administrator).
+         5. We return our own SmileSync JWT, the same as the normal login.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Google sign-in settings'
+      description: 'The login page calls this to know whether to show the Google button.'
+      authenticated: false
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: '{"data":{"enabled":false,"clientId":null},"message":"Google sign-in settings","status":200}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          vary: Origin
+        description: null
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - POST
+    uri: api/v1/auth/google
+    metadata:
+      custom: []
+      groupName: Authentication
+      groupDescription: |-
+
+        Sign in with Google (WST criterion 2: authentication with Google OAuth).
+
+        Flow:
+         1. The login page shows Google's own "Sign in with Google" button (Google Identity Services).
+         2. Google returns a signed ID token (a JWT) to the browser.
+         3. The browser sends it here. We ask Google to verify it, then check that it was issued
+            for OUR client ID and that Google has verified the email address.
+         4. Existing account with that email -> logged in. No account -> a new patient account is
+            created (staff accounts are only ever made by the clinic administrator).
+         5. We return our own SmileSync JWT, the same as the normal login.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Sign in with Google'
+      description: 'Send the ID token ("credential") that Google''s button returned.'
+      authenticated: false
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      credential:
+        custom: []
+        name: credential
+        description: 'The Google ID token.'
+        required: true
+        example: architecto
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+    cleanBodyParameters:
+      credential: architecto
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
       - POST
     uri: api/v1/auth/login
     metadata:
@@ -209,12 +314,12 @@ endpoints:
     responses:
       -
         custom: []
-        status: 200
-        content: '{"data":[{"clinic_id":2,"clinic_name":"BrightSmile Dental Center"},{"clinic_id":1,"clinic_name":"Project Smile Dental Clinic PH"}]}'
+        status: 500
+        content: '{"errors":[{"status":500,"message":"Server error.","source":""}]}'
         headers:
           cache-control: 'no-cache, private'
           content-type: application/json
-          access-control-allow-origin: '*'
+          vary: Origin
         description: null
     responseFields: []
     auth:
@@ -297,7 +402,7 @@ endpoints:
         headers:
           cache-control: 'no-cache, private'
           content-type: application/json
-          access-control-allow-origin: '*'
+          vary: Origin
         description: null
     responseFields: []
     auth:

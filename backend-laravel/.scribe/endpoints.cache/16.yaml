@@ -43,7 +43,7 @@ endpoints:
         headers:
           cache-control: 'no-cache, private'
           content-type: application/json
-          access-control-allow-origin: '*'
+          vary: Origin
         description: null
     responseFields: []
     auth:
@@ -294,14 +294,14 @@ endpoints:
         name: id
         description: 'The ID of the user.'
         required: true
-        example: 1
+        example: 16
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         deprecated: false
     cleanUrlParameters:
-      id: 1
+      id: 16
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -315,7 +315,7 @@ endpoints:
         headers:
           cache-control: 'no-cache, private'
           content-type: application/json
-          access-control-allow-origin: '*'
+          vary: Origin
         description: null
     responseFields: []
     auth:
@@ -354,14 +354,14 @@ endpoints:
         name: id
         description: 'The ID of the user.'
         required: true
-        example: 1
+        example: 16
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         deprecated: false
     cleanUrlParameters:
-      id: 1
+      id: 16
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -405,14 +405,14 @@ endpoints:
         name: user_id
         description: 'The ID of the user.'
         required: true
-        example: 1
+        example: 16
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         deprecated: false
     cleanUrlParameters:
-      user_id: 1
+      user_id: 16
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
@@ -465,7 +465,7 @@ endpoints:
         name: data.attributes.role
         description: ''
         required: true
-        example: patient
+        example: dentist
         type: string
         enumValues:
           - superadmin
@@ -580,7 +580,7 @@ endpoints:
         attributes:
           name: architecto
           email: zbailey@example.net
-          role: patient
+          role: dentist
           status: architecto
           password: ']|{+-0pBNvYg'
         relationships:
@@ -629,14 +629,14 @@ endpoints:
         name: user_id
         description: 'The ID of the user.'
         required: true
-        example: 1
+        example: 16
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         deprecated: false
     cleanUrlParameters:
-      user_id: 1
+      user_id: 16
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
@@ -689,7 +689,7 @@ endpoints:
         name: data.attributes.role
         description: ''
         required: false
-        example: receptionist
+        example: patient
         type: string
         enumValues:
           - superadmin
@@ -804,7 +804,7 @@ endpoints:
         attributes:
           name: architecto
           email: zbailey@example.net
-          role: receptionist
+          role: patient
           status: architecto
           password: ']|{+-0pBNvYg'
         relationships:

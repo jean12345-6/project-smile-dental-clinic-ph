@@ -1,0 +1,2754 @@
+{
+    "variable": [
+        {
+            "id": "baseUrl",
+            "key": "baseUrl",
+            "type": "string",
+            "name": "string",
+            "value": "https:\/\/smilesync.projectsmiledentalclinic.com"
+        }
+    ],
+    "info": {
+        "name": "SmileSync API Documentation",
+        "_postman_id": "7a411396-53cd-4d07-9d85-06b24ead5275",
+        "description": "",
+        "schema": "https:\/\/schema.getpostman.com\/json\/collection\/v2.1.0\/collection.json"
+    },
+    "item": [
+        {
+            "name": "Appointments",
+            "description": "\nBook, read, reschedule and cancel appointments.",
+            "item": [
+                {
+                    "name": "GET \/api\/v1\/appointments",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/appointments",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/appointments"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "vary",
+                                    "value": "Origin"
+                                }
+                            ],
+                            "code": 401,
+                            "body": "{\"errors\":[{\"status\":401,\"message\":\"Unauthenticated\",\"source\":\"\"}]}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "POST \/api\/v1\/appointments\nCreates an appointment, but only if the policy allows this user to do so.",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/appointments",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/appointments"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"data\":{\"attributes\":{\"startTime\":\"2026-12-10 10:00:00\",\"endTime\":\"2026-12-10 11:00:00\",\"status\":\"pending\",\"bookedVia\":\"portal\"},\"relationships\":{\"patient\":{\"data\":{\"id\":14}},\"dentist\":{\"data\":{\"id\":1}},\"branch\":{\"data\":{\"id\":1}},\"service\":{\"data\":{\"id\":1}}}}}"
+                        },
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "GET \/api\/v1\/appointments\/{appointment}",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/appointments\/:appointment_id",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/appointments\/:appointment_id",
+                            "variable": [
+                                {
+                                    "id": "appointment_id",
+                                    "key": "appointment_id",
+                                    "value": 16,
+                                    "description": "The ID of the appointment."
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "vary",
+                                    "value": "Origin"
+                                }
+                            ],
+                            "code": 401,
+                            "body": "{\"errors\":[{\"status\":401,\"message\":\"Unauthenticated\",\"source\":\"\"}]}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "DELETE \/api\/v1\/appointments\/{appointment}\nDeletes the appointment, but only if the policy allows it.",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/appointments\/:appointment_id",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/appointments\/:appointment_id",
+                            "variable": [
+                                {
+                                    "id": "appointment_id",
+                                    "key": "appointment_id",
+                                    "value": 16,
+                                    "description": "The ID of the appointment."
+                                }
+                            ]
+                        },
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "PUT \/api\/v1\/appointments\/{appointment}\nReplaces the whole appointment, but only if the policy allows it.",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/appointments\/:appointment_appointment_id",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/appointments\/:appointment_appointment_id",
+                            "variable": [
+                                {
+                                    "id": "appointment_appointment_id",
+                                    "key": "appointment_appointment_id",
+                                    "value": 16,
+                                    "description": "The ID of the appointment appointment."
+                                }
+                            ]
+                        },
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"data\":{\"attributes\":{\"startTime\":\"2026-11-23T16:47:32\",\"endTime\":\"2052-12-16\",\"status\":\"no_show\",\"bookedVia\":\"chatbot\",\"followUpOf\":16},\"relationships\":{\"patient\":{\"data\":{\"id\":16}},\"dentist\":{\"data\":{\"id\":16}},\"branch\":{\"data\":{\"id\":16}},\"service\":{\"data\":{\"id\":16}}}}}"
+                        },
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "PATCH \/api\/v1\/appointments\/{appointment}\nUpdates only the fields that were sent, but only if the policy allows it.",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/appointments\/:appointment_appointment_id",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/appointments\/:appointment_appointment_id",
+                            "variable": [
+                                {
+                                    "id": "appointment_appointment_id",
+                                    "key": "appointment_appointment_id",
+                                    "value": 16,
+                                    "description": "The ID of the appointment appointment."
+                                }
+                            ]
+                        },
+                        "method": "PATCH",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"data\":{\"attributes\":{\"startTime\":\"2026-12-12 10:00:00\",\"endTime\":\"2026-12-12 11:00:00\",\"status\":\"confirmed\",\"bookedVia\":\"portal\"},\"relationships\":{\"dentist\":{\"data\":{\"id\":1}},\"branch\":{\"data\":{\"id\":1}},\"service\":{\"data\":{\"id\":1}},\"patient\":{\"data\":[]}}}}"
+                        },
+                        "description": ""
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Assistant",
+            "description": "\nThe SmileSync assistant. It understands English, Filipino or both, answers from the clinic's own data,\nand books, reschedules and cancels through the same slot engine as the rest of the API.",
+            "item": [
+                {
+                    "name": "POST \/api\/v1\/chat\nBody: {\"message\": \"gusto ko magpa-appointment\"}  or  {\"action\": \"book_service\", \"data\": {.",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/chat",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/chat"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "..}}"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "GET \/api\/v1\/chat\/history \u2014 the logged-in patient's last messages.",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/chat\/history",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/chat\/history"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "vary",
+                                    "value": "Origin"
+                                }
+                            ],
+                            "code": 401,
+                            "body": "{\"errors\":[{\"status\":401,\"message\":\"Unauthenticated\",\"source\":\"\"}]}",
+                            "name": ""
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Authentication",
+            "description": "\nRegister, login, logout and refresh tokens.",
+            "item": [
+                {
+                    "name": "Register",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/auth\/register",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/auth\/register"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"clinic_id\":16,\"name\":\"n\",\"email\":\"ashly64@example.com\",\"password\":\"pBNvYg\"}"
+                        },
+                        "description": "Creates the account and logs the user in immediately.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Google sign-in settings",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/auth\/google\/config",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/auth\/google\/config"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "The login page calls this to know whether to show the Google button.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "vary",
+                                    "value": "Origin"
+                                }
+                            ],
+                            "code": 200,
+                            "body": "{\"data\":{\"enabled\":false,\"clientId\":null},\"message\":\"Google sign-in settings\",\"status\":200}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "Sign in with Google",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/auth\/google",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/auth\/google"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"credential\":\"architecto\"}"
+                        },
+                        "description": "Send the ID token (\"credential\") that Google's button returned.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Log in",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/auth\/login",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/auth\/login"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"email\":\"gbailey@example.net\",\"password\":\"|]|{+-\"}"
+                        },
+                        "description": "Returns an access token. Send it as a Bearer token on every other request.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "POST \/api\/v1\/auth\/register-patient\nA patient creates an account. A patient record is created with it, so they can use the assistant right away (FR-30).",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/auth\/register-patient",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/auth\/register-patient"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "GET \/api\/v1\/auth\/clinics \u2014 clinic names for the register screen.",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/auth\/clinics",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/auth\/clinics"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "vary",
+                                    "value": "Origin"
+                                }
+                            ],
+                            "code": 500,
+                            "body": "{\"errors\":[{\"status\":500,\"message\":\"Server error.\",\"source\":\"\"}]}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "POST api\/v1\/auth\/logout",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/auth\/logout",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/auth\/logout"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "GET api\/v1\/auth\/me",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/auth\/me",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/auth\/me"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "vary",
+                                    "value": "Origin"
+                                }
+                            ],
+                            "code": 401,
+                            "body": "{\"errors\":[{\"status\":401,\"message\":\"Unauthenticated\",\"source\":\"\"}]}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "POST api\/v1\/auth\/refresh",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/auth\/refresh",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/auth\/refresh"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Clinic info and hours",
+            "description": "",
+            "item": [
+                {
+                    "name": "GET \/api\/v1\/clinic-info \u2014 {info:{director,address,phone2}, hours:{mon:{closed,open,close},.",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/clinic-info",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/clinic-info"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "..}}"
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "vary",
+                                    "value": "Origin"
+                                }
+                            ],
+                            "code": 401,
+                            "body": "{\"errors\":[{\"status\":401,\"message\":\"Unauthenticated\",\"source\":\"\"}]}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "PUT \/api\/v1\/clinic-info {info:{.",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/clinic-info",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/clinic-info"
+                        },
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "..}, hours:{mon:{closed,open,close},...}, sync_landing:bool}"
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Clinic records",
+            "description": "\nOne controller for the clinic modules (services, schedules, treatments, invoices, inventory, feedback ...).\nEach resource lists who may read and who may write. Every create, update and delete is written to the audit log.",
+            "item": [
+                {
+                    "name": "GET api\/v1\/r\/{res}",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/r\/:res",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/r\/:res",
+                            "variable": [
+                                {
+                                    "id": "res",
+                                    "key": "res",
+                                    "value": "architecto",
+                                    "description": ""
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "vary",
+                                    "value": "Origin"
+                                }
+                            ],
+                            "code": 401,
+                            "body": "{\"errors\":[{\"status\":401,\"message\":\"Unauthenticated\",\"source\":\"\"}]}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "POST api\/v1\/r\/{res}",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/r\/:res",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/r\/:res",
+                            "variable": [
+                                {
+                                    "id": "res",
+                                    "key": "res",
+                                    "value": "architecto",
+                                    "description": ""
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "GET api\/v1\/r\/{res}\/{id}",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/r\/:res\/:id",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/r\/:res\/:id",
+                            "variable": [
+                                {
+                                    "id": "res",
+                                    "key": "res",
+                                    "value": "architecto",
+                                    "description": ""
+                                },
+                                {
+                                    "id": "id",
+                                    "key": "id",
+                                    "value": "architecto",
+                                    "description": "The ID of the {res}."
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "vary",
+                                    "value": "Origin"
+                                }
+                            ],
+                            "code": 401,
+                            "body": "{\"errors\":[{\"status\":401,\"message\":\"Unauthenticated\",\"source\":\"\"}]}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "PUT api\/v1\/r\/{res}\/{id}",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/r\/:res\/:id",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/r\/:res\/:id",
+                            "variable": [
+                                {
+                                    "id": "res",
+                                    "key": "res",
+                                    "value": "architecto",
+                                    "description": ""
+                                },
+                                {
+                                    "id": "id",
+                                    "key": "id",
+                                    "value": "architecto",
+                                    "description": "The ID of the {res}."
+                                }
+                            ]
+                        },
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "DELETE api\/v1\/r\/{res}\/{id}",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/r\/:res\/:id",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/r\/:res\/:id",
+                            "variable": [
+                                {
+                                    "id": "res",
+                                    "key": "res",
+                                    "value": "architecto",
+                                    "description": ""
+                                },
+                                {
+                                    "id": "id",
+                                    "key": "id",
+                                    "value": "architecto",
+                                    "description": "The ID of the {res}."
+                                }
+                            ]
+                        },
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "POST \/api\/v1\/r\/patient-records\/{id}\/restore\nBrings an archived patient back into the lists (WST criterion 11: recovery).",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/r\/:res\/:id\/restore",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/r\/:res\/:id\/restore",
+                            "variable": [
+                                {
+                                    "id": "res",
+                                    "key": "res",
+                                    "value": "architecto",
+                                    "description": ""
+                                },
+                                {
+                                    "id": "id",
+                                    "key": "id",
+                                    "value": "architecto",
+                                    "description": "The ID of the {res}."
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Same roles that may archive; the audit log keeps the before and after."
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Clinic workflow",
+            "description": "\nDaily queue, check-in, walk-ins, invoices, reports, reminders, patient summary and OCR upload.",
+            "item": [
+                {
+                    "name": "GET \/queue?date=&dentistId= \u2014 today's patients in order of arrival or appointment time.",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/queue",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/queue"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "vary",
+                                    "value": "Origin"
+                                }
+                            ],
+                            "code": 401,
+                            "body": "{\"errors\":[{\"status\":401,\"message\":\"Unauthenticated\",\"source\":\"\"}]}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "POST \/queue\/walkin {patientId, dentistId, serviceId}",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/queue\/walkin",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/queue\/walkin"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "POST \/queue\/{id}\/status {status} \u2014 move an appointment through its statuses.",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/queue\/:id\/status",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/queue\/:id\/status",
+                            "variable": [
+                                {
+                                    "id": "id",
+                                    "key": "id",
+                                    "value": "architecto",
+                                    "description": "The ID of the queue."
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "POST \/queue\/{id}\/followup {date} \u2014 books a follow-up at the first open slot of that day.",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/queue\/:id\/followup",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/queue\/:id\/followup",
+                            "variable": [
+                                {
+                                    "id": "id",
+                                    "key": "id",
+                                    "value": "architecto",
+                                    "description": "The ID of the queue."
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "POST \/invoices\/generate {appointmentId} \u2014 builds an invoice from the treatments done (or the service price).",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/invoices\/generate",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/invoices\/generate"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "GET \/patient-summary\/{id} \u2014 automatic summary, clearly labelled.",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/patient-summary\/:id",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/patient-summary\/:id",
+                            "variable": [
+                                {
+                                    "id": "id",
+                                    "key": "id",
+                                    "value": "architecto",
+                                    "description": "The ID of the patient summary."
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "vary",
+                                    "value": "Origin"
+                                }
+                            ],
+                            "code": 401,
+                            "body": "{\"errors\":[{\"status\":401,\"message\":\"Unauthenticated\",\"source\":\"\"}]}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "GET \/reports?from=&to=",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/reports",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/reports"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "vary",
+                                    "value": "Origin"
+                                }
+                            ],
+                            "code": 401,
+                            "body": "{\"errors\":[{\"status\":401,\"message\":\"Unauthenticated\",\"source\":\"\"}]}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "POST \/reminders\/run \u2014 the same job the schedule runs (php artisan smilesync:reminders).",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/reminders\/run",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/reminders\/run"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "POST \/waitlist\/{id}\/confirm \u2014 the patient takes the offered slot and the appointment is created.",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/waitlist\/:id\/confirm",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/waitlist\/:id\/confirm",
+                            "variable": [
+                                {
+                                    "id": "id",
+                                    "key": "id",
+                                    "value": "architecto",
+                                    "description": "The ID of the waitlist."
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "GET \/app-settings \u2014 reminder timing, no-show threshold, offer expiry.",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/app-settings",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/app-settings"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "vary",
+                                    "value": "Origin"
+                                }
+                            ],
+                            "code": 401,
+                            "body": "{\"errors\":[{\"status\":401,\"message\":\"Unauthenticated\",\"source\":\"\"}]}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "PUT \/app-settings",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/app-settings",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/app-settings"
+                        },
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "POST \/clinic\/logo (multipart: image) \u2014 the clinic logo (FR-07).",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/clinic\/logo",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/clinic\/logo"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "POST \/clinics\/{id}\/admin {name,email,password} \u2014 SuperAdmin creates the Clinic Administrator account (FR-06).",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/clinics\/:id\/admin",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/clinics\/:id\/admin",
+                            "variable": [
+                                {
+                                    "id": "id",
+                                    "key": "id",
+                                    "value": "architecto",
+                                    "description": "The ID of the clinic."
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "POST \/ocr\/upload (multipart: image, patientId, text?)",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/ocr\/upload",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/ocr\/upload"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Dashboard",
+            "description": "",
+            "item": [
+                {
+                    "name": "GET \/api\/v1\/stats \u2014 real counts for the staff dashboard, limited to the user's clinic.",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/stats",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/stats"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "vary",
+                                    "value": "Origin"
+                                }
+                            ],
+                            "code": 401,
+                            "body": "{\"errors\":[{\"status\":401,\"message\":\"Unauthenticated\",\"source\":\"\"}]}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "GET \/api\/v1\/stats\/finance?branch_id= \u2014 sales, paid, pending and charts for the admin dashboard.",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/stats\/finance",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/stats\/finance"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "vary",
+                                    "value": "Origin"
+                                }
+                            ],
+                            "code": 401,
+                            "body": "{\"errors\":[{\"status\":401,\"message\":\"Unauthenticated\",\"source\":\"\"}]}",
+                            "name": ""
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Landing page",
+            "description": "",
+            "item": [
+                {
+                    "name": "GET \/api\/v1\/public\/landing \u2014 what visitors see (no login). Published feedback becomes testimonials.",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/public\/landing",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/public\/landing"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "vary",
+                                    "value": "Origin"
+                                }
+                            ],
+                            "code": 500,
+                            "body": "{\"errors\":[{\"status\":500,\"message\":\"Server error.\",\"source\":\"\"}]}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "PUT \/api\/v1\/landing {content:{key:value,.",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/landing",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/landing"
+                        },
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "..}} \u2014 admins only. Keys are limited to simple names."
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Lookups",
+            "description": "\nLists the services, dentists and branches used by the booking forms.",
+            "item": [
+                {
+                    "name": "GET \/api\/v1\/lookups\nEverything the front end needs to fill its dropdowns. Staff also get the patient names.",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/lookups",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/lookups"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "vary",
+                                    "value": "Origin"
+                                }
+                            ],
+                            "code": 401,
+                            "body": "{\"errors\":[{\"status\":401,\"message\":\"Unauthenticated\",\"source\":\"\"}]}",
+                            "name": ""
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Patient Appointments",
+            "description": "\nThe appointments of one patient. The patient id comes from the URL.",
+            "item": [
+                {
+                    "name": "GET \/api\/v1\/patients\/{patient}\/appointments\nLists only this patient's appointments. All AppointmentFilter parameters work here too.",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/patients\/:patient_patient_id\/appointments",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/patients\/:patient_patient_id\/appointments",
+                            "variable": [
+                                {
+                                    "id": "patient_patient_id",
+                                    "key": "patient_patient_id",
+                                    "value": 16,
+                                    "description": "The ID of the patient patient."
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "vary",
+                                    "value": "Origin"
+                                }
+                            ],
+                            "code": 401,
+                            "body": "{\"errors\":[{\"status\":401,\"message\":\"Unauthenticated\",\"source\":\"\"}]}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "POST \/api\/v1\/patients\/{patient}\/appointments\nCreates an appointment for the patient named in the URL.",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/patients\/:patient_patient_id\/appointments",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/patients\/:patient_patient_id\/appointments",
+                            "variable": [
+                                {
+                                    "id": "patient_patient_id",
+                                    "key": "patient_patient_id",
+                                    "value": 16,
+                                    "description": "The ID of the patient patient."
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"data\":{\"attributes\":{\"startTime\":\"2026-12-10 10:00:00\",\"endTime\":\"2026-12-10 11:00:00\",\"status\":\"pending\",\"bookedVia\":\"portal\"},\"relationships\":{\"patient\":{\"data\":{\"id\":14}},\"dentist\":{\"data\":{\"id\":1}},\"branch\":{\"data\":{\"id\":1}},\"service\":{\"data\":{\"id\":1}}}}}"
+                        },
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "DELETE \/api\/v1\/patients\/{patient}\/appointments\/{appointment}\nDeletes the appointment. The scoped binding returns 404 if it is not this patient's appointment.",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/patients\/:patient_patient_id\/appointments\/:appointment_id",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/patients\/:patient_patient_id\/appointments\/:appointment_id",
+                            "variable": [
+                                {
+                                    "id": "patient_patient_id",
+                                    "key": "patient_patient_id",
+                                    "value": 16,
+                                    "description": "The ID of the patient patient."
+                                },
+                                {
+                                    "id": "appointment_id",
+                                    "key": "appointment_id",
+                                    "value": 16,
+                                    "description": "The ID of the appointment."
+                                }
+                            ]
+                        },
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "PUT \/api\/v1\/patients\/{patient}\/appointments\/{appointment}\nReplaces the whole appointment (staff only).",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/patients\/:patient_patient_id\/appointments\/:appointment_appointment_id",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/patients\/:patient_patient_id\/appointments\/:appointment_appointment_id",
+                            "variable": [
+                                {
+                                    "id": "patient_patient_id",
+                                    "key": "patient_patient_id",
+                                    "value": 16,
+                                    "description": "The ID of the patient patient."
+                                },
+                                {
+                                    "id": "appointment_appointment_id",
+                                    "key": "appointment_appointment_id",
+                                    "value": 16,
+                                    "description": "The ID of the appointment appointment."
+                                }
+                            ]
+                        },
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"data\":{\"attributes\":{\"startTime\":\"2026-11-23T16:47:32\",\"endTime\":\"2052-12-16\",\"status\":\"checked_in\",\"bookedVia\":\"portal\",\"followUpOf\":16},\"relationships\":{\"patient\":{\"data\":{\"id\":16}},\"dentist\":{\"data\":{\"id\":16}},\"branch\":{\"data\":{\"id\":16}},\"service\":{\"data\":{\"id\":16}}}}}"
+                        },
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "PATCH \/api\/v1\/patients\/{patient}\/appointments\/{appointment}\nUpdates only the fields that were sent.",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/patients\/:patient_patient_id\/appointments\/:appointment_appointment_id",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/patients\/:patient_patient_id\/appointments\/:appointment_appointment_id",
+                            "variable": [
+                                {
+                                    "id": "patient_patient_id",
+                                    "key": "patient_patient_id",
+                                    "value": 16,
+                                    "description": "The ID of the patient patient."
+                                },
+                                {
+                                    "id": "appointment_appointment_id",
+                                    "key": "appointment_appointment_id",
+                                    "value": 16,
+                                    "description": "The ID of the appointment appointment."
+                                }
+                            ]
+                        },
+                        "method": "PATCH",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"data\":{\"attributes\":{\"startTime\":\"2026-12-12 10:00:00\",\"endTime\":\"2026-12-12 11:00:00\",\"status\":\"confirmed\",\"bookedVia\":\"portal\"},\"relationships\":{\"dentist\":{\"data\":{\"id\":1}},\"branch\":{\"data\":{\"id\":1}},\"service\":{\"data\":{\"id\":1}},\"patient\":{\"data\":[]}}}}"
+                        },
+                        "description": ""
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Patient portal",
+            "description": "",
+            "item": [
+                {
+                    "name": "GET \/api\/v1\/my\/transactions \u2014 every payment made on the patient's own invoices.",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/my\/transactions",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/my\/transactions"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "vary",
+                                    "value": "Origin"
+                                }
+                            ],
+                            "code": 401,
+                            "body": "{\"errors\":[{\"status\":401,\"message\":\"Unauthenticated\",\"source\":\"\"}]}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "GET \/api\/v1\/my\/notifications \u2014 built from reminders, staff replies, invoices, payments and appointment updates.",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/my\/notifications",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/my\/notifications"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "vary",
+                                    "value": "Origin"
+                                }
+                            ],
+                            "code": 401,
+                            "body": "{\"errors\":[{\"status\":401,\"message\":\"Unauthenticated\",\"source\":\"\"}]}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "POST \/api\/v1\/my\/notifications\/read  {keys:[.",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/my\/notifications\/read",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/my\/notifications\/read"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "..]} or {all:true}"
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Patients",
+            "description": "\nRead patients (list and show).",
+            "item": [
+                {
+                    "name": "GET \/api\/v1\/patients\nFilters and sorting come from the URL (?fullName=*maria*, ?sort=-createdAt .",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/patients",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/patients"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "..).\nAdd ?include=appointments to load each patient's appointments in one extra query.\n\nStaff only. A patient must never be able to list other patients: the clinic\nscope limits rows to the clinic, not to the person, so without this check a\nsigned-in patient could read every other patient's name, email and contact\nnumber. Patients use the \/my\/* endpoints for their own record instead."
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "vary",
+                                    "value": "Origin"
+                                }
+                            ],
+                            "code": 401,
+                            "body": "{\"errors\":[{\"status\":401,\"message\":\"Unauthenticated\",\"source\":\"\"}]}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "GET \/api\/v1\/patients\/{patient}\nAdd ?include=appointments to load this patient's appointments.",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/patients\/:patient_id",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/patients\/:patient_id",
+                            "variable": [
+                                {
+                                    "id": "patient_id",
+                                    "key": "patient_id",
+                                    "value": 16,
+                                    "description": "The ID of the patient."
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "A patient may read only their own record."
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "vary",
+                                    "value": "Origin"
+                                }
+                            ],
+                            "code": 401,
+                            "body": "{\"errors\":[{\"status\":401,\"message\":\"Unauthenticated\",\"source\":\"\"}]}",
+                            "name": ""
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Scanned forms",
+            "description": "\nReads a HANDWRITTEN patient form with an AI vision model and returns the patient fields.\nWorks with Google Gemini or Anthropic; set the matching key in .env. Settings are read\nthrough config\/ocr.php so they survive config caching in production.\nWithout a key the screen falls back to the basic in-browser reader.",
+            "item": [
+                {
+                    "name": "POST \/api\/v1\/ocr\/read (multipart: image)",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/ocr\/read",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/ocr\/read"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Slots",
+            "description": "\nFind the free time slots of a dentist.",
+            "item": [
+                {
+                    "name": "GET \/api\/v1\/slots\nLists the free slots of one dentist on one date. The slot length comes from the service.",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/slots",
+                            "query": [
+                                {
+                                    "key": "dentistId",
+                                    "value": "1",
+                                    "description": "The dentist.",
+                                    "disabled": false
+                                },
+                                {
+                                    "key": "serviceId",
+                                    "value": "1",
+                                    "description": "The service (sets the duration).",
+                                    "disabled": false
+                                },
+                                {
+                                    "key": "date",
+                                    "value": "2026-11-09",
+                                    "description": "YYYY-MM-DD, today or later.",
+                                    "disabled": false
+                                },
+                                {
+                                    "key": "branchId",
+                                    "value": "1",
+                                    "description": "The branch (optional).",
+                                    "disabled": false
+                                }
+                            ],
+                            "raw": "{{baseUrl}}\/api\/v1\/slots?dentistId=1&serviceId=1&date=2026-11-09&branchId=1"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"dentistId\":16,\"serviceId\":16,\"date\":\"2052-12-16\",\"branchId\":16}"
+                        },
+                        "description": ""
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "vary",
+                                    "value": "Origin"
+                                }
+                            ],
+                            "code": 401,
+                            "body": "{\"errors\":[{\"status\":401,\"message\":\"Unauthenticated\",\"source\":\"\"}]}",
+                            "name": ""
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Staff inbox",
+            "description": "\nChats the assistant passed to staff. Staff read the conversation and reply, and the reply\nshows up inside the patient's assistant panel.",
+            "item": [
+                {
+                    "name": "GET \/api\/v1\/chat\/replies?after=ID \u2014 the logged-in patient's staff replies.",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/chat\/replies",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/chat\/replies"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "vary",
+                                    "value": "Origin"
+                                }
+                            ],
+                            "code": 401,
+                            "body": "{\"errors\":[{\"status\":401,\"message\":\"Unauthenticated\",\"source\":\"\"}]}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "GET \/api\/v1\/chat\/inbox",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/chat\/inbox",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/chat\/inbox"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "vary",
+                                    "value": "Origin"
+                                }
+                            ],
+                            "code": 401,
+                            "body": "{\"errors\":[{\"status\":401,\"message\":\"Unauthenticated\",\"source\":\"\"}]}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "GET \/api\/v1\/chat\/inbox\/{patientId} \u2014 the whole conversation.",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/chat\/inbox\/:patientId",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/chat\/inbox\/:patientId",
+                            "variable": [
+                                {
+                                    "id": "patientId",
+                                    "key": "patientId",
+                                    "value": "architecto",
+                                    "description": ""
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "vary",
+                                    "value": "Origin"
+                                }
+                            ],
+                            "code": 401,
+                            "body": "{\"errors\":[{\"status\":401,\"message\":\"Unauthenticated\",\"source\":\"\"}]}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "POST \/api\/v1\/chat\/inbox\/{patientId}\/reply  body: {\"message\": \".",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/chat\/inbox\/:patientId\/reply",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/chat\/inbox\/:patientId\/reply",
+                            "variable": [
+                                {
+                                    "id": "patientId",
+                                    "key": "patientId",
+                                    "value": "architecto",
+                                    "description": ""
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "..\"}"
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Users",
+            "description": "\nManage clinic staff and patient login accounts.",
+            "item": [
+                {
+                    "name": "GET \/api\/v1\/users\nLists every user with the filters and sorting from the URL.",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/users",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/users"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "vary",
+                                    "value": "Origin"
+                                }
+                            ],
+                            "code": 401,
+                            "body": "{\"errors\":[{\"status\":401,\"message\":\"Unauthenticated\",\"source\":\"\"}]}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "POST \/api\/v1\/users\nCreates a user (needs the user:create ability).",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/users",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/users"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"data\":{\"attributes\":{\"name\":\"architecto\",\"email\":\"zbailey@example.net\",\"role\":\"receptionist\",\"status\":\"architecto\",\"password\":\"]|{+-0pBNvYg\"},\"relationships\":{\"clinic\":{\"data\":{\"id\":16}},\"branch\":{\"data\":{\"id\":16}}}}}"
+                        },
+                        "description": "A clinic admin can only add users to their own clinic. Only the SuperAdmin can pick a clinic\nor create another SuperAdmin. Every user except a SuperAdmin must belong to a clinic."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "GET \/api\/v1\/users\/{user}",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/users\/:id",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/users\/:id",
+                            "variable": [
+                                {
+                                    "id": "id",
+                                    "key": "id",
+                                    "value": 16,
+                                    "description": "The ID of the user."
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "vary",
+                                    "value": "Origin"
+                                }
+                            ],
+                            "code": 401,
+                            "body": "{\"errors\":[{\"status\":401,\"message\":\"Unauthenticated\",\"source\":\"\"}]}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "DELETE \/api\/v1\/users\/{user}\nDeletes the user (needs user:delete).",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/users\/:id",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/users\/:id",
+                            "variable": [
+                                {
+                                    "id": "id",
+                                    "key": "id",
+                                    "value": 16,
+                                    "description": "The ID of the user."
+                                }
+                            ]
+                        },
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "PUT \/api\/v1\/users\/{user}\nReplaces the whole user: every field is required (needs user:replace).",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/users\/:user_id",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/users\/:user_id",
+                            "variable": [
+                                {
+                                    "id": "user_id",
+                                    "key": "user_id",
+                                    "value": 16,
+                                    "description": "The ID of the user."
+                                }
+                            ]
+                        },
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"data\":{\"attributes\":{\"name\":\"architecto\",\"email\":\"zbailey@example.net\",\"role\":\"dentist\",\"status\":\"architecto\",\"password\":\"]|{+-0pBNvYg\"},\"relationships\":{\"clinic\":{\"data\":{\"id\":16}},\"branch\":{\"data\":{\"id\":16}}}}}"
+                        },
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "PATCH \/api\/v1\/users\/{user}\nUpdates only the fields that were sent (needs user:update).",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/users\/:user_id",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/users\/:user_id",
+                            "variable": [
+                                {
+                                    "id": "user_id",
+                                    "key": "user_id",
+                                    "value": 16,
+                                    "description": "The ID of the user."
+                                }
+                            ]
+                        },
+                        "method": "PATCH",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"data\":{\"attributes\":{\"name\":\"architecto\",\"email\":\"zbailey@example.net\",\"role\":\"patient\",\"status\":\"architecto\",\"password\":\"]|{+-0pBNvYg\"},\"relationships\":{\"clinic\":{\"data\":{\"id\":16}},\"branch\":{\"data\":{\"id\":16}}}}}"
+                        },
+                        "description": ""
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Waitlist",
+            "description": "\nJoin the waiting list when a slot is full. A freed slot is offered to the first person waiting.",
+            "item": [
+                {
+                    "name": "GET \/api\/v1\/waitlist\nStaff see everyone. A patient sees only their own entries.",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/waitlist",
+                            "query": [
+                                {
+                                    "key": "status",
+                                    "value": "waiting",
+                                    "description": "Filter: waiting, offered.",
+                                    "disabled": false
+                                }
+                            ],
+                            "raw": "{{baseUrl}}\/api\/v1\/waitlist?status=waiting"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "vary",
+                                    "value": "Origin"
+                                }
+                            ],
+                            "code": 401,
+                            "body": "{\"errors\":[{\"status\":401,\"message\":\"Unauthenticated\",\"source\":\"\"}]}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "POST \/api\/v1\/waitlist\nJoin the waiting list. A patient joins for themselves. Staff must send patientId.",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/waitlist",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/waitlist"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"patientId\":14,\"serviceId\":1,\"branchId\":1,\"dentistId\":1,\"preferredDate\":\"2026-11-09\"}"
+                        },
+                        "description": ""
+                    },
+                    "response": []
+                }
+            ]
+        }
+    ],
+    "auth": {
+        "type": "bearer",
+        "bearer": [
+            {
+                "key": "Authorization",
+                "type": "string"
+            }
+        ]
+    }
+}

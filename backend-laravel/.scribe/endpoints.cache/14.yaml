@@ -24,6 +24,11 @@ endpoints:
       description: |-
         ..).
         Add ?include=appointments to load each patient's appointments in one extra query.
+
+        Staff only. A patient must never be able to list other patients: the clinic
+        scope limits rows to the clinic, not to the person, so without this check a
+        signed-in patient could read every other patient's name, email and contact
+        number. Patients use the /my/* endpoints for their own record instead.
       authenticated: true
       deprecated: false
     headers:
@@ -45,7 +50,7 @@ endpoints:
         headers:
           cache-control: 'no-cache, private'
           content-type: application/json
-          access-control-allow-origin: '*'
+          vary: Origin
         description: null
     responseFields: []
     auth:
@@ -71,7 +76,7 @@ endpoints:
       title: |-
         GET /api/v1/patients/{patient}
         Add ?include=appointments to load this patient's appointments.
-      description: ''
+      description: 'A patient may read only their own record.'
       authenticated: true
       deprecated: false
     headers:
@@ -84,14 +89,14 @@ endpoints:
         name: patient_id
         description: 'The ID of the patient.'
         required: true
-        example: 1
+        example: 16
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         deprecated: false
     cleanUrlParameters:
-      patient_id: 1
+      patient_id: 16
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -105,7 +110,7 @@ endpoints:
         headers:
           cache-control: 'no-cache, private'
           content-type: application/json
-          access-control-allow-origin: '*'
+          vary: Origin
         description: null
     responseFields: []
     auth:

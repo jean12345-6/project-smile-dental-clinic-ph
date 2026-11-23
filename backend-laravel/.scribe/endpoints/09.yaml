@@ -2,7 +2,9 @@ name: 'Scanned forms'
 description: |-
 
   Reads a HANDWRITTEN patient form with an AI vision model and returns the patient fields.
-  Needs ANTHROPIC_API_KEY in .env. Without it the screen falls back to the basic in-browser reader.
+  Works with Google Gemini or Anthropic; set the matching key in .env. Settings are read
+  through config/ocr.php so they survive config caching in production.
+  Without a key the screen falls back to the basic in-browser reader.
 endpoints:
   -
     custom: []
@@ -15,7 +17,9 @@ endpoints:
       groupDescription: |-
 
         Reads a HANDWRITTEN patient form with an AI vision model and returns the patient fields.
-        Needs ANTHROPIC_API_KEY in .env. Without it the screen falls back to the basic in-browser reader.
+        Works with Google Gemini or Anthropic; set the matching key in .env. Settings are read
+        through config/ocr.php so they survive config caching in production.
+        Without a key the screen falls back to the basic in-browser reader.
       subgroup: ''
       subgroupDescription: ''
       title: 'POST /api/v1/ocr/read (multipart: image)'

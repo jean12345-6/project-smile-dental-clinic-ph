@@ -108,7 +108,7 @@ endpoints:
         name: date
         description: 'Must be a valid date in the format <code>Y-m-d</code>. Must be a date after or equal to <code>today</code>.'
         required: true
-        example: '2052-12-09'
+        example: '2052-12-16'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -128,7 +128,7 @@ endpoints:
     cleanBodyParameters:
       dentistId: 16
       serviceId: 16
-      date: '2052-12-09'
+      date: '2052-12-16'
       branchId: 16
     fileParameters: []
     responses:
@@ -139,7 +139,7 @@ endpoints:
         headers:
           cache-control: 'no-cache, private'
           content-type: application/json
-          access-control-allow-origin: '*'
+          vary: Origin
         description: null
     responseFields: []
     auth:
