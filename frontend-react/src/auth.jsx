@@ -40,6 +40,16 @@ export function AuthProvider({ children }) {
     await load();
   };
 
+  // Sign in with Google: Google's button gives us an ID token ("credential"); the API checks it
+  // with Google and returns our own token, the same as the normal login.
+  const loginWithGoogle = async (credential) => {
+    const res = await api('/auth/google', { method: 'POST', body: { credential } });
+    const token = findKey(res, 'access_token') || findKey(res, 'token');
+    if (!token) throw new Error('Google sign-in worked but no token was returned.');
+    localStorage.setItem('token', token);
+    await load();
+  };
+
   const logout = async (reason = 'logout') => {
     // Signing out must never wait for the network. It used to await the server call before
     // clearing anything, so on a slow phone connection the button appeared to do nothing
@@ -104,6 +114,6 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <Ctx.Provider value={{ user, lookups, loading, login, logout, isPatient, name, refreshLookups }}>{children}</Ctx.Provider>
+    <Ctx.Provider value={{ user, lookups, loading, login, loginWithGoogle, logout, isPatient, name, refreshLookups }}>{children}</Ctx.Provider>
   );
 }

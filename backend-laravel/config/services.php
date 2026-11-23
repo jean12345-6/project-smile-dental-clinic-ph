@@ -14,6 +14,12 @@ return [
     |
     */
 
+    // Sign in with Google (Google Identity Services). Only the client ID is needed: the
+    // ID token is checked with Google's tokeninfo endpoint, so no client secret is stored.
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+    ],
+
     'postmark' => [
         'key' => env('POSTMARK_API_KEY'),
     ],

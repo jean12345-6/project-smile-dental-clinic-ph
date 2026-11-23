@@ -1,15 +1,59 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { api } from '../api.js';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth.jsx';
 import { Alert } from '../ui.jsx';
 
 export default function Login() {
-  const { user, login } = useAuth();
+  const { user, login, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+
+  // Sign in with Google: show Google's own button when the server has a client ID set
+  const googleBox = useRef(null);
+  const [googleReady, setGoogleReady] = useState(false);
+  useEffect(() => {
+    if (user) return undefined;
+    let cancelled = false;
+    (async () => {
+      let clientId = null;
+      try {
+        const res = await api('/auth/google/config');
+        clientId = res?.data?.clientId || null;
+      } catch { /* no Google button if the setting cannot be read */ }
+      if (!clientId || cancelled) return;
+      const start = () => {
+        if (cancelled || !window.google?.accounts?.id || !googleBox.current) return;
+        window.google.accounts.id.initialize({
+          client_id: clientId,
+          callback: async ({ credential }) => {
+            setError('');
+            setBusy(true);
+            try {
+              await loginWithGoogle(credential);
+              navigate('/');
+            } catch (err) {
+              setError(err.message);
+            } finally {
+              setBusy(false);
+            }
+          },
+        });
+        window.google.accounts.id.renderButton(googleBox.current, { theme: 'outline', size: 'large', text: 'signin_with', shape: 'pill', width: 320 });
+        setGoogleReady(true);
+      };
+      if (window.google?.accounts?.id) { start(); return; }
+      const tag = document.createElement('script');
+      tag.src = 'https://accounts.google.com/gsi/client';
+      tag.async = true;
+      tag.onload = start;
+      document.head.appendChild(tag);
+    })();
+    return () => { cancelled = true; };
+  }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (user) return <Navigate to="/" replace />;
 
@@ -43,7 +87,9 @@ export default function Login() {
         <button className="btn btn-primary" disabled={busy}>
           {busy ? 'Signing in…' : 'Sign in'}
         </button>
-        <p className="muted center-text">New patient? <Link to="/register">Create an account</Link></p>
+        <div className="login-or" style={{ display: googleReady ? 'flex' : 'none' }}><span>or</span></div>
+        <div ref={googleBox} className="login-google" />
+        <p className="muted center-text">New patient? <Link to="/register">Create an account</Link>{googleReady ? ' or sign in with Google.' : ''}</p>
       </form>
     </div>
   );

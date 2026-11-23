@@ -684,3 +684,8 @@ body {
 @media (max-width: 1099px) {
   .dock { width: 100%; max-width: 100vw; left: 0; right: 0; }
 }
+
+/* Sign in with Google */
+.login-or { align-items: center; gap: 12px; color: var(--muted, #6b7280); font-size: 0.9rem; margin: 4px 0; }
+.login-or::before, .login-or::after { content: ''; flex: 1; height: 1px; background: currentColor; opacity: 0.3; }
+.login-google { display: flex; justify-content: center; min-height: 0; }
