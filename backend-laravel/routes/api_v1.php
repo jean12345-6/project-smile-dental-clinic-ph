@@ -12,6 +12,9 @@ use App\Http\Controllers\Api\V1\WaitlistController;
 
 Route::prefix('auth')->group(function () {
     Route::post('register', [AuthController::class, 'register'])->middleware('throttle:10,1');
+    // Sign in with Google: the login page reads the client ID, then sends Google's ID token
+    Route::get('google/config', [\App\Http\Controllers\Api\V1\GoogleAuthController::class, 'config']);
+    Route::post('google', [\App\Http\Controllers\Api\V1\GoogleAuthController::class, 'login'])->middleware('throttle:20,1');
     // throttle:20,1 = at most 20 login requests per minute per IP, on top of the 5-per-email limit in AuthController
     Route::post('login', [AuthController::class, 'login'])->middleware(['throttle:20,1', \App\Http\Middleware\SessionLogger::class]);
 });
