@@ -9,6 +9,8 @@ use App\Models\User;
 use App\Traits\ApiResponses;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\RateLimiter;
+use App\Support\Dbx;
 
 
 /**
@@ -20,6 +22,10 @@ class AuthController extends Controller
 {
     // Gives this controller the ok(), success() and error() response helpers
     use ApiResponses;
+
+    // Login attempt limit (WST criterion 2)
+    private const MAX_LOGIN_ATTEMPTS = 5;
+    private const LOCKOUT_SECONDS = 60;
 
     // Register: creates the account and logs the user in immediately
     /**
@@ -59,10 +65,35 @@ class AuthController extends Controller
     {
         $credentials = $request->only('email', 'password');
 
+        // Login attempt limit: 5 wrong passwords for the same email from the same IP
+        // locks that pair for 60 seconds. The key is per email AND per IP, so one
+        // attacker cannot lock out a real user who logs in from somewhere else.
+        $key = 'login|' . mb_strtolower(trim((string) $request->input('email'))) . '|' . $request->ip();
+        $userId = User::where('email', $request->input('email'))->value('id');
+
+        if (RateLimiter::tooManyAttempts($key, self::MAX_LOGIN_ATTEMPTS)) {
+            $seconds = RateLimiter::availableIn($key);
+            Dbx::audit(null, 'login_locked', 'users', $userId, null, ['email' => $request->input('email'), 'ip' => $request->ip(), 'retry_in_seconds' => $seconds]);
+
+            return $this->error("Too many login attempts. Please try again in {$seconds} seconds.", 429)
+                ->header('Retry-After', $seconds);
+        }
+
         // attempt() returns false when the email or password is wrong
         if (! $token = Auth::guard('api')->attempt($credentials)) {
-            return $this->error('Invalid credentials', 401);
+            RateLimiter::hit($key, self::LOCKOUT_SECONDS);
+            $left = RateLimiter::remaining($key, self::MAX_LOGIN_ATTEMPTS);
+            Dbx::audit(null, 'login_failed', 'users', $userId, null, ['email' => $request->input('email'), 'ip' => $request->ip(), 'attempts_left' => $left]);
+
+            $msg = $left > 0
+                ? "Invalid credentials. {$left} attempt(s) left before a short lock."
+                : 'Invalid credentials. Too many attempts: login is locked for ' . self::LOCKOUT_SECONDS . ' seconds.';
+
+            return $this->error($msg, 401);
         }
+
+        // A correct login resets the counter
+        RateLimiter::clear($key);
 
         return $this->ok('Login successful', $this->formatToken($token));
     }
